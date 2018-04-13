@@ -379,7 +379,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   if (k<2) {
     stop("Attachment_Points must have lenght >= 2.")
   }
-  if (length(Expected_Layer_Losses != k)) {
+  if (length(Expected_Layer_Losses) != k) {
     stop("Attachment_Points and Expected_Layer_Losses must have the same lenght.")
   }
   if (min(diff(Attachment_Points)) <= 0) {
@@ -489,7 +489,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       Status <- paste0(Status, "Layer exit frequencies not strictly less than RoLs. Frequencies not used! \n")
     }
   }
-  if (!is.null(Frequencies)) {
+  if (is.null(Frequencies)) {
     alpha_between_layers <- numeric(k-1)
     for (i in 1:(k-1)) {
       if (i < k-1) {
@@ -521,6 +521,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   Results <- Fit_PP(Attachment_Points, s, l, alpha_max = alpha_max, minimize_ratios = minimize_ratios)
 
   Results$FQ <- Frequencies[1]
+  if (Status == "") {Status <- "OK."}
   Results$Status <- Status
   return(Results)
 }
