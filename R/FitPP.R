@@ -1,20 +1,20 @@
-Fit_PP <- function(p, s, l, tolerance = 10^(-10), alpha_max = 100, minimize_ratios = T) {
-  # p vector of deductibles
+Fit_PP <- function(a, s, l, tolerance = 10^(-10), alpha_max = 100, minimize_ratios = T) {
+  # a vector of attachment points
   # s vector of frequencies
-  # l[i] exp loss of layer p[i+1] - p[i] xs p[i]
+  # l[i] exp loss of layer a[i+1] - a[i] xs a[i]
 
-  if (length(p) != length(s)) {
-    return("p and s must have same lenght!")
+  if (length(a) != length(s)) {
+    return("a and s must have same lenght!")
   }
-  n <- length(p)
-  if (min(diff(p))<=0) {
-    return("p must be ascending")
+  n <- length(a)
+  if (min(diff(a))<=0) {
+    return("a must be ascending")
   }
   if (max(diff(s))>=0) {
     return("s must be descending")
   }
-  if (p[1] <= 0) {
-    return("p must be positive.")
+  if (a[1] <= 0) {
+    return("a must be positive.")
   }
   if (s[n] <= 0) {
     return("s must be positive.")
@@ -22,12 +22,12 @@ Fit_PP <- function(p, s, l, tolerance = 10^(-10), alpha_max = 100, minimize_rati
 
   t <- numeric(2*n-1)
   alpha <- numeric(2*n-1)
-  t[2*(1:n)-1] <- p
-  alpha[2*n-1] <- s[n] * p[n] / l[n] + 1
+  t[2*(1:n)-1] <- a
+  alpha[2*n-1] <- s[n] * a[n] / l[n] + 1
   for (k in 1:(n-1)) {
-    taus <- Calculate_taus(s[k], s[k+1], p[k], p[k+1], l[k], tolerance = tolerance)
-    lower_bound <- min(p[k] * (s[k] / s[k+1])^(1/alpha_max), (p[k] + p[k+1]) / 2)
-    upper_bound <- max(p[k+1] * (s[k+1] / s[k])^(1/alpha_max), (p[k] + p[k+1]) / 2)
+    taus <- Calculate_taus(s[k], s[k+1], a[k], a[k+1], l[k], tolerance = tolerance)
+    lower_bound <- min(a[k] * (s[k] / s[k+1])^(1/alpha_max), (a[k] + a[k+1]) / 2)
+    upper_bound <- max(a[k+1] * (s[k+1] / s[k])^(1/alpha_max), (a[k] + a[k+1]) / 2)
     if (taus[2] < lower_bound) {
       taus <- rep(lower_bound, 2)
     } else if (taus[1] > upper_bound) {
@@ -41,7 +41,7 @@ Fit_PP <- function(p, s, l, tolerance = 10^(-10), alpha_max = 100, minimize_rati
       if (taus[1]<taus[2]) {
         t_temp <- (taus[1] + taus[2]) / 2
         penalty <- function(t) {
-          alphas <- Calculate_alphas(s[k], s[k+1], p[k], p[k+1], l[k], t, tolerance = tolerance, alpha_max = alpha_max)
+          alphas <- Calculate_alphas(s[k], s[k+1], a[k], a[k+1], l[k], t, tolerance = tolerance, alpha_max = alpha_max)
           #return(abs(alphas[1]-alphas[2]))
           if (alphas[1]<alphas[2]) {
             if (alphas[2]>1000*alphas[1]) {
@@ -65,7 +65,7 @@ Fit_PP <- function(p, s, l, tolerance = 10^(-10), alpha_max = 100, minimize_rati
         t[2*k] <- taus[1]
       }
     }
-    alpha[(2*k-1):(2*k)] <- Calculate_alphas(s[k], s[k+1], p[k], p[k+1], l[k], t[2*k], tolerance = tolerance, alpha_max = alpha_max)
+    alpha[(2*k-1):(2*k)] <- Calculate_alphas(s[k], s[k+1], a[k], a[k+1], l[k], t[2*k], tolerance = tolerance, alpha_max = alpha_max)
   }
 
   Result <- list(t = t, alpha = alpha)
@@ -74,11 +74,11 @@ Fit_PP <- function(p, s, l, tolerance = 10^(-10), alpha_max = 100, minimize_rati
 
 
 
-Calculate_taus <- function(s_0, s_1, p_0, p_1, l_0, tolerance = 10^(-10)) {
+Calculate_taus <- function(s_0, s_1, a_0, a_1, l_0, tolerance = 10^(-10)) {
   # s_0 = s_k
   # s_1 = s_{k+1}
-  # p_0 = p_k
-  # p_1 = p_{k+1}
+  # a_0 = a_k
+  # a_1 = a_{k+1}
   # l_0 = l_k
 
   LL <- function(a, b, alpha) {
@@ -90,23 +90,23 @@ Calculate_taus <- function(s_0, s_1, p_0, p_1, l_0, tolerance = 10^(-10)) {
   }
 
   lambda <- function(t, alpha) {
-    # use s_0, p_0, s_1 and p_1 from environment
-    Result <- s_0 * LL(p_0, t, alpha) + s_0 * (p_0 / t)^alpha * LL(t, p_1, (log(s_1/s_0) - alpha*log(p_0/t)) / log(t/p_1) )
+    # use s_0, a_0, s_1 and a_1 from environment
+    Result <- s_0 * LL(a_0, t, alpha) + s_0 * (a_0 / t)^alpha * LL(t, a_1, (log(s_1/s_0) - alpha*log(a_0/t)) / log(t/a_1) )
     return(Result)
   }
 
   f <- function(x) {
-    lambda(x, log(s_1/s_0) / log(p_0/x)) - l_0
+    lambda(x, log(s_1/s_0) / log(a_0/x)) - l_0
   }
 
-  delta <- tolerance *(p_1 - p_0)
+  delta <- tolerance *(a_1 - a_0)
   tau_u <- NA
-  try(tau_u <- uniroot(f, interval = c(p_0+delta, p_1-delta), tol = tolerance * (p_1 - p_0))$root, silent = T)
+  try(tau_u <- uniroot(f, interval = c(a_0 + delta, a_1 - delta), tol = tolerance * (a_1 - a_0))$root, silent = T)
   if (is.na(tau_u)) {
-    if (f((p_0 + p_1) / 2) < 0) {
-      tau_u <- p_1
+    if (f((a_0 + a_1) / 2) < 0) {
+      tau_u <- a_1
     } else {
-      tau_u <- p_0
+      tau_u <- a_0
     }
   }
 
@@ -115,16 +115,16 @@ Calculate_taus <- function(s_0, s_1, p_0, p_1, l_0, tolerance = 10^(-10)) {
   }
 
   tau_l <- NA
-  try(tau_l <- uniroot(g, interval = c(p_0, p_1), tol = tolerance * (p_1 - p_0))$root, silent = T)
+  try(tau_l <- uniroot(g, interval = c(a_0, a_1), tol = tolerance * (a_1 - a_0))$root, silent = T)
   if (is.na(tau_l)) {
-    if (g((p_0 + p_1) / 2) > 0) {
-      tau_l <- p_0
+    if (g((a_0 + a_1) / 2) > 0) {
+      tau_l <- a_0
     } else {
-      tau_l <- p_1
+      tau_l <- a_1
     }
   }
   # if (is.na(tau_l)) {
-  #   tau_l <- p_0
+  #   tau_l <- a_0
   # }
 
   return(c(tau_l, tau_u))
@@ -133,11 +133,11 @@ Calculate_taus <- function(s_0, s_1, p_0, p_1, l_0, tolerance = 10^(-10)) {
 
 
 
-Calculate_alphas <- function(s_0, s_1, p_0, p_1, l_0, t, alpha_max = 100, tolerance = 10^(-10)) {
+Calculate_alphas <- function(s_0, s_1, a_0, a_1, l_0, t, alpha_max = 100, tolerance = 10^(-10)) {
   # s_0 = s_k
   # s_1 = s_{k+1}
-  # p_0 = p_k
-  # p_1 = p_{k+1}
+  # a_0 = a_k
+  # a_1 = a_{k+1}
   # l_0 = l_k
 
   LL <- function(a, b, alpha) {
@@ -149,8 +149,8 @@ Calculate_alphas <- function(s_0, s_1, p_0, p_1, l_0, t, alpha_max = 100, tolera
   }
 
   lambda <- function(t, alpha) {
-    # use s_0, p_0, s_1 and p_1 from environment
-    Result <- s_0 * LL(p_0, t, alpha) + s_0 * (p_0 / t)^alpha * LL(t, p_1, (log(s_1/s_0) - alpha*log(p_0/t)) / log(t/p_1) )
+    # use s_0, a_0, s_1 and a_1 from environment
+    Result <- s_0 * LL(a_0, t, alpha) + s_0 * (a_0 / t)^alpha * LL(t, a_1, (log(s_1/s_0) - alpha*log(a_0/t)) / log(t/a_1) )
     return(Result)
   }
 
@@ -159,7 +159,7 @@ Calculate_alphas <- function(s_0, s_1, p_0, p_1, l_0, t, alpha_max = 100, tolera
   }
 
   alpha_0 <- NA
-  try(alpha_0 <- uniroot(f, c(0, alpha_max), tol = tolerance * (p_1 - p_0))$root, silent = T)
+  try(alpha_0 <- uniroot(f, c(0, alpha_max), tol = tolerance * (a_1 - a_0))$root, silent = T)
   if (is.na(alpha_0)) {
     if (abs(f(0) < abs(f(alpha_max)))) {
       alpha_0 <- 0
@@ -167,7 +167,7 @@ Calculate_alphas <- function(s_0, s_1, p_0, p_1, l_0, t, alpha_max = 100, tolera
       alpha_0 <- alpha_max
     }
   }
-  alpha_1 <- (log(s_1/s_0) - alpha_0 * log(p_0/t)) / log(t/p_1)
+  alpha_1 <- (log(s_1/s_0) - alpha_0 * log(a_0/t)) / log(t/a_1)
   alpha_1 <- min(alpha_max, alpha_1)
 
   return(pmax(c(alpha_0, alpha_1), 0))
