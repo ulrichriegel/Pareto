@@ -1,0 +1,464 @@
+
+#' This function the expected loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint
+#' @param Cover Numeric. Cover of the reinsurance layer. Use "unl" for unlimited layers.
+#' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
+#' @param alpha Numeric. Pareto alpha.
+#' @param t Numeric.. Threshold of the Pareto distribution. If t = NULL (default) then t <- Attachment Point
+#' @export
+
+Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL) {
+  if (is.null(t)) {
+    t <- AttachmentPoint
+    if (AttachmentPoint == 0) {
+      return("If Attachment Point in zero, then a t>0 has to be entered.")
+    }
+  }
+  if (t <= 0) {
+    return("t must be greater than 0.")
+  }
+
+  if (Cover == "unl" && AttachmentPoint >= 0 && alpha >= 0) {
+    if (alpha <= 1) {
+      return("alpha must be > 1 for unlimited covers!")
+    } else if (t <= AttachmentPoint) {
+      #EP <- t^alpha / (1 - alpha) * ( - AttachmentPoint^(1 - alpha))
+      EP <- -(t / AttachmentPoint)^alpha / (1 - alpha) * AttachmentPoint
+    } else {
+      EP <- t - AttachmentPoint
+      #EP <- EP + t^alpha / (1 - alpha) * (- t^(1 - alpha))
+      EP <- EP - t / (1 - alpha)
+    }
+    return(EP)
+  } else if (Cover >= 0 && AttachmentPoint >= 0 && alpha >= 0) {
+    EP <- NaN
+    while (is.nan(EP)) {
+      if (t <= AttachmentPoint) {
+        if (alpha == 0) {
+          EP <- Cover
+        } else if (alpha == 1) {
+          EP <- t * (log(Cover + AttachmentPoint) - log(AttachmentPoint))
+        } else {
+          #EP <- t^alpha / (1 - alpha) * ((Cover + AttachmentPoint)^(1 - alpha) - AttachmentPoint^(1 - alpha))
+          EP <- t / (1 - alpha) * (((Cover + AttachmentPoint) / t)^(1 - alpha) - (AttachmentPoint / t)^(1 - alpha))
+        }
+      } else if (t >= AttachmentPoint + Cover) {
+        EP <- Cover
+      } else {
+        EP <- t - AttachmentPoint
+        if (alpha == 0) {
+          EP <- Cover
+        } else if (alpha == 1) {
+          EP <- EP + t * (log(Cover + AttachmentPoint) - log(t))
+        } else {
+          #EP <- EP + t^alpha / (1 - alpha) * ((Cover + AttachmentPoint)^(1 - alpha) - t^(1 - alpha))
+          EP <- EP + t / (1 - alpha) * (((Cover + AttachmentPoint) / t)^(1 - alpha) - 1)
+        }
+      }
+      if (is.nan(EP) || is.infinite(EP)) {
+        alpha <- alpha / 2
+        EP <- NaN
+        print(paste("alpha reduced to", round(alpha, 2)))
+      }
+    }
+    return(EP)
+  } else {
+    return(NULL)
+  }
+
+}
+
+
+#' This function generates random deviates of the Pareto distribution Pareto(t, alpha).
+#' @param n Number of observations.
+#' @param t Threshold of the Pareto distribution
+#' @param alpha Pareto alpha.
+#' @export
+
+rPareto <- function(n, t, alpha) {
+  FinvPareto <- function(x,t,alpha) {
+    return(t/(1-x)^(1/alpha))
+  }
+  return(FinvPareto(runif(n),t,alpha))
+}
+
+
+#' This function extrapolates from the layer Cover_1 xs AttachmentPoint_1 to the layer Cover_2 xs AttachmentPoint_2 using a Pareto distribution Pareto(t, alpha) with t sufficiently small.
+#' @param Cover_1 Numeric. Cover of the layer from which we extrapolate. Use "unl" for unlimited layers.
+#' @param AttachmentPoint_1 Numeric. Attachment point of the layer from which we extrapolate.
+#' @param Cover_2 Numeric. Cover of the layer to which we extrapolate. Use "unl" for unlimited layers.
+#' @param AttachmentPoint_2 Numeric. Attachment point of the layer to which we extrapolate.
+#' @param alpha Numeric. Pareto alpha used for the extrapolation.
+#' @param ExpLoss_1 Numeric. Expected loss of the layer from which we extrapolate. If NULL (default) then the function provides only the ratio between the expected losses of the layers.
+#' @export
+
+Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2, alpha, ExpLoss_1 = NULL) {
+  if (is.null(ExpLoss_1)) {
+    ExpLoss_1 <- 1
+  }
+  if (Cover_1 == "unl" || Cover_2 == "unl") {
+    if (alpha <= 1) {
+      return("alpha must be > 1 for unlimited covers!")
+    } else if (Cover_1 == "unl" && Cover_2 == "unl") {
+      Result <- ((AttachmentPoint_2)^(1-alpha)) / ((AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
+    } else if (Cover_2 == "unl") {
+      Result <- ( - (AttachmentPoint_2)^(1-alpha)) / ((Cover_1 + AttachmentPoint_1)^(1-alpha) - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
+    } else {
+      Result <- ((Cover_2 + AttachmentPoint_2)^(1-alpha) - (AttachmentPoint_2)^(1-alpha)) / ( - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
+    }
+    return(Result)
+  }
+  if (alpha <= 0) {
+    Result <- Cover_2 / Cover_1 * ExpLoss_1
+  } else if (alpha == 1) {
+    Result <- (log(Cover_2 + AttachmentPoint_2) - log(AttachmentPoint_2)) / (log(Cover_1 + AttachmentPoint_1) - log(AttachmentPoint_1)) * ExpLoss_1
+  } else {
+    Result <- ((Cover_2 + AttachmentPoint_2)^(1-alpha) - (AttachmentPoint_2)^(1-alpha)) / ((Cover_1 + AttachmentPoint_1)^(1-alpha) - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
+  }
+  return(Result)
+}
+
+
+
+#' This function finds the Pareto alpha between two layers.
+#' @param Cover_1 Numeric. Cover of the first layer.
+#' @param AttachmentPoint_1 Numeric. Cover of the first layer.
+#' @param ExpLoss_1 Numeric. Expected loss of the first layer.
+#' @param Cover_2 Numeric. Cover of the second layer.
+#' @param AttachmentPoint_2 Numeric. Cover of the second layer.
+#' @param ExpLoss_2 Numeric. Expected loss of the second layer.
+#' @param max_alpha Numeric. Upper limit for the alpha that is returned.
+#' @param tolerance Numeric. Accuracy of the result.
+#' @export
+
+Pareto_Find_Alpha <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 20, tolerance = 10^(-10)) {
+  if (Cover_1 <= 0 || AttachmentPoint_1 <= 0 || ExpLoss_1 <= 0 || Cover_2 <= 0 || AttachmentPoint_2 <= 0 || ExpLoss_2 <= 0) {
+    return("All input parameters must be positive!")
+  }
+
+  f <- function(alpha) {
+    Pareto_Extrapolation(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2, alpha, ExpLoss_1) - ExpLoss_2
+  }
+
+  Result <- NA
+  if (is.numeric(Cover_1) && is.numeric(Cover_2)) {
+    try(Result <- uniroot(f, c(0, max_alpha), tol = tolerance)$root, silent = T)
+    if (AttachmentPoint_1 > AttachmentPoint_2 && AttachmentPoint_1 + Cover_1 >= AttachmentPoint_2 + Cover_2 && f(max_alpha) < 0) {
+      Result <- max_alpha
+    } else if (AttachmentPoint_1 < AttachmentPoint_2 && AttachmentPoint_1 + Cover_1 <= AttachmentPoint_2 + Cover_2 && f(max_alpha) > 0) {
+      Result <- max_alpha
+    }
+  } else {
+    try(Result <- uniroot(f, c(1 + tolerance, max_alpha), tol = tolerance)$root, silent = T)
+    if (is.na(Result)) {
+      if (Cover_1 == "unl" && Cover_2 == "unl") {
+        if (AttachmentPoint_1 < AttachmentPoint_2 && f(max_alpha) > 0) {
+          Result <- max_alpha
+        }
+        if (AttachmentPoint_1 > AttachmentPoint_2 && f(max_alpha) < 0) {
+          Result <- max_alpha
+        }
+      } else if (Cover_1 == "unl") {
+        if (AttachmentPoint_1 > AttachmentPoint_2 && f(max_alpha) < 0) {
+          Result <- max_alpha
+        }
+      } else if (Cover_2 == "unl") {
+        if (AttachmentPoint_1 < AttachmentPoint_2 && f(max_alpha) > 0) {
+          Result <- max_alpha
+        }
+      }
+    }
+  }
+  if (is.na(Result)) {
+    return("Did not find a solution!")
+  }
+  alpha <- Result
+  return(alpha)
+
+}
+
+
+
+#' This function calculates the expected loss of a Piecewise Pareto Distribution in the layer Cover xs AttachmentPoint
+#' @param Cover Numeric. Cover of the reinsurance layer.
+#' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
+#' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
+#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
+#' @export
+
+PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha) {
+  if (!is.numeric(t) || !is.numeric(alpha)) {
+    return("alpha and t must be numeric.")
+  }
+  if (length(t) != length(alpha)) {
+    return("t and alpha must have the same length")
+  }
+  n <- length(t)
+  if (min(t) <= 0) {
+    return("t must have positive elements!")
+  }
+  if (min(alpha) < 0) {
+    return("alpha must have non-negative elements!")
+  }
+  if (min(diff(t)) <= 0) {
+    return("t must be strictily ascending!")
+  }
+  if (length(AttachmentPoint) != 1 || length(Cover) != 1) {
+    return("AttachmentPoint and Cover must have lenght  1!")
+  }
+  if (!is.numeric(AttachmentPoint)) {
+    return("AttachmentPoint must be numeric!")
+  }
+  if (AttachmentPoint < 0) {
+    return("AttachmentPoint must be non-negative!")
+  }
+  if (!is.numeric(Cover)) {
+    if (!is.character(Cover)) {
+      return("AttachmentPoint must be numeric or unl!")
+    } else if (Cover != "unl") {
+      return("AttachmentPoint must be numeric or unl!")
+    }
+  } else {
+    if (Cover < 0) {
+      return("Cover must be non-negative!")
+    }
+  }
+  if (Cover == 0) {
+    return(0)
+  }
+
+  factors_t <- t[2:n] / t[1:(n-1)]
+  excess_prob <- numeric(n)
+  excess_prob[1] <- 1
+  excess_prob[2:n] <- cumprod((1/factors_t)^alpha[1:(n-1)])
+
+  k1 <- sum(t <= AttachmentPoint)
+  if (Cover == "unl") {
+    k2 <- n
+  } else {
+    k2 <- sum(t < AttachmentPoint + Cover)
+  }
+
+  if (k1 == 0 && k2 == 0) {
+    return(Cover)
+  } else if (k1 == 0) {
+    Result <- t[1] - AttachmentPoint
+    AttachmentPoint <- t[1]
+    if (is.numeric(Cover)) {
+      Cover <- Cover - Result
+    }
+    k1 <- 1
+  } else {
+    Result <- 0
+  }
+
+  Att <- numeric(n)
+  Exit <- numeric(n)
+
+  Att[k1:k2] <- pmax(t[k1:k2], AttachmentPoint)
+  if (k2 < n) {
+    Exit[k1:k2] <- pmin(t[(k1+1):(k2+1)], AttachmentPoint + Cover)
+  } else if (k1 < k2) {
+    if (is.numeric(Cover)) {
+      Exit[k1:k2] <- c(t[(k1+1):k2], AttachmentPoint + Cover)
+    } else {
+      Exit[k1:k2] <- c(t[(k1+1):k2], 0)
+    }
+  } else {
+    if (is.numeric(Cover)) {
+      Exit[k1] <- AttachmentPoint + Cover
+    } else {
+      Exit[k1] <- 0
+    }
+  }
+
+  if (is.numeric(Cover)) {
+    for (i in k1:k2) {
+      Result <- Result + Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * excess_prob[i]
+    }
+  } else if (Cover == "unl") {
+    if (k1 < k2) {
+      for (i in k1:(k2-1)) {
+        Result <- Result + Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * excess_prob[i]
+      }
+    }
+    Result <- Result + Pareto_Layer_Mean("unl", Att[n], alpha[n], t[n]) * excess_prob[n]
+  }
+
+  return(Result)
+}
+
+
+
+
+
+#' This function generates random deviates of the Piecewise Pareto distribution.
+#' @param n Numeric. Number of simulations
+#' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
+#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
+#' @export
+
+rPiecewisePareto <- function(n, t, alpha) {
+  if (!is.numeric(t) || !is.numeric(alpha)) {
+    return("alpha and t must be numeric.")
+  }
+  if (length(t) != length(alpha)) {
+    return("t and alpha must have the same length")
+  }
+  k <- length(t)
+  if (min(t) <= 0) {
+    return("t must have positive elements!")
+  }
+  if (min(alpha) < 0) {
+    return("alpha must have non-negative elements!")
+  }
+  if (min(diff(t)) <= 0) {
+    return("t must be strictily ascending!")
+  }
+
+  factors_t <- t[2:k] / t[1:(k-1)]
+  excess_prob <- numeric(k)
+  excess_prob[1] <- 1
+  excess_prob[2:k] <- cumprod((1/factors_t)^alpha[1:(k-1)])
+  prob_for_pieces <- c(-diff(excess_prob), excess_prob[k])
+
+  Simulated_Pieces <- c(sample(1:k, n, replace = T, prob = prob_for_pieces))
+  NumberOfSimulations_for_Pieces <- numeric(k)
+  for (i in 1:k) {
+    NumberOfSimulations_for_Pieces[i] <- sum(Simulated_Pieces == i)
+  }
+
+  FinvPareto <- function(x,t,alpha) {
+    return(t/(1-x)^(1/alpha))
+  }
+
+  Result <- numeric(n)
+
+  for (i in 1:k) {
+    if (i == k) {
+      CDF <- 1
+    } else {
+      CDF <- 1 - (t[i] / t[i+1])^alpha[i]
+    }
+    Result[Simulated_Pieces == i] <- FinvPareto(runif(NumberOfSimulations_for_Pieces[i], min = 0, max = CDF), t[i], alpha[i])
+  }
+
+  return(Result)
+}
+
+
+
+
+#' This function matches the expected losses of consecutive layers using a piecewise Pareto severity
+#' @param Attachment_Points Numeric vector. Vector containing the attachment points of consecutive layers in increasing order
+#' @param Expected_Layer_Losses Numeric vector. Vector containing the expected losses of layers xs the attachment points.
+#' @param Unlimited_Layers Logical. If true, then Expected_Layer_Losses[i] contains the expected loss of unlimited xs Attachment_Points[i].
+#'        If FALSE then Expected_Layer_Losses[i] contains the expected loss of the layers Attachment_Points[i+1] xs Attachment_Points[i]
+#' @param Frequencies. Numeric vector. Expected excess frequencies at the attachment points. If NULL then the function calculates frequencies.
+#' @param FQ_at_lowest_AttPt. Numerical. Expected excess frequency a Attachment_Points[1]
+#' @param FQ_at_highest_AttPt. Numerical. Expected excess frequency a Attachment_Points[k]
+#' @param minimize_ratios. Logical. If TRUE then ratios between alphas are minimized.
+#' @param Use_unlimited_Layer_for_FQ. Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If TRUE then the frequency is calculated using the Pareto alpha between the last two layers.
+#' @param alpha_max. Numerical. Maximum alpha to be used for the matching.
+#'
+#' @return t. Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution.
+#' @return alpha. Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution.
+#' @return FQ. Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution.
+#' @export
+
+PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, tolerance = 10^(-10), alpha_max = 20) {
+  k <-length(Attachment_Points)
+  if (k<2) {
+    stop("At least two attachment points required.")
+  }
+  if (Unlimited_Layers) {
+    ELL <- Expected_Layer_Losses[1:(k-1)] - Expected_Layer_Losses[2:k]
+    ELL <- c(ELL, Expected_Layer_Losses[k])
+  } else {
+    ELL <- Expected_Layer_Losses
+  }
+  Limits <- Attachment_Points[2:k] - Attachment_Points[1:(k-1)]
+  if (!is.null(Frequencies)) {
+    if (length(Frequencies) != k) {
+      stop ("Number of Frequencies must be equal to number of Attachment Points.")
+    }
+  } else {
+    alpha_between_layers <- numeric(k-1)
+    for (i in 1:(k-1)) {
+      if (i < k-1) {
+        alpha_between_layers[i] <-  Pareto_Find_Alpha(Limits[i], Attachment_Points[i], ELL[i], Limits[i+1], Attachment_Points[i+1], ELL[i+1])
+        Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Limits[i+1], Attachment_Points[i+1], alpha_between_layers[i])
+      } else {
+        if (Use_unlimited_Layer_for_FQ) {
+          alpha_between_layers[i] <-  Pareto_Find_Alpha(Limits[i], Attachment_Points[i], ELL[i], "unl", Attachment_Points[i+1], ELL[i+1])
+          Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean("unl", Attachment_Points[i+1], alpha_between_layers[i])
+        } else {
+          Frequencies[i+1] = Frequencies[i] * (Attachment_Points[i]/Attachment_Points[i+1])^alpha_between_layers[i-1]
+        }
+      }
+    }
+    Frequencies[1] <- ELL[1] / Pareto_Layer_Mean(Limits[1], Attachment_Points[1], alpha_between_layers[1])
+  }
+  if (!is.null(FQ_at_lowest_AttPt)) {
+    Frequencies[1] <- FQ_at_lowest_AttPt
+  }
+  if (!is.null(FQ_at_highest_AttPt)) {
+    Frequencies[k] <- FQ_at_highest_AttPt
+  }
+  s <- Frequencies / Frequencies[1]
+  l <- ELL / Frequencies[1]
+  Results <- Fit_PP(Attachment_Points, s, l, alpha_max = alpha_max, minimize_ratios = minimize_ratios)
+
+  Results$FQ <- Frequencies[1]
+  return(Results)
+}
+
+
+
+
+
+
+
+#' This function calculates the cumulative distribution function of a Piecewise Pareto Distribution
+#' @param x Numeric. The function evaluates the CDF at x.
+#' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
+#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
+#' @export
+
+PiecewisePareto_CDF <- function(x, t, alpha) {
+  if (!is.numeric(t) || !is.numeric(alpha)) {
+    return("alpha and t must be numeric.")
+  }
+  if (length(t) != length(alpha)) {
+    return("t and alpha must have the same length")
+  }
+  n <- length(t)
+  if (min(t) <= 0) {
+    return("t must have positive elements!")
+  }
+  if (min(alpha) < 0) {
+    return("alpha must have non-negative elements!")
+  }
+  if (min(diff(t)) <= 0) {
+    return("t must be strictily ascending!")
+  }
+  if (length(x) != 1) {
+    return("x must have lenght  1!")
+  }
+  if (!is.numeric(x)) {
+    return("x must be numeric!")
+  }
+
+  if (x <= t[1]) {
+    return(0)
+  }
+
+  t <- t[t<x]
+  t <- c(t,x)
+  n <- length(t)
+
+  factors_t <- t[2:n] / t[1:(n-1)]
+  return(1 - prod((1/factors_t)^alpha[1:(n-1)]))
+
+}
+
+
