@@ -372,12 +372,21 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   if (!is.numeric(Expected_Layer_Losses)) {
     stop("Expected_Layer_Losses must be numeric.")
   }
+  if (min(Expected_Layer_Losses) <= 0) {
+    stop("Expected_Layer_Losses must be positive.")
+  }
   k <-length(Attachment_Points)
   if (k<2) {
     stop("Attachment_Points must have lenght >= 2.")
   }
   if (length(Expected_Layer_Losses != k)) {
     stop("Attachment_Points and Expected_Layer_Losses must have the same lenght.")
+  }
+  if (min(diff(Attachment_Points)) <= 0) {
+    stop("Attachment_Points must be increasing.")
+  }
+  if (min(Attachment_Points) <= 0) {
+    stop("Attachment_Points must be positive.")
   }
   if (!is.logical(Unlimited_Layers)) {
     stop("Unlimited_Layers must be locigal.")
@@ -440,6 +449,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     stop("alpha_max must be positive.")
   }
 
+  Status <- ""
 
   if (Unlimited_Layers) {
     ELL <- Expected_Layer_Losses[1:(k-1)] - Expected_Layer_Losses[2:k]
@@ -448,11 +458,38 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     ELL <- Expected_Layer_Losses
   }
   Limits <- Attachment_Points[2:k] - Attachment_Points[1:(k-1)]
-  if (!is.null(Frequencies)) {
-    if (length(Frequencies) != k) {
-      stop ("Number of Frequencies must be equal to number of Attachment Points.")
+  Limits <- c(Limits, Inf)
+  RoLs <- ELL / Limits
+  if (max(diff(RoLs)) >= 0) {
+    repeat {
+      if (k<3) {
+        stop("Layers cannot be merged to obtain strictly decreasing RoLs.")
+      }
+      pos <- order(diff(RoLs))[k-1]
+      ELL[pos] <- ELL[pos] + ELL[pos+1]
+      ELL <- ELL[-(pos+1)]
+      Limits[pos] <- Limits[pos] + Limits[pos+1]
+      Limits <- Limits[-(pos+1)]
+      if (!is.null(Frequencies)) {
+        Frequencies <- Frequencies[-(pos+1)]
+      }
+      k <- k-1
+      RoLs <- ELL[1:(k-1)] / Limits
+      if (max(diff(RoLs)) < 0) {break}
     }
-  } else {
+    Status <- paste0(Status, "RoLs not strictly decreasing. Layers have been merged.\n")
+  }
+  if (!is.null(Frequencies)) {
+    if (min(Frequencies - RoLs) <= 0) {
+      Frequencies <- NULL
+      Status <- paste0(Status, "Layer entry frequencies not strictly greater than RoLs. Frequencies not used! \n")
+    }
+    if (max(Frequencies[2:k] - RoLs[1:(k-1)]) >= 0) {
+      Frequencies <- NULL
+      Status <- paste0(Status, "Layer exit frequencies not strictly less than RoLs. Frequencies not used! \n")
+    }
+  }
+  if (!is.null(Frequencies)) {
     alpha_between_layers <- numeric(k-1)
     for (i in 1:(k-1)) {
       if (i < k-1) {
@@ -470,16 +507,21 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     Frequencies[1] <- ELL[1] / Pareto_Layer_Mean(Limits[1], Attachment_Points[1], alpha_between_layers[1])
   }
   if (!is.null(FQ_at_lowest_AttPt)) {
-    Frequencies[1] <- FQ_at_lowest_AttPt
+    if (FQ_at_lowest_AttPt > RoLs[1]) {
+      Frequencies[1] <- FQ_at_lowest_AttPt
+    }
   }
   if (!is.null(FQ_at_highest_AttPt)) {
-    Frequencies[k] <- FQ_at_highest_AttPt
+    if (FQ_at_highest_AttPt < RoLs[k-1]) {
+      Frequencies[k] <- FQ_at_highest_AttPt
+    }
   }
   s <- Frequencies / Frequencies[1]
   l <- ELL / Frequencies[1]
   Results <- Fit_PP(Attachment_Points, s, l, alpha_max = alpha_max, minimize_ratios = minimize_ratios)
 
   Results$FQ <- Frequencies[1]
+  Results$Status <- Status
   return(Results)
 }
 
