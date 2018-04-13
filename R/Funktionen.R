@@ -468,25 +468,26 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       pos <- order(diff(RoLs))[k-1]
       ELL[pos] <- ELL[pos] + ELL[pos+1]
       ELL <- ELL[-(pos+1)]
+      Attachment_Points <- Attachment_Points[-(pos+1)]
       Limits[pos] <- Limits[pos] + Limits[pos+1]
       Limits <- Limits[-(pos+1)]
       if (!is.null(Frequencies)) {
         Frequencies <- Frequencies[-(pos+1)]
       }
       k <- k-1
-      RoLs <- ELL[1:(k-1)] / Limits
+      RoLs <- ELL / Limits
       if (max(diff(RoLs)) < 0) {break}
     }
-    Status <- paste0(Status, "RoLs not strictly decreasing. Layers have been merged.\n")
+    Status <- paste0(Status, "RoLs not strictly decreasing. Layers have been merged. ")
   }
   if (!is.null(Frequencies)) {
     if (min(Frequencies - RoLs) <= 0) {
       Frequencies <- NULL
-      Status <- paste0(Status, "Layer entry frequencies not strictly greater than RoLs. Frequencies not used! \n")
+      Status <- paste0(Status, "Layer entry frequencies not strictly greater than RoLs. Frequencies not used! ")
     }
     if (max(Frequencies[2:k] - RoLs[1:(k-1)]) >= 0) {
       Frequencies <- NULL
-      Status <- paste0(Status, "Layer exit frequencies not strictly less than RoLs. Frequencies not used! \n")
+      Status <- paste0(Status, "Layer exit frequencies not strictly less than RoLs. Frequencies not used! ")
     }
   }
   if (is.null(Frequencies)) {
@@ -509,11 +510,15 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   if (!is.null(FQ_at_lowest_AttPt)) {
     if (FQ_at_lowest_AttPt > RoLs[1]) {
       Frequencies[1] <- FQ_at_lowest_AttPt
+    } else {
+      Status <- paste0(Status, "FQ_at_lowest_AttPt too small. Not used! ")
     }
   }
   if (!is.null(FQ_at_highest_AttPt)) {
     if (FQ_at_highest_AttPt < RoLs[k-1]) {
       Frequencies[k] <- FQ_at_highest_AttPt
+    } else {
+      Status <- paste0(Status, "FQ_at_highest_AttPt too large. Not used! ")
     }
   }
   s <- Frequencies / Frequencies[1]
