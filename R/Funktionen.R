@@ -366,10 +366,81 @@ rPiecewisePareto <- function(n, t, alpha) {
 #' @export
 
 PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, tolerance = 10^(-10), alpha_max = 20) {
+  if (!is.numeric(Attachment_Points)) {
+    stop("Attachment_Points must be numeric.")
+  }
+  if (!is.numeric(Expected_Layer_Losses)) {
+    stop("Expected_Layer_Losses must be numeric.")
+  }
   k <-length(Attachment_Points)
   if (k<2) {
-    stop("At least two attachment points required.")
+    stop("Attachment_Points must have lenght >= 2.")
   }
+  if (length(Expected_Layer_Losses != k)) {
+    stop("Attachment_Points and Expected_Layer_Losses must have the same lenght.")
+  }
+  if (!is.logical(Unlimited_Layers)) {
+    stop("Unlimited_Layers must be locigal.")
+  }
+  if (length(Unlimited_Layers) != 1) {
+    stop("Unlimited_Layers must have length 1.")
+  }
+  if (!is.null(Frequencies)) {
+    if (!is.numeric(Frequencies)) {
+      stop("Frequencies must be numeric or NULL.")
+    }
+    if (length(Frequencies) != k) {
+      stop("Attachment_Points and Frequencies must have the same lenght.")
+    }
+  }
+  if (!is.null(FQ_at_lowest_AttPt)) {
+    if (!is.numeric(FQ_at_lowest_AttPt)) {
+      stop("FQ_at_lowest_AttPt must be numeric or NULL.")
+    }
+    if (length(FQ_at_lowest_AttPt) != 1) {
+      stop("FQ_at_lowest_AttPt must have lenght 1.")
+    }
+  }
+  if (!is.null(FQ_at_highest_AttPt)) {
+    if (!is.numeric(FQ_at_highest_AttPt)) {
+      stop("FQ_at_highest_AttPt must be numeric or NULL.")
+    }
+    if (length(FQ_at_highest_AttPt) != 1) {
+      stop("FQ_at_highest_AttPt must have lenght 1.")
+    }
+  }
+  if (!is.logical(minimize_ratios)) {
+    stop("minimize_ratios must be locigal.")
+  }
+  if (length(minimize_ratios) != 1) {
+    stop("minimize_ratios must have length 1.")
+  }
+  if (!is.logical(Use_unlimited_Layer_for_FQ)) {
+    stop("Use_unlimited_Layer_for_FQ must be locigal.")
+  }
+  if (length(Use_unlimited_Layer_for_FQ) != 1) {
+    stop("Use_unlimited_Layer_for_FQ must have length 1.")
+  }
+  if (!is.numeric(tolerance)) {
+    stop("tolerance must be numeric.")
+  }
+  if (length(tolerance) != 1) {
+    stop("tolerance must have length 1.")
+  }
+  if (tolerance <= 0) {
+    stop("tolerance must be positive.")
+  }
+  if (!is.numeric(alpha_max)) {
+    stop("alpha_max must be numeric.")
+  }
+  if (length(alpha_max) != 1) {
+    stop("alpha_max must have length 1.")
+  }
+  if (alpha_max <= 0) {
+    stop("alpha_max must be positive.")
+  }
+
+
   if (Unlimited_Layers) {
     ELL <- Expected_Layer_Losses[1:(k-1)] - Expected_Layer_Losses[2:k]
     ELL <- c(ELL, Expected_Layer_Losses[k])
