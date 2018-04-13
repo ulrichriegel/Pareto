@@ -8,7 +8,3 @@
 "Example1_EL"
 
 
-#### ' @useDynLib glrm
-#### ' @importFrom Rcpp sourceCpp
-# NULL
-
