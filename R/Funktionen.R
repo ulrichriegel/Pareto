@@ -130,7 +130,7 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
 #' @param tolerance Numeric. Accuracy of the result.
 #' @export
 
-Pareto_Find_Alpha <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 20, tolerance = 10^(-10)) {
+Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 20, tolerance = 10^(-10)) {
   if (Cover_1 <= 0 || AttachmentPoint_1 <= 0 || ExpLoss_1 <= 0 || Cover_2 <= 0 || AttachmentPoint_2 <= 0 || ExpLoss_2 <= 0) {
     return("All input parameters must be positive!")
   }
@@ -175,6 +175,57 @@ Pareto_Find_Alpha <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, At
   return(alpha)
 
 }
+
+
+#' This function finds the Pareto alpha between an excess frequency and a layer.
+#' @param Threshold Numeric. Threshold
+#' @param Frequency Numeric. Expected frequency in excess of Thershold
+#' @param Cover Numeric. Cover of the second layer.
+#' @param AttachmentPoint Numeric. Cover of the layer.
+#' @param ExpLoss Numeric. Expected loss of the layer.
+#' @param max_alpha Numeric. Upper limit for the alpha that is returned.
+#' @param tolerance Numeric. Accuracy of the result.
+#' @export
+
+Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, AttachmentPoint, ExpLoss, max_alpha = 20, tolerance = 10^(-10)) {
+  if (Threshold <= 0 || Frequency <= 0 || Cover <= 0 || AttachmentPoint <= 0 || ExpLoss <= 0) {
+    return("All input parameters must be positive!")
+  }
+  if (Threshold > AttachmentPoint && Threshold < AttachmentPoint + Cover) {
+    return("Threshold must be <= AttachmentPoint or >= Cover + AttachmentPoint")
+  }
+
+  f <- function(alpha) {
+    Pareto_Layer_Mean(Cover, AttachmentPoint, alpha) * (Threshold / AttachmentPoint)^alpha * Frequency - ExpLoss
+  }
+
+  Result <- NA
+  if (is.numeric(Cover)) {
+    try(Result <- uniroot(f, c(0, max_alpha), tol = tolerance)$root, silent = T)
+    if (AttachmentPoint >= Threshold && f(max_alpha) > 0) {
+      Result <- max_alpha
+    } else if (AttachmentPoint + Cover <= Threshold && f(max_alpha) < 0) {
+      Result <- max_alpha
+    }
+  } else {
+    try(Result <- uniroot(f, c(1 + tolerance, max_alpha), tol = tolerance)$root, silent = T)
+    if (is.na(Result)) {
+      if (Cover == "unl") {
+        if (AttachmentPoint >= Threshold && f(max_alpha) < 0) {
+          Result <- max_alpha
+        }
+      }
+    }
+  }
+  if (is.na(Result)) {
+    return("Did not find a solution!")
+  }
+  alpha <- Result
+  return(alpha)
+
+}
+
+
 
 
 
@@ -494,11 +545,11 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     alpha_between_layers <- numeric(k-1)
     for (i in 1:(k-1)) {
       if (i < k-1) {
-        alpha_between_layers[i] <-  Pareto_Find_Alpha(Limits[i], Attachment_Points[i], ELL[i], Limits[i+1], Attachment_Points[i+1], ELL[i+1])
+        alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Limits[i+1], Attachment_Points[i+1], ELL[i+1])
         Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Limits[i+1], Attachment_Points[i+1], alpha_between_layers[i])
       } else {
         if (Use_unlimited_Layer_for_FQ) {
-          alpha_between_layers[i] <-  Pareto_Find_Alpha(Limits[i], Attachment_Points[i], ELL[i], "unl", Attachment_Points[i+1], ELL[i+1])
+          alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], "unl", Attachment_Points[i+1], ELL[i+1])
           Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean("unl", Attachment_Points[i+1], alpha_between_layers[i])
         } else {
           Frequencies[i+1] = Frequencies[i] * (Attachment_Points[i]/Attachment_Points[i+1])^alpha_between_layers[i-1]
