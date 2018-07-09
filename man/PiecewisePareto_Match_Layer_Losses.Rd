@@ -6,8 +6,9 @@
 \usage{
 PiecewisePareto_Match_Layer_Losses(Attachment_Points, Expected_Layer_Losses,
   Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL,
-  FQ_at_highest_AttPt = NULL, minimize_ratios = TRUE,
-  Use_unlimited_Layer_for_FQ = TRUE, tolerance = 10^(-10), alpha_max = 20)
+  FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL,
+  minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE,
+  tolerance = 10^(-10), alpha_max = 20)
 }
 \arguments{
 \item{Attachment_Points}{Numeric vector. Vector containing the attachment points of consecutive layers in increasing order}
@@ -17,11 +18,15 @@ PiecewisePareto_Match_Layer_Losses(Attachment_Points, Expected_Layer_Losses,
 \item{Unlimited_Layers}{Logical. If true, then Expected_Layer_Losses[i] contains the expected loss of unlimited xs Attachment_Points[i].
 If FALSE then Expected_Layer_Losses[i] contains the expected loss of the layers Attachment_Points[i+1] xs Attachment_Points[i]}
 
-\item{Frequencies.}{Numeric vector. Expected excess frequencies at the attachment points. If NULL then the function calculates frequencies.}
+\item{Frequencies.}{Numeric vector. Expected frequencies excess the attachment points. If NULL then the function calculates frequencies.}
 
-\item{FQ_at_lowest_AttPt.}{Numerical. Expected excess frequency a Attachment_Points[1]}
+\item{FQ_at_lowest_AttPt.}{Numerical. Expected frequency excess Attachment_Points[1]}
 
-\item{FQ_at_highest_AttPt.}{Numerical. Expected excess frequency a Attachment_Points[k]}
+\item{FQ_at_highest_AttPt.}{Numerical. Expected frequency excess Attachment_Points[k]}
+
+\item{TotalLoss_Frequencies.}{Numeric vector. TotalLoss_Frequencies[i] is the frequency of total losses to layer i (i.e. Attachment_Points[i+1]-Attachment_Points[i] xs Attachment_Points[i])
+TotalLoss_Frequencies[i] is the frequency for losses >= Attachment_Points[i+1], whereas Frequencies[i] is the frequency of losses > Attachment_Points[i].
+TotalLoss_Frequencies[i] > Frequencies[i+1] means that there is a point mass of the severity at Attachment_Points[i+1].}
 
 \item{minimize_ratios.}{Logical. If TRUE then ratios between alphas are minimized.}
 
