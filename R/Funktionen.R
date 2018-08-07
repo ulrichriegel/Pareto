@@ -686,9 +686,11 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
 #' @param x Numeric. The function evaluates the CDF at x.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
 #' @export
 
-PiecewisePareto_CDF <- function(x, t, alpha) {
+PiecewisePareto_CDF <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
   if (!is.numeric(t) || !is.numeric(alpha)) {
     return("alpha and t must be numeric.")
   }
@@ -711,18 +713,59 @@ PiecewisePareto_CDF <- function(x, t, alpha) {
   if (!is.numeric(x)) {
     return("x must be numeric!")
   }
+  if (!is.null(truncation)) {
+    if (!is.numeric(truncation)) {
+      return("truncation must be NULL or numeric")
+    }
+    if (truncation <= t[n]) {
+      return("truncation must be greater than max(t)")
+    }
+    if (truncation_type != "wd" && truncation_type != "lp") {
+      return("truncation_type must be wd or lp")
+    }
+  }
 
   if (x <= t[1]) {
     return(0)
   }
 
-  t <- t[t<x]
-  t <- c(t,x)
-  n <- length(t)
+  if (is.null(truncation)) {
+    t <- t[t<x]
+    t <- c(t,x)
+    n <- length(t)
 
-  factors_t <- t[2:n] / t[1:(n-1)]
-  return(1 - prod((1/factors_t)^alpha[1:(n-1)]))
+    factors_t <- t[2:n] / t[1:(n-1)]
+    return(1 - prod((1/factors_t)^alpha[1:(n-1)]))
+  } else if (truncation_type == "wd") {
+    if (x >= truncation) {
+      return(1)
+    }
+    factors_t <- t[2:n] / t[1:(n-1)]
+    scaling <- 1 / (1 - prod((1/factors_t)^alpha[1:(n-1)]) * (t[n] / truncation)^alpha[n])
 
+    t <- t[t<x]
+    t <- c(t,x)
+    n <- length(t)
+
+    factors_t <- t[2:n] / t[1:(n-1)]
+    return(scaling * (1 - prod((1/factors_t)^alpha[1:(n-1)])))
+
+  } else {
+    if (x >= truncation) {
+      return(1)
+    } else if (x <= t[n]) {
+      t <- t[t<x]
+      t <- c(t,x)
+      n <- length(t)
+
+      factors_t <- t[2:n] / t[1:(n-1)]
+      return(1 - prod((1/factors_t)^alpha[1:(n-1)]))
+    } else {
+      factors_t <- t[2:n] / t[1:(n-1)]
+      excess_prob <- prod((1/factors_t)^alpha[1:(n-1)])
+      return(1 - excess_prob * (1 - (1-(t[n]/x)^alpha[n]) / (1-(t[n]/truncation)^alpha[n])))
+    }
+  }
 }
 
 

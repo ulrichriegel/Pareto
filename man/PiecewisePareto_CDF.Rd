@@ -4,7 +4,7 @@
 \alias{PiecewisePareto_CDF}
 \title{This function calculates the cumulative distribution function of a Piecewise Pareto Distribution}
 \usage{
-PiecewisePareto_CDF(x, t, alpha)
+PiecewisePareto_CDF(x, t, alpha, truncation = NULL, truncation_type = "lp")
 }
 \arguments{
 \item{x}{Numeric. The function evaluates the CDF at x.}
@@ -12,6 +12,10 @@ PiecewisePareto_CDF(x, t, alpha)
 \item{t}{Numeric vector. Thresholds of the piecewise Pareto distribution.}
 
 \item{alpha}{Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].}
+
+\item{truncation}{Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.}
+
+\item{truncation_type}{Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.}
 }
 \description{
 This function calculates the cumulative distribution function of a Piecewise Pareto Distribution
