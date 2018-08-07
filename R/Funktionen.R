@@ -72,13 +72,24 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL) {
 #' @param n Number of observations.
 #' @param t Threshold of the Pareto distribution
 #' @param alpha Pareto alpha.
+#' @param truncation If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation (resampled Pareto)
 #' @export
 
-rPareto <- function(n, t, alpha) {
+rPareto <- function(n, t, alpha, truncation = NULL) {
   FinvPareto <- function(x,t,alpha) {
     return(t/(1-x)^(1/alpha))
   }
-  return(FinvPareto(runif(n),t,alpha))
+  u <- 0
+  o <- 1
+  if (!is.null(truncation)) {
+    if (is.numeric(truncation)) {
+      if (truncation > t) {
+        o <- 1 - (t / truncation)^alpha
+      }
+    }
+  }
+
+  return(FinvPareto(runif(n, u, o),t,alpha))
 }
 
 
@@ -346,9 +357,11 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha) {
 #' @param n Numeric. Number of simulations
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
 #' @export
 
-rPiecewisePareto <- function(n, t, alpha) {
+rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "lp") {
   if (!is.numeric(t) || !is.numeric(alpha)) {
     return("alpha and t must be numeric.")
   }
@@ -365,12 +378,28 @@ rPiecewisePareto <- function(n, t, alpha) {
   if (min(diff(t)) <= 0) {
     return("t must be strictily ascending!")
   }
+  if (!is.null(truncation)) {
+    if (!is.numeric(truncation)) {
+      return("truncation must be NULL or numeric")
+    }
+    if (truncation <= t[k]) {
+      return("truncation must be greater than max(t)")
+    }
+    if (truncation_type != "wd" && truncation_type != "lp") {
+      return("truncation_type must be wd or lp")
+    }
+  }
 
   factors_t <- t[2:k] / t[1:(k-1)]
   excess_prob <- numeric(k)
   excess_prob[1] <- 1
   excess_prob[2:k] <- cumprod((1/factors_t)^alpha[1:(k-1)])
   prob_for_pieces <- c(-diff(excess_prob), excess_prob[k])
+
+  if (!is.null(truncation) && truncation_type == "wd") {
+    prob_for_pieces[k] <- excess_prob[k] - excess_prob[k] * (t[k] / truncation)^alpha[k]
+    prob_for_pieces <- prob_for_pieces / sum(prob_for_pieces)
+  }
 
   Simulated_Pieces <- c(sample(1:k, n, replace = T, prob = prob_for_pieces))
   NumberOfSimulations_for_Pieces <- numeric(k)
@@ -386,7 +415,11 @@ rPiecewisePareto <- function(n, t, alpha) {
 
   for (i in 1:k) {
     if (i == k) {
-      CDF <- 1
+      if (!is.null(truncation)) {
+        CDF <- 1 - (t[k] / truncation)^alpha[i]
+      } else {
+        CDF <- 1
+      }
     } else {
       CDF <- 1 - (t[i] / t[i+1])^alpha[i]
     }

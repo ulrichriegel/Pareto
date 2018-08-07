@@ -4,7 +4,7 @@
 \alias{rPareto}
 \title{This function generates random deviates of the Pareto distribution Pareto(t, alpha).}
 \usage{
-rPareto(n, t, alpha)
+rPareto(n, t, alpha, truncation = NULL)
 }
 \arguments{
 \item{n}{Number of observations.}
@@ -12,6 +12,8 @@ rPareto(n, t, alpha)
 \item{t}{Threshold of the Pareto distribution}
 
 \item{alpha}{Pareto alpha.}
+
+\item{truncation}{If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation (resampled Pareto)}
 }
 \description{
 This function generates random deviates of the Pareto distribution Pareto(t, alpha).

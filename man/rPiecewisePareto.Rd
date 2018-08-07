@@ -4,7 +4,7 @@
 \alias{rPiecewisePareto}
 \title{This function generates random deviates of the Piecewise Pareto distribution.}
 \usage{
-rPiecewisePareto(n, t, alpha)
+rPiecewisePareto(n, t, alpha, truncation = NULL, truncation_type = "lp")
 }
 \arguments{
 \item{n}{Numeric. Number of simulations}
@@ -12,6 +12,10 @@ rPiecewisePareto(n, t, alpha)
 \item{t}{Numeric vector. Thresholds of the piecewise Pareto distribution.}
 
 \item{alpha}{Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].}
+
+\item{truncation}{Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.}
+
+\item{truncation_type}{Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.}
 }
 \description{
 This function generates random deviates of the Piecewise Pareto distribution.
