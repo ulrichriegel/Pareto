@@ -8,11 +8,11 @@ Pareto_Extrapolation(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2,
   alpha, ExpLoss_1 = NULL)
 }
 \arguments{
-\item{Cover_1}{Numeric. Cover of the layer from which we extrapolate. Use "unl" for unlimited layers.}
+\item{Cover_1}{Numeric. Cover of the layer from which we extrapolate. Use Inf for unlimited layers.}
 
 \item{AttachmentPoint_1}{Numeric. Attachment point of the layer from which we extrapolate.}
 
-\item{Cover_2}{Numeric. Cover of the layer to which we extrapolate. Use "unl" for unlimited layers.}
+\item{Cover_2}{Numeric. Cover of the layer to which we extrapolate. Use Inf for unlimited layers.}
 
 \item{AttachmentPoint_2}{Numeric. Attachment point of the layer to which we extrapolate.}
 

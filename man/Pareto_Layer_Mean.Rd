@@ -4,16 +4,19 @@
 \alias{Pareto_Layer_Mean}
 \title{This function the expected loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint}
 \usage{
-Pareto_Layer_Mean(Cover, AttachmentPoint, alpha, t = NULL)
+Pareto_Layer_Mean(Cover, AttachmentPoint, alpha, t = NULL,
+  truncation = NULL)
 }
 \arguments{
-\item{Cover}{Numeric. Cover of the reinsurance layer. Use "unl" for unlimited layers.}
+\item{Cover}{Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.}
 
 \item{AttachmentPoint}{Numeric. Attachment point of the reinsurance layer.}
 
 \item{alpha}{Numeric. Pareto alpha.}
 
 \item{t}{Numeric.. Threshold of the Pareto distribution. If t = NULL (default) then t <- Attachment Point}
+
+\item{truncation}{Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.}
 }
 \description{
 This function the expected loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint

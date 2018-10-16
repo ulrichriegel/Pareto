@@ -1,31 +1,47 @@
 
 #' This function the expected loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint
-#' @param Cover Numeric. Cover of the reinsurance layer. Use "unl" for unlimited layers.
+#' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
 #' @param alpha Numeric. Pareto alpha.
 #' @param t Numeric.. Threshold of the Pareto distribution. If t = NULL (default) then t <- Attachment Point
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
 #' @export
 
-Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL) {
+Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
   if (is.null(t)) {
     t <- AttachmentPoint
     if (AttachmentPoint == 0) {
-      return("If Attachment Point in zero, then a t>0 has to be entered.")
+      warning("If Attachment Point in zero, then a t>0 has to be entered.")
+      return(NA)
     }
   }
   if (t <= 0) {
-    return("t must be greater than 0.")
+    warning("t must be greater than 0.")
+    return(NA)
+  }
+  if (!is.null(truncation)) {
+    if (truncation <= AttachmentPoint) {
+      warning("truncation must be larger than AttachmentPoint")
+      return(NA)
+    }
+    if (!is.null(t)) {
+      if (truncation <= t) {
+        warning("truncation must be larger than t")
+      }
+    }
+    if (AttachmentPoint + Cover > truncation) {
+      Cover <- truncation - AttachmentPoint
+    }
   }
 
-  if (Cover == "unl" && AttachmentPoint >= 0 && alpha >= 0) {
+  if (Cover == Inf && AttachmentPoint >= 0 && alpha >= 0) {
     if (alpha <= 1) {
-      return("alpha must be > 1 for unlimited covers!")
+      warning("alpha must be > 1 for unlimited covers!")
+      return(NA)
     } else if (t <= AttachmentPoint) {
-      #EP <- t^alpha / (1 - alpha) * ( - AttachmentPoint^(1 - alpha))
       EP <- -(t / AttachmentPoint)^alpha / (1 - alpha) * AttachmentPoint
     } else {
       EP <- t - AttachmentPoint
-      #EP <- EP + t^alpha / (1 - alpha) * (- t^(1 - alpha))
       EP <- EP - t / (1 - alpha)
     }
     return(EP)
@@ -38,7 +54,6 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL) {
         } else if (alpha == 1) {
           EP <- t * (log(Cover + AttachmentPoint) - log(AttachmentPoint))
         } else {
-          #EP <- t^alpha / (1 - alpha) * ((Cover + AttachmentPoint)^(1 - alpha) - AttachmentPoint^(1 - alpha))
           EP <- t / (1 - alpha) * (((Cover + AttachmentPoint) / t)^(1 - alpha) - (AttachmentPoint / t)^(1 - alpha))
         }
       } else if (t >= AttachmentPoint + Cover) {
@@ -50,19 +65,26 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL) {
         } else if (alpha == 1) {
           EP <- EP + t * (log(Cover + AttachmentPoint) - log(t))
         } else {
-          #EP <- EP + t^alpha / (1 - alpha) * ((Cover + AttachmentPoint)^(1 - alpha) - t^(1 - alpha))
           EP <- EP + t / (1 - alpha) * (((Cover + AttachmentPoint) / t)^(1 - alpha) - 1)
         }
       }
       if (is.nan(EP) || is.infinite(EP)) {
         alpha <- alpha / 2
         EP <- NaN
-        print(paste("alpha reduced to", round(alpha, 2)))
+        warning(paste("alpha reduced to", round(alpha, 2)))
+      }
+    }
+    if (!is.null(truncation)) {
+      # then Cover + AttachmentPoint <= truncation
+      if (truncation < Inf) {
+        FQ_at_truncation <- (t / truncation)^alpha
+        EP <- (EP - FQ_at_truncation * Cover) / (1 - FQ_at_truncation)
       }
     }
     return(EP)
   } else {
-    return(NULL)
+    warning("Cover, Attachment Point and alpha must be >= 0; NA produced")
+    return(NA)
   }
 
 }
@@ -94,9 +116,9 @@ rPareto <- function(n, t, alpha, truncation = NULL) {
 
 
 #' This function extrapolates from the layer Cover_1 xs AttachmentPoint_1 to the layer Cover_2 xs AttachmentPoint_2 using a Pareto distribution Pareto(t, alpha) with t sufficiently small.
-#' @param Cover_1 Numeric. Cover of the layer from which we extrapolate. Use "unl" for unlimited layers.
+#' @param Cover_1 Numeric. Cover of the layer from which we extrapolate. Use Inf for unlimited layers.
 #' @param AttachmentPoint_1 Numeric. Attachment point of the layer from which we extrapolate.
-#' @param Cover_2 Numeric. Cover of the layer to which we extrapolate. Use "unl" for unlimited layers.
+#' @param Cover_2 Numeric. Cover of the layer to which we extrapolate. Use Inf for unlimited layers.
 #' @param AttachmentPoint_2 Numeric. Attachment point of the layer to which we extrapolate.
 #' @param alpha Numeric. Pareto alpha used for the extrapolation.
 #' @param ExpLoss_1 Numeric. Expected loss of the layer from which we extrapolate. If NULL (default) then the function provides only the ratio between the expected losses of the layers.
@@ -106,7 +128,7 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
   if (is.null(ExpLoss_1)) {
     ExpLoss_1 <- 1
   }
-  if (Cover_1 == "unl" || Cover_2 == "unl") {
+  if (Cover_1 == Inf|| Cover_2 == Inf) {
     if (alpha <= 1) {
       return("alpha must be > 1 for unlimited covers!")
     } else if (Cover_1 == "unl" && Cover_2 == "unl") {
