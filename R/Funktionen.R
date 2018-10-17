@@ -122,33 +122,48 @@ rPareto <- function(n, t, alpha, truncation = NULL) {
 #' @param AttachmentPoint_2 Numeric. Attachment point of the layer to which we extrapolate.
 #' @param alpha Numeric. Pareto alpha used for the extrapolation.
 #' @param ExpLoss_1 Numeric. Expected loss of the layer from which we extrapolate. If NULL (default) then the function provides only the ratio between the expected losses of the layers.
+#' @param truncation Numeric. If truncation is not NULL and truncation > AttachmentPoint_1, then the Pareto distribution is truncated at truncation.
 #' @export
 
-Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2, alpha, ExpLoss_1 = NULL) {
+Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2, alpha, ExpLoss_1 = NULL, truncation = NULL) {
   if (is.null(ExpLoss_1)) {
     ExpLoss_1 <- 1
   }
-  if (Cover_1 == Inf|| Cover_2 == Inf) {
-    if (alpha <= 1) {
-      warning("alpha must be > 1 for unlimited covers!")
+  # if (is.null(truncation)) {
+  #   if (Cover_1 == Inf|| Cover_2 == Inf) {
+  #     if (alpha <= 1) {
+  #       warning("alpha must be > 1 for unlimited covers!")
+  #       return(NA)
+  #     } else if (Cover_1 == Inf && Cover_2 == Inf) {
+  #       Result <- ((AttachmentPoint_2)^(1-alpha)) / ((AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
+  #     } else if (Cover_2 == Inf) {
+  #       Result <- ( - (AttachmentPoint_2)^(1-alpha)) / ((Cover_1 + AttachmentPoint_1)^(1-alpha) - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
+  #     } else {
+  #       Result <- ((Cover_2 + AttachmentPoint_2)^(1-alpha) - (AttachmentPoint_2)^(1-alpha)) / ( - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
+  #     }
+  #     return(Result)
+  #   }
+  #   if (alpha <= 0) {
+  #     Result <- Cover_2 / Cover_1 * ExpLoss_1
+  #   } else if (alpha == 1) {
+  #     Result <- (log(Cover_2 + AttachmentPoint_2) - log(AttachmentPoint_2)) / (log(Cover_1 + AttachmentPoint_1) - log(AttachmentPoint_1)) * ExpLoss_1
+  #   } else {
+  #     Result <- ((Cover_2 + AttachmentPoint_2)^(1-alpha) - (AttachmentPoint_2)^(1-alpha)) / ((Cover_1 + AttachmentPoint_1)^(1-alpha) - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
+  #   }
+  #   return(Result)
+  # } else {
+
+  if (!is.null(truncation)) {
+    if (truncation <= AttachmentPoint_1) {
+      warning("truncation must be greater than AttachmentPoint_1")
       return(NA)
-    } else if (Cover_1 == Inf && Cover_2 == Inf) {
-      Result <- ((AttachmentPoint_2)^(1-alpha)) / ((AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
-    } else if (Cover_2 == Inf) {
-      Result <- ( - (AttachmentPoint_2)^(1-alpha)) / ((Cover_1 + AttachmentPoint_1)^(1-alpha) - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
-    } else {
-      Result <- ((Cover_2 + AttachmentPoint_2)^(1-alpha) - (AttachmentPoint_2)^(1-alpha)) / ( - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
     }
-    return(Result)
   }
-  if (alpha <= 0) {
-    Result <- Cover_2 / Cover_1 * ExpLoss_1
-  } else if (alpha == 1) {
-    Result <- (log(Cover_2 + AttachmentPoint_2) - log(AttachmentPoint_2)) / (log(Cover_1 + AttachmentPoint_1) - log(AttachmentPoint_1)) * ExpLoss_1
-  } else {
-    Result <- ((Cover_2 + AttachmentPoint_2)^(1-alpha) - (AttachmentPoint_2)^(1-alpha)) / ((Cover_1 + AttachmentPoint_1)^(1-alpha) - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
-  }
+  Smaller_AP <- min(AttachmentPoint_1, AttachmentPoint_2)
+  Result <- ExpLoss_1 * Pareto_Layer_Mean(Cover_2, AttachmentPoint_2, alpha, t = Smaller_AP, truncation = truncation) / Pareto_Layer_Mean(Cover_1, AttachmentPoint_1, alpha, t = Smaller_AP, truncation = truncation)
   return(Result)
+  # }
+
 }
 
 
