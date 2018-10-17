@@ -130,10 +130,11 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
   }
   if (Cover_1 == Inf|| Cover_2 == Inf) {
     if (alpha <= 1) {
-      return("alpha must be > 1 for unlimited covers!")
-    } else if (Cover_1 == "unl" && Cover_2 == "unl") {
+      warning("alpha must be > 1 for unlimited covers!")
+      return(NA)
+    } else if (Cover_1 == Inf && Cover_2 == Inf) {
       Result <- ((AttachmentPoint_2)^(1-alpha)) / ((AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
-    } else if (Cover_2 == "unl") {
+    } else if (Cover_2 == Inf) {
       Result <- ( - (AttachmentPoint_2)^(1-alpha)) / ((Cover_1 + AttachmentPoint_1)^(1-alpha) - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
     } else {
       Result <- ((Cover_2 + AttachmentPoint_2)^(1-alpha) - (AttachmentPoint_2)^(1-alpha)) / ( - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
@@ -165,7 +166,8 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
 
 Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 20, tolerance = 10^(-10)) {
   if (Cover_1 <= 0 || AttachmentPoint_1 <= 0 || ExpLoss_1 <= 0 || Cover_2 <= 0 || AttachmentPoint_2 <= 0 || ExpLoss_2 <= 0) {
-    return("All input parameters must be positive!")
+    warning("All input parameters must be positive!")
+    return(NA)
   }
 
   f <- function(alpha) {
@@ -183,18 +185,18 @@ Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, 
   } else {
     try(Result <- uniroot(f, c(1 + tolerance, max_alpha), tol = tolerance)$root, silent = T)
     if (is.na(Result)) {
-      if (Cover_1 == "unl" && Cover_2 == "unl") {
+      if (Cover_1 == Inf && Cover_2 == Inf) {
         if (AttachmentPoint_1 < AttachmentPoint_2 && f(max_alpha) > 0) {
           Result <- max_alpha
         }
         if (AttachmentPoint_1 > AttachmentPoint_2 && f(max_alpha) < 0) {
           Result <- max_alpha
         }
-      } else if (Cover_1 == "unl") {
+      } else if (Cover_1 == Inf) {
         if (AttachmentPoint_1 > AttachmentPoint_2 && f(max_alpha) < 0) {
           Result <- max_alpha
         }
-      } else if (Cover_2 == "unl") {
+      } else if (Cover_2 == Inf) {
         if (AttachmentPoint_1 < AttachmentPoint_2 && f(max_alpha) > 0) {
           Result <- max_alpha
         }
@@ -202,7 +204,8 @@ Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, 
     }
   }
   if (is.na(Result)) {
-    return("Did not find a solution!")
+    warning("Did not find a solution!")
+    return(NA)
   }
   alpha <- Result
   return(alpha)
@@ -243,7 +246,7 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
   } else {
     try(Result <- uniroot(f, c(1 + tolerance, max_alpha), tol = tolerance)$root, silent = T)
     if (is.na(Result)) {
-      if (Cover == "unl") {
+      if (Cover == Inf) {
         if (AttachmentPoint >= Threshold && f(max_alpha) < 0) {
           Result <- max_alpha
         }
@@ -251,7 +254,8 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
     }
   }
   if (is.na(Result)) {
-    return("Did not find a solution!")
+    warning("Did not find a solution!")
+    return(NA)
   }
   alpha <- Result
   return(alpha)
@@ -271,40 +275,44 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
 
 PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha) {
   if (!is.numeric(t) || !is.numeric(alpha)) {
-    return("alpha and t must be numeric.")
+    warning("alpha and t must be numeric.")
+    return(NA)
   }
   if (length(t) != length(alpha)) {
-    return("t and alpha must have the same length")
+    warning("t and alpha must have the same length")
+    return(NA)
   }
   n <- length(t)
   if (min(t) <= 0) {
-    return("t must have positive elements!")
+    waring("t must have positive elements!")
+    return(NA)
   }
   if (min(alpha) < 0) {
-    return("alpha must have non-negative elements!")
+    warning("alpha must have non-negative elements!")
+    return(NA)
   }
   if (min(diff(t)) <= 0) {
-    return("t must be strictily ascending!")
+    warning("t must be strictily ascending!")
+    return(NA)
   }
   if (length(AttachmentPoint) != 1 || length(Cover) != 1) {
-    return("AttachmentPoint and Cover must have lenght  1!")
+    warning("AttachmentPoint and Cover must have lenght  1!")
+    return(NA)
   }
   if (!is.numeric(AttachmentPoint)) {
-    return("AttachmentPoint must be numeric!")
+    warning("AttachmentPoint must be numeric!")
+    return(NA)
   }
   if (AttachmentPoint < 0) {
-    return("AttachmentPoint must be non-negative!")
+    warning("AttachmentPoint must be non-negative!")
+    return(NA)
   }
   if (!is.numeric(Cover)) {
-    if (!is.character(Cover)) {
-      return("AttachmentPoint must be numeric or unl!")
-    } else if (Cover != "unl") {
-      return("AttachmentPoint must be numeric or unl!")
-    }
-  } else {
-    if (Cover < 0) {
-      return("Cover must be non-negative!")
-    }
+    waring("AttachmentPoint must be numeric!")
+    return(NA)
+  } else if (Cover < 0) {
+    warning("Cover must be non-negative!")
+    return(NA)
   }
   if (Cover == 0) {
     return(0)
@@ -316,7 +324,7 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha) {
   excess_prob[2:n] <- cumprod((1/factors_t)^alpha[1:(n-1)])
 
   k1 <- sum(t <= AttachmentPoint)
-  if (Cover == "unl") {
+  if (Cover == Inf) {
     k2 <- n
   } else {
     k2 <- sum(t < AttachmentPoint + Cover)
@@ -355,17 +363,17 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha) {
     }
   }
 
-  if (is.numeric(Cover)) {
+  if (!is.infinite(Cover)) {
     for (i in k1:k2) {
       Result <- Result + Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * excess_prob[i]
     }
-  } else if (Cover == "unl") {
+  } else if (Cover == Inf) {
     if (k1 < k2) {
       for (i in k1:(k2-1)) {
         Result <- Result + Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * excess_prob[i]
       }
     }
-    Result <- Result + Pareto_Layer_Mean("unl", Att[n], alpha[n], t[n]) * excess_prob[n]
+    Result <- Result + Pareto_Layer_Mean(Inf, Att[n], alpha[n], t[n]) * excess_prob[n]
   }
 
   return(Result)
@@ -385,30 +393,38 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha) {
 
 rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "lp") {
   if (!is.numeric(t) || !is.numeric(alpha)) {
-    return("alpha and t must be numeric.")
+    warning("alpha and t must be numeric.")
+    return(NA)
   }
   if (length(t) != length(alpha)) {
-    return("t and alpha must have the same length")
+    warning("t and alpha must have the same length")
+    return(NA)
   }
   k <- length(t)
   if (min(t) <= 0) {
-    return("t must have positive elements!")
+    warning("t must have positive elements!")
+    return(NA)
   }
   if (min(alpha) < 0) {
-    return("alpha must have non-negative elements!")
+    warning("alpha must have non-negative elements!")
+    return(NA)
   }
   if (min(diff(t)) <= 0) {
-    return("t must be strictily ascending!")
+    warning("t must be strictily ascending!")
+    return(NA)
   }
   if (!is.null(truncation)) {
     if (!is.numeric(truncation)) {
-      return("truncation must be NULL or numeric")
+      warning("truncation must be NULL or numeric")
+      return(NA)
     }
     if (truncation <= t[k]) {
-      return("truncation must be greater than max(t)")
+      warning("truncation must be greater than max(t)")
+      return(NA)
     }
     if (truncation_type != "wd" && truncation_type != "lp") {
-      return("truncation_type must be wd or lp")
+      warning("truncation_type must be wd or lp")
+      return(NA)
     }
   }
 
@@ -623,8 +639,8 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
         Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Limits[i+1], Attachment_Points[i+1], alpha_between_layers[i])
       } else {
         if (Use_unlimited_Layer_for_FQ) {
-          alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], "unl", Attachment_Points[i+1], ELL[i+1])
-          Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean("unl", Attachment_Points[i+1], alpha_between_layers[i])
+          alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Inf, Attachment_Points[i+1], ELL[i+1])
+          Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Inf, Attachment_Points[i+1], alpha_between_layers[i])
         } else {
           Frequencies[i+1] = Frequencies[i] * (Attachment_Points[i]/Attachment_Points[i+1])^alpha_between_layers[i-1]
         }
@@ -714,36 +730,46 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
 
 PiecewisePareto_CDF <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
   if (!is.numeric(t) || !is.numeric(alpha)) {
-    return("alpha and t must be numeric.")
+    waring("alpha and t must be numeric.")
+    return(NA)
   }
   if (length(t) != length(alpha)) {
-    return("t and alpha must have the same length")
+    warning("t and alpha must have the same length")
+    return(NA)
   }
   n <- length(t)
   if (min(t) <= 0) {
-    return("t must have positive elements!")
+    warning("t must have positive elements!")
+    return(NA)
   }
   if (min(alpha) < 0) {
-    return("alpha must have non-negative elements!")
+    warning("alpha must have non-negative elements!")
+    return(NA)
   }
   if (min(diff(t)) <= 0) {
-    return("t must be strictily ascending!")
+    warning("t must be strictily ascending!")
+    return(NA)
   }
   if (length(x) != 1) {
-    return("x must have lenght  1!")
+    warning("x must have lenght  1!")
+    return(NA)
   }
   if (!is.numeric(x)) {
-    return("x must be numeric!")
+    warning("x must be numeric!")
+    return(NA)
   }
   if (!is.null(truncation)) {
     if (!is.numeric(truncation)) {
-      return("truncation must be NULL or numeric")
+      warning("truncation must be NULL or numeric")
+      return(NA)
     }
     if (truncation <= t[n]) {
-      return("truncation must be greater than max(t)")
+      warning("truncation must be greater than max(t)")
+      return(NA)
     }
     if (truncation_type != "wd" && truncation_type != "lp") {
-      return("truncation_type must be wd or lp")
+      warning("truncation_type must be wd or lp")
+      return(NA)
     }
   }
 
