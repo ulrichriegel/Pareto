@@ -5,7 +5,8 @@
 \title{This function finds the Pareto alpha between two layers.}
 \usage{
 Pareto_Find_Alpha_btw_Layers(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2,
-  AttachmentPoint_2, ExpLoss_2, max_alpha = 20, tolerance = 10^(-10))
+  AttachmentPoint_2, ExpLoss_2, max_alpha = 20, tolerance = 10^(-10),
+  truncation = NULL)
 }
 \arguments{
 \item{Cover_1}{Numeric. Cover of the first layer.}
@@ -23,6 +24,8 @@ Pareto_Find_Alpha_btw_Layers(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2,
 \item{max_alpha}{Numeric. Upper limit for the alpha that is returned.}
 
 \item{tolerance}{Numeric. Accuracy of the result.}
+
+\item{truncation}{Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.}
 }
 \description{
 This function finds the Pareto alpha between two layers.

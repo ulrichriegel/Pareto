@@ -36,8 +36,8 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation 
 
   if (Cover == Inf && AttachmentPoint >= 0 && alpha >= 0) {
     if (alpha <= 1) {
-      warning("alpha must be > 1 for unlimited covers!")
-      return(NA)
+      #warning("alpha must be > 1 for unlimited covers!")
+      return(Inf)
     } else if (t <= AttachmentPoint) {
       EP <- -(t / AttachmentPoint)^alpha / (1 - alpha) * AttachmentPoint
     } else {
@@ -177,21 +177,33 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
 #' @param ExpLoss_2 Numeric. Expected loss of the second layer.
 #' @param max_alpha Numeric. Upper limit for the alpha that is returned.
 #' @param tolerance Numeric. Accuracy of the result.
+#' @param truncation Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.
 #' @export
 
-Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 20, tolerance = 10^(-10)) {
+Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 20, tolerance = 10^(-10), truncation = NULL) {
   if (Cover_1 <= 0 || AttachmentPoint_1 <= 0 || ExpLoss_1 <= 0 || Cover_2 <= 0 || AttachmentPoint_2 <= 0 || ExpLoss_2 <= 0) {
     warning("All input parameters must be positive!")
     return(NA)
   }
+  min_alpha <- 0
+  if (!is.null(truncation)) {
+    if (truncation <= max(AttachmentPoint_1, AttachmentPoint_2)) {
+      warning("tuncation must be NULL or greater than both attachment points!")
+      return(NA)
+    } else {
+      Cover_1 <- min(truncation - AttachmentPoint_1, Cover_1)
+      Cover_2 <- min(truncation - AttachmentPoint_2, Cover_2)
+      min_alpha <- tolerance
+    }
+  }
 
   f <- function(alpha) {
-    Pareto_Extrapolation(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2, alpha, ExpLoss_1) - ExpLoss_2
+    Pareto_Extrapolation(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2, alpha, ExpLoss_1, truncation = truncation) - ExpLoss_2
   }
 
   Result <- NA
-  if (is.numeric(Cover_1) && is.numeric(Cover_2)) {
-    try(Result <- uniroot(f, c(0, max_alpha), tol = tolerance)$root, silent = T)
+  if (!is.infinite(Cover_1) && !is.infinite(Cover_2)) {
+    try(Result <- uniroot(f, c(min_alpha, max_alpha), tol = tolerance)$root, silent = T)
     if (AttachmentPoint_1 > AttachmentPoint_2 && AttachmentPoint_1 + Cover_1 >= AttachmentPoint_2 + Cover_2 && f(max_alpha) < 0) {
       Result <- max_alpha
     } else if (AttachmentPoint_1 < AttachmentPoint_2 && AttachmentPoint_1 + Cover_1 <= AttachmentPoint_2 + Cover_2 && f(max_alpha) > 0) {
@@ -240,10 +252,12 @@ Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, 
 
 Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, AttachmentPoint, ExpLoss, max_alpha = 20, tolerance = 10^(-10)) {
   if (Threshold <= 0 || Frequency <= 0 || Cover <= 0 || AttachmentPoint <= 0 || ExpLoss <= 0) {
-    return("All input parameters must be positive!")
+    warning("All input parameters must be positive!")
+    return(NA)
   }
   if (Threshold > AttachmentPoint && Threshold < AttachmentPoint + Cover) {
-    return("Threshold must be <= AttachmentPoint or >= Cover + AttachmentPoint")
+    warning("Threshold must be <= AttachmentPoint or >= Cover + AttachmentPoint")
+    return(NA)
   }
 
   f <- function(alpha) {
@@ -731,6 +745,43 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
 
 
 
+#' This function calculates the cumulative distribution function of a Pareto Distribution
+#' @param x Numeric. The function evaluates the CDF at x.
+#' @param t Numeric. Threshold of the piecewise Pareto distribution.
+#' @param alpha Numeric. Pareto alpha.
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @export
+
+Pareto_CDF <- function(x, t, alpha, truncation = NULL) {
+  if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(x)) {
+    waring("x, t and alpha must be numeric.")
+    return(NA)
+  }
+  if (length(t) != 1 || length(alpha) != 1 || length(x) != 1) {
+    warning("x, t and alpha must have length 1")
+    return(NA)
+  }
+  if (t <= 0) {
+    warning("t must be positive.")
+    return(NA)
+  }
+  if (!is.null(truncation)) {
+    if (truncation <= t) {
+      warning("truncation must be NULL or greater that t.")
+    }
+  }
+  if (x <= t) {
+    return(0)
+  } else if (is.null(truncation)) {
+    Result <- 1 - (t / x)^alpha
+    return(Result)
+  } else if (x >= truncation) {
+    return(1)
+  } else {
+    Result <- (1 - (t / x)^alpha) / (1 - (t / truncation)^alpha)
+    return(Result)
+  }
+}
 
 
 
@@ -753,6 +804,10 @@ PiecewisePareto_CDF <- function(x, t, alpha, truncation = NULL, truncation_type 
     return(NA)
   }
   n <- length(t)
+  if (n == 1) {
+    Result <- Pareto_CDF(x, t, alpha, truncation)
+    return(Result)
+  }
   if (min(t) <= 0) {
     warning("t must have positive elements!")
     return(NA)
