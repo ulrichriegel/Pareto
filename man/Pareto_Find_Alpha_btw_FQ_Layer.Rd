@@ -5,7 +5,7 @@
 \title{This function finds the Pareto alpha between an excess frequency and a layer.}
 \usage{
 Pareto_Find_Alpha_btw_FQ_Layer(Threshold, Frequency, Cover, AttachmentPoint,
-  ExpLoss, max_alpha = 20, tolerance = 10^(-10))
+  ExpLoss, max_alpha = 20, tolerance = 10^(-10), truncation = NULL)
 }
 \arguments{
 \item{Threshold}{Numeric. Threshold}
@@ -21,6 +21,8 @@ Pareto_Find_Alpha_btw_FQ_Layer(Threshold, Frequency, Cover, AttachmentPoint,
 \item{max_alpha}{Numeric. Upper limit for the alpha that is returned.}
 
 \item{tolerance}{Numeric. Accuracy of the result.}
+
+\item{truncation}{Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.}
 }
 \description{
 This function finds the Pareto alpha between an excess frequency and a layer.

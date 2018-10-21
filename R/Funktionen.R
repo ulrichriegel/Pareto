@@ -248,9 +248,10 @@ Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, 
 #' @param ExpLoss Numeric. Expected loss of the layer.
 #' @param max_alpha Numeric. Upper limit for the alpha that is returned.
 #' @param tolerance Numeric. Accuracy of the result.
+#' @param truncation Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.
 #' @export
 
-Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, AttachmentPoint, ExpLoss, max_alpha = 20, tolerance = 10^(-10)) {
+Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, AttachmentPoint, ExpLoss, max_alpha = 20, tolerance = 10^(-10), truncation = NULL) {
   if (Threshold <= 0 || Frequency <= 0 || Cover <= 0 || AttachmentPoint <= 0 || ExpLoss <= 0) {
     warning("All input parameters must be positive!")
     return(NA)
@@ -259,29 +260,56 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
     warning("Threshold must be <= AttachmentPoint or >= Cover + AttachmentPoint")
     return(NA)
   }
+  if (!is.null(truncation)) {
+    if (truncation <= AttachmentPoint || truncation <= Threshold) {
+      warning("Threshold and AttachmentPoint must be less than truncation")
+      return(NA)
+    }
+    Cover <- min(Cover, truncation - AttachmentPoint)
+  }
 
   f <- function(alpha) {
-    Pareto_Layer_Mean(Cover, AttachmentPoint, alpha) * (Threshold / AttachmentPoint)^alpha * Frequency - ExpLoss
+  #  Pareto_Layer_Mean(Cover, AttachmentPoint, alpha) * (Threshold / AttachmentPoint)^alpha * Frequency - ExpLoss
+    if (AttachmentPoint < Threshold) {
+      FQ_Factor <- 1 / (1 - Pareto_CDF(Threshold, AttachmentPoint, alpha, truncation = truncation))
+    } else {
+      FQ_Factor <- 1 - Pareto_CDF(AttachmentPoint, Threshold, alpha, truncation = truncation)
+    }
+
+    Pareto_Layer_Mean(Cover, AttachmentPoint, alpha, truncation = truncation) * FQ_Factor * Frequency - ExpLoss
   }
 
   Result <- NA
-  if (is.numeric(Cover)) {
-    try(Result <- uniroot(f, c(0, max_alpha), tol = tolerance)$root, silent = T)
-    if (AttachmentPoint >= Threshold && f(max_alpha) > 0) {
-      Result <- max_alpha
-    } else if (AttachmentPoint + Cover <= Threshold && f(max_alpha) < 0) {
-      Result <- max_alpha
-    }
+  if (is.infinite(Cover) || !is.null(truncation)) {
+    min_alpha <- tolerance
   } else {
-    try(Result <- uniroot(f, c(1 + tolerance, max_alpha), tol = tolerance)$root, silent = T)
-    if (is.na(Result)) {
-      if (Cover == Inf) {
-        if (AttachmentPoint >= Threshold && f(max_alpha) < 0) {
-          Result <- max_alpha
-        }
-      }
-    }
+    min_alpha <- 0
   }
+  try(Result <- uniroot(f, c(min_alpha, max_alpha), tol = tolerance)$root, silent = T)
+  if (AttachmentPoint >= Threshold && f(max_alpha) > 0) {
+    Result <- max_alpha
+  } else if (AttachmentPoint + Cover <= Threshold && f(max_alpha) < 0) {
+    Result <- max_alpha
+  }
+
+
+  # if (is.numeric(Cover)) {
+  #   try(Result <- uniroot(f, c(0, max_alpha), tol = tolerance)$root, silent = T)
+  #   if (AttachmentPoint >= Threshold && f(max_alpha) > 0) {
+  #     Result <- max_alpha
+  #   } else if (AttachmentPoint + Cover <= Threshold && f(max_alpha) < 0) {
+  #     Result <- max_alpha
+  #   }
+  # } else {
+  #   try(Result <- uniroot(f, c(1 + tolerance, max_alpha), tol = tolerance)$root, silent = T)
+  #   if (is.na(Result)) {
+  #     if (Cover == Inf) {
+  #       if (AttachmentPoint >= Threshold && f(max_alpha) < 0) {
+  #         Result <- max_alpha
+  #       }
+  #     }
+  #   }
+  # }
   if (is.na(Result)) {
     warning("Did not find a solution!")
     return(NA)
