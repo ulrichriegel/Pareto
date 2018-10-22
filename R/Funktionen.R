@@ -1,9 +1,9 @@
 
-#' This function the expected loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint
+#' This function calculates the expected loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint
 #' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
 #' @param alpha Numeric. Pareto alpha.
-#' @param t Numeric.. Threshold of the Pareto distribution. If t = NULL (default) then t <- Attachment Point
+#' @param t Numeric. Threshold of the Pareto distribution. If t = NULL (default) then t <- Attachment Point
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
 #' @export
 
@@ -20,14 +20,11 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation 
     return(NA)
   }
   if (!is.null(truncation)) {
-    if (truncation <= AttachmentPoint) {
-      warning("truncation must be larger than AttachmentPoint")
-      return(NA)
+    if (truncation <= t) {
+      warning("truncation must be larger than t")
     }
-    if (!is.null(t)) {
-      if (truncation <= t) {
-        warning("truncation must be larger than t")
-      }
+    if (truncation <= AttachmentPoint) {
+      return(0)
     }
     if (AttachmentPoint + Cover > truncation) {
       Cover <- truncation - AttachmentPoint
@@ -88,6 +85,112 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation 
   }
 
 }
+
+
+
+
+
+# #' This function the mean of the squared xs loss of the Pareto Distribution Pareto(AttachmentPoint, alpha) in the layer Cover xs AttachmentPoint
+# #' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
+# #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
+# #' @param alpha Numeric. Pareto alpha.
+# This function is not visible to the user. The function is used in Pareto_Layer_Var.
+
+Pareto_Layer_Second_Moment <- function(Cover, AttachmentPoint, alpha) {
+  if (AttachmentPoint <= 0) {
+    return(NA)
+  }
+  if (Cover < 0) {
+    return(NA)
+  }
+  if (Cover == 0) {
+    return(0)
+  }
+  if (alpha < 0) {
+    return(NA)
+  }
+
+  if (Cover == Inf) {
+    if (alpha <= 2) {
+      warning("alpha must be > 2 for unlimited covers!")
+      return(NA)
+    } else {
+      SM <- 2 * AttachmentPoint^2 * (1/(alpha-2) - 1/(alpha-1))
+    }
+    return(SM)
+  } else {
+    if (alpha == 0) {
+      SM <- Cover^2
+    } else if (alpha == 1) {
+      SM <- 2 * AttachmentPoint^2 * (Cover/AttachmentPoint - log(1+Cover/AttachmentPoint))
+    } else if (alpha == 2) {
+      SM <- 2 * AttachmentPoint^2 * (-Cover/(Cover+AttachmentPoint) + log(1+Cover/AttachmentPoint))
+    } else {
+      SM <- 2 * AttachmentPoint^2 * (((1+Cover/AttachmentPoint)^(2-alpha)-1) / (2-alpha) - ((1+Cover/AttachmentPoint)^(1-alpha)-1) / (1-alpha))
+    }
+    return(SM)
+  }
+
+}
+
+#' This function the variance of the loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint
+#' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
+#' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
+#' @param alpha Numeric. Pareto alpha.
+#' @param t Numeric. Threshold of the Pareto distribution. If t = NULL (default) then t <- Attachment Point
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @export
+
+Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
+  if (is.null(t)) {
+    t <- AttachmentPoint
+    if (AttachmentPoint == 0) {
+      warning("If Attachment Point in zero, then a t>0 has to be entered.")
+      return(NA)
+    }
+  }
+  if (t <= 0) {
+    warning("t must be greater than 0.")
+    return(NA)
+  }
+  if (!is.null(truncation)) {
+    if (truncation <= t) {
+      warning("truncation must be larger than t")
+    }
+    if (truncation <= AttachmentPoint) {
+      return(0)
+    }
+    if (AttachmentPoint + Cover > truncation) {
+      Cover <- truncation - AttachmentPoint
+    }
+  }
+  ExitPoint <- Cover + AttachmentPoint
+  if (t >= ExitPoint) {
+    return(0)
+  }
+  AttachmentPoint <- max(AttachmentPoint, t)
+  Cover <- ExitPoint - AttachmentPoint
+
+  # Second moment of layer loss if t = AttachmentPoint
+  SM <- Pareto_Layer_Second_Moment(Cover, AttachmentPoint, alpha)
+  if (!is.null(truncation)) {
+    # probability of truncation if t = AttachmentPoint
+    p <- 1- Pareto_CDF(truncation, AttachmentPoint, alpha)
+    # consider truncation in second moment
+    SM <- (SM - p * Cover^2) / (1 - p)
+  }
+  # consider thresholds t < AttachmentPoint
+  p <- 1 - Pareto_CDF(AttachmentPoint, t, alpha, truncation = truncation)
+  SM <- p * SM
+
+  # calculate Variance
+  Result <- SM - Pareto_Layer_Mean(Cover, AttachmentPoint, alpha, t, truncation = truncation)^2
+  return(Result)
+}
+
+
+
+
 
 
 #' This function generates random deviates of the Pareto distribution Pareto(t, alpha).
