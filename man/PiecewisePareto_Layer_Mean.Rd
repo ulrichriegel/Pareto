@@ -4,7 +4,8 @@
 \alias{PiecewisePareto_Layer_Mean}
 \title{This function calculates the expected loss of a Piecewise Pareto Distribution in the layer Cover xs AttachmentPoint}
 \usage{
-PiecewisePareto_Layer_Mean(Cover, AttachmentPoint, t, alpha)
+PiecewisePareto_Layer_Mean(Cover, AttachmentPoint, t, alpha,
+  truncation = NULL, truncation_type = "lp")
 }
 \arguments{
 \item{Cover}{Numeric. Cover of the reinsurance layer.}
@@ -14,6 +15,10 @@ PiecewisePareto_Layer_Mean(Cover, AttachmentPoint, t, alpha)
 \item{t}{Numeric vector. Thresholds of the piecewise Pareto distribution.}
 
 \item{alpha}{Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].}
+
+\item{truncation}{Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.}
+
+\item{truncation_type}{Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.}
 }
 \description{
 This function calculates the expected loss of a Piecewise Pareto Distribution in the layer Cover xs AttachmentPoint

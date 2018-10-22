@@ -396,23 +396,6 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
   }
 
 
-  # if (is.numeric(Cover)) {
-  #   try(Result <- uniroot(f, c(0, max_alpha), tol = tolerance)$root, silent = T)
-  #   if (AttachmentPoint >= Threshold && f(max_alpha) > 0) {
-  #     Result <- max_alpha
-  #   } else if (AttachmentPoint + Cover <= Threshold && f(max_alpha) < 0) {
-  #     Result <- max_alpha
-  #   }
-  # } else {
-  #   try(Result <- uniroot(f, c(1 + tolerance, max_alpha), tol = tolerance)$root, silent = T)
-  #   if (is.na(Result)) {
-  #     if (Cover == Inf) {
-  #       if (AttachmentPoint >= Threshold && f(max_alpha) < 0) {
-  #         Result <- max_alpha
-  #       }
-  #     }
-  #   }
-  # }
   if (is.na(Result)) {
     warning("Did not find a solution!")
     return(NA)
@@ -431,9 +414,11 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
 #' @export
 
-PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha) {
+PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
   if (!is.numeric(t) || !is.numeric(alpha)) {
     warning("alpha and t must be numeric.")
     return(NA)
@@ -474,6 +459,27 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha) {
     warning("Cover must be non-negative!")
     return(NA)
   }
+  if (!is.null(truncation)) {
+    if (!is.numeric(truncation)) {
+      warning("truncation must be NULL or numeric")
+      return(NA)
+    }
+    if (truncation <= t[n]) {
+      warning("truncation must be greater than max(t)")
+      return(NA)
+    }
+    if (truncation_type != "wd" && truncation_type != "lp") {
+      warning("truncation_type must be wd or lp")
+      return(NA)
+    }
+    if (truncation <= AttachmentPoint) {
+      return(0)
+    }
+    Cover <- min(Cover, truncation - AttachmentPoint)
+    if (is.infinite(truncation)) {
+      truncation <- NULL
+    }
+  }
   if (Cover == 0) {
     return(0)
   }
@@ -496,6 +502,7 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha) {
     Result <- t[1] - AttachmentPoint
     AttachmentPoint <- t[1]
     if (is.numeric(Cover)) {
+      Cover_orig <- Cover
       Cover <- Cover - Result
     }
     k1 <- 1
@@ -525,7 +532,11 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha) {
 
   if (!is.infinite(Cover)) {
     for (i in k1:k2) {
-      Result <- Result + Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * excess_prob[i]
+      if (!is.null(truncation) && truncation_type == "lp" && i == n) {
+        Result <- Result + Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = truncation) * excess_prob[i]
+      } else {
+        Result <- Result + Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * excess_prob[i]
+      }
     }
   } else if (Cover == Inf) {
     if (k1 < k2) {
@@ -534,6 +545,10 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha) {
       }
     }
     Result <- Result + Pareto_Layer_Mean(Inf, Att[n], alpha[n], t[n]) * excess_prob[n]
+  }
+  if (!is.null(truncation) && truncation_type == "wd") {
+    p <- (1 - Pareto_CDF(truncation, t[n], alpha[n])) * excess_prob[n]
+    Result <- (Result - p * Cover_orig) / (1 - p)
   }
 
   return(Result)
