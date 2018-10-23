@@ -1,6 +1,6 @@
 t <- c(1000,3000,5000)
 Cover <- 8000
-AttPoint <- 0
+AttPoint <- 2000
 truncation <- 6000
 alpha <- c(0.7,1.5,2)
 truncation_type ="wd"

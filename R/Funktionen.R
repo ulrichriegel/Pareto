@@ -509,13 +509,13 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncat
     k2 <- sum(t < AttachmentPoint + Cover)
   }
 
+  Cover_orig <- Cover
   if (k1 == 0 && k2 == 0) {
     return(Cover)
   } else if (k1 == 0) {
     Result <- t[1] - AttachmentPoint
     AttachmentPoint <- t[1]
     if (is.numeric(Cover)) {
-      Cover_orig <- Cover
       Cover <- Cover - Result
     }
     k1 <- 1
@@ -568,6 +568,174 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncat
 }
 
 
+
+#' This function calculates the second moment of a Piecewise Pareto Distribution in the layer Cover xs AttachmentPoint
+#' @param Cover Numeric. Cover of the reinsurance layer.
+#' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
+#' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
+#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#' @export
+
+PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
+  if (!is.numeric(t) || !is.numeric(alpha)) {
+    warning("alpha and t must be numeric.")
+    return(NA)
+  }
+  if (length(t) != length(alpha)) {
+    warning("t and alpha must have the same length")
+    return(NA)
+  }
+  n <- length(t)
+  if (min(t) <= 0) {
+    waring("t must have positive elements!")
+    return(NA)
+  }
+  if (min(alpha) < 0) {
+    warning("alpha must have non-negative elements!")
+    return(NA)
+  }
+  if (min(diff(t)) <= 0) {
+    warning("t must be strictily ascending!")
+    return(NA)
+  }
+  if (length(AttachmentPoint) != 1 || length(Cover) != 1) {
+    warning("AttachmentPoint and Cover must have lenght  1!")
+    return(NA)
+  }
+  if (!is.numeric(AttachmentPoint)) {
+    warning("AttachmentPoint must be numeric!")
+    return(NA)
+  }
+  if (AttachmentPoint < 0) {
+    warning("AttachmentPoint must be non-negative!")
+    return(NA)
+  }
+  if (!is.numeric(Cover)) {
+    waring("AttachmentPoint must be numeric!")
+    return(NA)
+  } else if (Cover < 0) {
+    warning("Cover must be non-negative!")
+    return(NA)
+  }
+  if (!is.null(truncation)) {
+    if (!is.numeric(truncation)) {
+      warning("truncation must be NULL or numeric")
+      return(NA)
+    }
+    if (truncation <= t[n]) {
+      warning("truncation must be greater than max(t)")
+      return(NA)
+    }
+    if (truncation_type != "wd" && truncation_type != "lp") {
+      warning("truncation_type must be wd or lp")
+      return(NA)
+    }
+    if (truncation <= AttachmentPoint) {
+      return(0)
+    }
+    Cover <- min(Cover, truncation - AttachmentPoint)
+    if (is.infinite(truncation)) {
+      truncation <- NULL
+    }
+  }
+  if (Cover == 0) {
+    return(0)
+  }
+
+  factors_t <- t[2:n] / t[1:(n-1)]
+  excess_prob <- numeric(n)
+  excess_prob[1] <- 1
+  excess_prob[2:n] <- cumprod((1/factors_t)^alpha[1:(n-1)])
+
+  prob <- c(- diff(excess_prob), excess_prob[n])
+
+  k1 <- sum(t <= AttachmentPoint)
+  if (Cover == Inf) {
+    k2 <- n
+  } else {
+    k2 <- sum(t < AttachmentPoint + Cover)
+  }
+
+  AttachmentPoint_orig <- AttachmentPoint
+  Cover_orig <- Cover
+
+  if (k1 == 0 && k2 == 0) {
+    return(Cover^2)
+  } else if (k1 == 0) {
+    AttachmentPoint <- t[1]
+    if (is.numeric(Cover)) {
+      Cover <- Cover - (AttachmentPoint - AttachmentPoint_orig)
+    }
+    k1 <- 1
+  }
+
+  Result <- 0
+
+
+  Att <- numeric(n)
+  Exit <- numeric(n)
+
+  Att[k1:k2] <- pmax(t[k1:k2], AttachmentPoint)
+  if (k2 < n) {
+    Exit[k1:k2] <- pmin(t[(k1+1):(k2+1)], AttachmentPoint + Cover)
+  } else if (k1 < k2) {
+    if (is.numeric(Cover)) {
+      Exit[k1:k2] <- c(t[(k1+1):k2], AttachmentPoint + Cover)
+    } else {
+      Exit[k1:k2] <- c(t[(k1+1):k2], 0)
+    }
+  } else {
+    Exit[k1] <- AttachmentPoint + Cover
+  }
+
+#  if (!is.infinite(Cover)) {
+    for (i in k1:k2) {
+      #if (!is.null(truncation) && truncation_type == "lp" && i == n) {
+      if (i == n) {
+          # Result <- Result + Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = truncation) * prob[i]
+        # Result <- Result + (Att[i] - AttachmentPoint_orig)^2 * prob[i]
+        # Result <- Result + 2 * (Att[i] - AttachmentPoint_orig) * Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = truncation) * prob[i]
+        Result <- Result + Pareto_Layer_SM(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * prob[i]
+        Result <- Result + (Att[i] - AttachmentPoint_orig)^2 * prob[i] * (t[i] / Att[i])^alpha[i]
+        Result <- Result + 2 * (Att[i] - AttachmentPoint_orig) * Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * prob[i]
+      } else {
+        Result <- Result + Pareto_Layer_SM(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = Exit[i]) * prob[i]
+        Result <- Result + (Att[i] - AttachmentPoint_orig)^2 * prob[i] * (t[i] / Att[i])^alpha[i]
+        Result <- Result + 2 * (Att[i] - AttachmentPoint_orig) * Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = Exit[i]) * prob[i]
+      }
+    }
+  # } else if (Cover == Inf) {
+  #   if (k1 < k2) {
+  #     for (i in k1:(k2-1)) {
+  #       Result <- Result + Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * excess_prob[i]
+  #     }
+  #   }
+  #   Result <- Result + Pareto_Layer_Mean(Inf, Att[n], alpha[n], t[n]) * excess_prob[n]
+  # }
+  # if (!is.null(truncation) && truncation_type == "wd") {
+  #   p <- (1 - Pareto_CDF(truncation, t[n], alpha[n])) * excess_prob[n]
+  #   Result <- (Result - p * Cover_orig) / (1 - p)
+  # }
+
+
+  return(Result)
+}
+
+
+#' This function calculates the variance of a Piecewise Pareto Distribution in the layer Cover xs AttachmentPoint
+#' @param Cover Numeric. Cover of the reinsurance layer.
+#' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
+#' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
+#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#' @export
+
+PiecewisePareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
+  Result <- PiecewisePareto_Layer_SM(Cover, AttachmentPoint, t, alpha, truncation, truncation_type) - PiecewisePareto_Layer_Mean(Cover, AttachmentPoint, t, alpha, truncation, truncation_type)^2
+}
 
 
 
