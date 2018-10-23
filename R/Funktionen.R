@@ -90,13 +90,13 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation 
 
 
 
-# #' This function the mean of the squared xs loss of the Pareto Distribution Pareto(AttachmentPoint, alpha) in the layer Cover xs AttachmentPoint
+# #' This function the second moment of the xs loss of the Pareto Distribution Pareto(AttachmentPoint, alpha) in the layer Cover xs AttachmentPoint
 # #' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
 # #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
 # #' @param alpha Numeric. Pareto alpha.
 # This function is not visible to the user. The function is used in Pareto_Layer_Var.
 
-Pareto_Layer_Second_Moment <- function(Cover, AttachmentPoint, alpha) {
+Pareto_Layer_Second_Moment_simple <- function(Cover, AttachmentPoint, alpha) {
   if (AttachmentPoint <= 0) {
     return(NA)
   }
@@ -172,7 +172,7 @@ Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation =
   Cover <- ExitPoint - AttachmentPoint
 
   # Second moment of layer loss if t = AttachmentPoint
-  SM <- Pareto_Layer_Second_Moment(Cover, AttachmentPoint, alpha)
+  SM <- Pareto_Layer_Second_Moment_simple(Cover, AttachmentPoint, alpha)
   if (!is.null(truncation)) {
     # probability of truncation if t = AttachmentPoint
     p <- 1- Pareto_CDF(truncation, AttachmentPoint, alpha)
@@ -189,6 +189,19 @@ Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation =
 }
 
 
+#' This function the second moment of the xs-loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint
+#' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
+#' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
+#' @param alpha Numeric. Pareto alpha.
+#' @param t Numeric. Threshold of the Pareto distribution. If t = NULL (default) then t <- Attachment Point
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @export
+#  Generalized version of Pareto_Layer_Second_Moment_simple
+
+Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
+  Result <- Pareto_Layer_Var(Cover, AttachmentPoint, alpha, t, truncation = truncation) + Pareto_Layer_Mean(Cover, AttachmentPoint, alpha, t, truncation = truncation)^2
+  return(Result)
+}
 
 
 

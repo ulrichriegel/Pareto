@@ -17,3 +17,4 @@ var(xs_losses) / Pareto_Layer_Var(Cover, AttPoint, alpha, t, truncation)
 
 
 
+mean(xs_losses^2) / Pareto_Layer_SM(Cover, AttPoint, alpha, t, truncation)
