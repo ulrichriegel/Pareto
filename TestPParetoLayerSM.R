@@ -1,8 +1,10 @@
 t <- c(1000,3000,5000)
-Cover <- 5000
-AttPoint <- 1000
-truncation <- NULL
+#t <- 1000
+Cover <- 1000
+AttPoint <- 9000
+truncation <- 10000
 alpha <- c(0.7,1.5,2)
+#alpha <- 1.5
 truncation_type <- "lp"
 
 NumberOfSimulations <- 1000000

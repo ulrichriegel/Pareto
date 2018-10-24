@@ -588,6 +588,9 @@ PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncatio
     return(NA)
   }
   n <- length(t)
+  if (n == 1) {
+    return(Pareto_Layer_SM(Cover, AttachmentPoint, alpha, t, truncation))
+  }
   if (min(t) <= 0) {
     waring("t must have positive elements!")
     return(NA)
@@ -681,43 +684,30 @@ PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncatio
   if (k2 < n) {
     Exit[k1:k2] <- pmin(t[(k1+1):(k2+1)], AttachmentPoint + Cover)
   } else if (k1 < k2) {
-    if (is.numeric(Cover)) {
-      Exit[k1:k2] <- c(t[(k1+1):k2], AttachmentPoint + Cover)
-    } else {
-      Exit[k1:k2] <- c(t[(k1+1):k2], 0)
-    }
+    Exit[k1:k2] <- c(t[(k1+1):k2], AttachmentPoint + Cover)
   } else {
     Exit[k1] <- AttachmentPoint + Cover
   }
 
-#  if (!is.infinite(Cover)) {
-    for (i in k1:k2) {
-      #if (!is.null(truncation) && truncation_type == "lp" && i == n) {
-      if (i == n) {
-          # Result <- Result + Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = truncation) * prob[i]
-        # Result <- Result + (Att[i] - AttachmentPoint_orig)^2 * prob[i]
-        # Result <- Result + 2 * (Att[i] - AttachmentPoint_orig) * Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = truncation) * prob[i]
-        Result <- Result + Pareto_Layer_SM(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * prob[i]
-        Result <- Result + (Att[i] - AttachmentPoint_orig)^2 * prob[i] * (t[i] / Att[i])^alpha[i]
-        Result <- Result + 2 * (Att[i] - AttachmentPoint_orig) * Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * prob[i]
-      } else {
-        Result <- Result + Pareto_Layer_SM(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = Exit[i]) * prob[i]
-        Result <- Result + (Att[i] - AttachmentPoint_orig)^2 * prob[i] * (t[i] / Att[i])^alpha[i]
-        Result <- Result + 2 * (Att[i] - AttachmentPoint_orig) * Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = Exit[i]) * prob[i]
-      }
+  for (i in k1:k2) {
+    if (!is.null(truncation) && truncation_type == "lp" && i == n) {
+      Result <- Result + Pareto_Layer_SM(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = truncation) * prob[i]
+      Result <- Result + (Att[i] - AttachmentPoint_orig)^2 * prob[i] * (1 - Pareto_CDF(Att[n], t[n], alpha[n]))
+      Result <- Result + 2 * (Att[i] - AttachmentPoint_orig) * Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = truncation) * prob[i]
+    } else if (i == k2) {
+      Result <- Result + Pareto_Layer_SM(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * excess_prob[i]
+      Result <- Result + (Att[i] - AttachmentPoint_orig)^2 * excess_prob[i] * (t[i] / Att[i])^alpha[i]
+      Result <- Result + 2 * (Att[i] - AttachmentPoint_orig) * Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * excess_prob[i]
+    } else {
+      Result <- Result + Pareto_Layer_SM(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = Exit[i]) * prob[i]
+      Result <- Result + (Att[i] - AttachmentPoint_orig)^2 * prob[i] * (t[i] / Att[i])^alpha[i]
+      Result <- Result + 2 * (Att[i] - AttachmentPoint_orig) * Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = Exit[i]) * prob[i]
     }
-  # } else if (Cover == Inf) {
-  #   if (k1 < k2) {
-  #     for (i in k1:(k2-1)) {
-  #       Result <- Result + Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * excess_prob[i]
-  #     }
-  #   }
-  #   Result <- Result + Pareto_Layer_Mean(Inf, Att[n], alpha[n], t[n]) * excess_prob[n]
-  # }
-  # if (!is.null(truncation) && truncation_type == "wd") {
-  #   p <- (1 - Pareto_CDF(truncation, t[n], alpha[n])) * excess_prob[n]
-  #   Result <- (Result - p * Cover_orig) / (1 - p)
-  # }
+  }
+  if (!is.null(truncation) && truncation_type == "wd") {
+    p <- (1 - Pareto_CDF(truncation, t[n], alpha[n])) * excess_prob[n]
+    Result <- (Result - p * Cover_orig^2) / (1 - p)
+  }
 
 
   return(Result)
@@ -757,6 +747,9 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
     return(NA)
   }
   k <- length(t)
+  if (k == 1) {
+    return(rPareto(n, t, alpha, truncation))
+  }
   if (min(t) <= 0) {
     warning("t must have positive elements!")
     return(NA)
