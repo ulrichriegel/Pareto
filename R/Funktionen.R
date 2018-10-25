@@ -112,8 +112,8 @@ Pareto_Layer_Second_Moment_simple <- function(Cover, AttachmentPoint, alpha) {
 
   if (Cover == Inf) {
     if (alpha <= 2) {
-      warning("alpha must be > 2 for unlimited covers!")
-      return(NA)
+      # warning("alpha must be > 2 for unlimited covers!")
+      return(Inf)
     } else {
       SM <- 2 * AttachmentPoint^2 * (1/(alpha-2) - 1/(alpha-1))
     }
@@ -245,29 +245,6 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
   if (is.null(ExpLoss_1)) {
     ExpLoss_1 <- 1
   }
-  # if (is.null(truncation)) {
-  #   if (Cover_1 == Inf|| Cover_2 == Inf) {
-  #     if (alpha <= 1) {
-  #       warning("alpha must be > 1 for unlimited covers!")
-  #       return(NA)
-  #     } else if (Cover_1 == Inf && Cover_2 == Inf) {
-  #       Result <- ((AttachmentPoint_2)^(1-alpha)) / ((AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
-  #     } else if (Cover_2 == Inf) {
-  #       Result <- ( - (AttachmentPoint_2)^(1-alpha)) / ((Cover_1 + AttachmentPoint_1)^(1-alpha) - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
-  #     } else {
-  #       Result <- ((Cover_2 + AttachmentPoint_2)^(1-alpha) - (AttachmentPoint_2)^(1-alpha)) / ( - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
-  #     }
-  #     return(Result)
-  #   }
-  #   if (alpha <= 0) {
-  #     Result <- Cover_2 / Cover_1 * ExpLoss_1
-  #   } else if (alpha == 1) {
-  #     Result <- (log(Cover_2 + AttachmentPoint_2) - log(AttachmentPoint_2)) / (log(Cover_1 + AttachmentPoint_1) - log(AttachmentPoint_1)) * ExpLoss_1
-  #   } else {
-  #     Result <- ((Cover_2 + AttachmentPoint_2)^(1-alpha) - (AttachmentPoint_2)^(1-alpha)) / ((Cover_1 + AttachmentPoint_1)^(1-alpha) - (AttachmentPoint_1)^(1-alpha)) * ExpLoss_1
-  #   }
-  #   return(Result)
-  # } else {
 
   if (!is.null(truncation)) {
     if (truncation <= AttachmentPoint_1) {
@@ -441,6 +418,9 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncat
     return(NA)
   }
   n <- length(t)
+  if (n == 1) {
+    return(Pareto_Layer_Mean(Cover, AttachmentPoint, alpha, t, truncation))
+  }
   if (min(t) <= 0) {
     waring("t must have positive elements!")
     return(NA)
