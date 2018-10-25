@@ -171,6 +171,10 @@ Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation =
   AttachmentPoint <- max(AttachmentPoint, t)
   Cover <- ExitPoint - AttachmentPoint
 
+  if (is.infinite(Cover) && alpha <= 2) {
+    return(Inf)
+  }
+
   # Second moment of layer loss if t = AttachmentPoint
   SM <- Pareto_Layer_Second_Moment_simple(Cover, AttachmentPoint, alpha)
   if (!is.null(truncation)) {
@@ -199,7 +203,11 @@ Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation =
 #  Generalized version of Pareto_Layer_Second_Moment_simple
 
 Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
-  Result <- Pareto_Layer_Var(Cover, AttachmentPoint, alpha, t, truncation = truncation) + Pareto_Layer_Mean(Cover, AttachmentPoint, alpha, t, truncation = truncation)^2
+  Var <- Pareto_Layer_Var(Cover, AttachmentPoint, alpha, t, truncation = truncation)
+  if (is.infinite(Var)) {
+    return(Inf)
+  }
+  Result <- Var + Pareto_Layer_Mean(Cover, AttachmentPoint, alpha, t, truncation = truncation)^2
   return(Result)
 }
 
@@ -273,7 +281,7 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
 #' @param truncation Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.
 #' @export
 
-Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 20, tolerance = 10^(-10), truncation = NULL) {
+Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 100, tolerance = 10^(-10), truncation = NULL) {
   if (Cover_1 <= 0 || AttachmentPoint_1 <= 0 || ExpLoss_1 <= 0 || Cover_2 <= 0 || AttachmentPoint_2 <= 0 || ExpLoss_2 <= 0) {
     warning("All input parameters must be positive!")
     return(NA)
@@ -344,7 +352,7 @@ Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, 
 #' @param truncation Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.
 #' @export
 
-Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, AttachmentPoint, ExpLoss, max_alpha = 20, tolerance = 10^(-10), truncation = NULL) {
+Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, AttachmentPoint, ExpLoss, max_alpha = 100, tolerance = 10^(-10), truncation = NULL) {
   if (Threshold <= 0 || Frequency <= 0 || Cover <= 0 || AttachmentPoint <= 0 || ExpLoss <= 0) {
     warning("All input parameters must be positive!")
     return(NA)
@@ -475,6 +483,9 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncat
   }
   if (Cover == 0) {
     return(0)
+  }
+  if (is.infinite(Cover) && alpha[n] <= 1) {
+    return(Inf)
   }
 
   factors_t <- t[2:n] / t[1:(n-1)]
@@ -626,6 +637,9 @@ PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncatio
   if (Cover == 0) {
     return(0)
   }
+  if (is.infinite(Cover) && alpha[n] <= 2) {
+    return(Inf)
+  }
 
   factors_t <- t[2:n] / t[1:(n-1)]
   excess_prob <- numeric(n)
@@ -704,7 +718,12 @@ PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncatio
 #' @export
 
 PiecewisePareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
-  Result <- PiecewisePareto_Layer_SM(Cover, AttachmentPoint, t, alpha, truncation, truncation_type) - PiecewisePareto_Layer_Mean(Cover, AttachmentPoint, t, alpha, truncation, truncation_type)^2
+  SM <- PiecewisePareto_Layer_SM(Cover, AttachmentPoint, t, alpha, truncation, truncation_type)
+  if (is.infinite(SM)) {
+    return(Inf)
+  }
+  Result <- SM - PiecewisePareto_Layer_Mean(Cover, AttachmentPoint, t, alpha, truncation, truncation_type)^2
+  return(Result)
 }
 
 
@@ -819,7 +838,7 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #' @return FQ. Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution.
 #' @export
 
-PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, tolerance = 10^(-10), alpha_max = 20) {
+PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, tolerance = 10^(-10), alpha_max = 100) {
   if (!is.numeric(Attachment_Points)) {
     stop("Attachment_Points must be numeric.")
   }
