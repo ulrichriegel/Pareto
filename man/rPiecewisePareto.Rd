@@ -4,7 +4,8 @@
 \alias{rPiecewisePareto}
 \title{This function generates random deviates of the Piecewise Pareto distribution.}
 \usage{
-rPiecewisePareto(n, t, alpha, truncation = NULL, truncation_type = "lp")
+rPiecewisePareto(n, t, alpha, truncation = NULL,
+  truncation_type = "lp")
 }
 \arguments{
 \item{n}{Numeric. Number of simulations}

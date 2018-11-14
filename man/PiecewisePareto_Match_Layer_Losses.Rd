@@ -4,11 +4,12 @@
 \alias{PiecewisePareto_Match_Layer_Losses}
 \title{This function matches the expected losses of consecutive layers using a piecewise Pareto severity}
 \usage{
-PiecewisePareto_Match_Layer_Losses(Attachment_Points, Expected_Layer_Losses,
-  Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL,
-  FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL,
-  minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE,
-  tolerance = 10^(-10), alpha_max = 20)
+PiecewisePareto_Match_Layer_Losses(Attachment_Points,
+  Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL,
+  FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL,
+  TotalLoss_Frequencies = NULL, minimize_ratios = TRUE,
+  Use_unlimited_Layer_for_FQ = TRUE, truncation = NULL,
+  tolerance = 10^(-10), alpha_max = 100)
 }
 \arguments{
 \item{Attachment_Points}{Numeric vector. Vector containing the attachment points of consecutive layers in increasing order}
@@ -17,6 +18,8 @@ PiecewisePareto_Match_Layer_Losses(Attachment_Points, Expected_Layer_Losses,
 
 \item{Unlimited_Layers}{Logical. If true, then Expected_Layer_Losses[i] contains the expected loss of unlimited xs Attachment_Points[i].
 If FALSE then Expected_Layer_Losses[i] contains the expected loss of the layers Attachment_Points[i+1] xs Attachment_Points[i]}
+
+\item{truncation}{Numeric. If truncation is not NULL and truncation > max(Attachment_Points), then the last Pareto piece is truncated at truncation (truncation_type = "lp").}
 
 \item{Frequencies.}{Numeric vector. Expected frequencies excess the attachment points. If NULL then the function calculates frequencies.}
 

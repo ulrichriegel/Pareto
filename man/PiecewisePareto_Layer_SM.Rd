@@ -4,8 +4,8 @@
 \alias{PiecewisePareto_Layer_SM}
 \title{This function calculates the second moment of a Piecewise Pareto Distribution in the layer Cover xs AttachmentPoint}
 \usage{
-PiecewisePareto_Layer_SM(Cover, AttachmentPoint, t, alpha, truncation = NULL,
-  truncation_type = "lp")
+PiecewisePareto_Layer_SM(Cover, AttachmentPoint, t, alpha,
+  truncation = NULL, truncation_type = "lp")
 }
 \arguments{
 \item{Cover}{Numeric. Cover of the reinsurance layer.}

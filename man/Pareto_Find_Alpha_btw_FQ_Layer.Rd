@@ -4,8 +4,9 @@
 \alias{Pareto_Find_Alpha_btw_FQ_Layer}
 \title{This function finds the Pareto alpha between an excess frequency and a layer.}
 \usage{
-Pareto_Find_Alpha_btw_FQ_Layer(Threshold, Frequency, Cover, AttachmentPoint,
-  ExpLoss, max_alpha = 20, tolerance = 10^(-10), truncation = NULL)
+Pareto_Find_Alpha_btw_FQ_Layer(Threshold, Frequency, Cover,
+  AttachmentPoint, ExpLoss, max_alpha = 100, tolerance = 10^(-10),
+  truncation = NULL)
 }
 \arguments{
 \item{Threshold}{Numeric. Threshold}

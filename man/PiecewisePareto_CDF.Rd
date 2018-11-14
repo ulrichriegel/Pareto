@@ -4,7 +4,8 @@
 \alias{PiecewisePareto_CDF}
 \title{This function calculates the cumulative distribution function of a Piecewise Pareto Distribution}
 \usage{
-PiecewisePareto_CDF(x, t, alpha, truncation = NULL, truncation_type = "lp")
+PiecewisePareto_CDF(x, t, alpha, truncation = NULL,
+  truncation_type = "lp")
 }
 \arguments{
 \item{x}{Numeric. The function evaluates the CDF at x.}

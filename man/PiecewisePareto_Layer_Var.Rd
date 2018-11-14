@@ -4,8 +4,8 @@
 \alias{PiecewisePareto_Layer_Var}
 \title{This function calculates the variance of a Piecewise Pareto Distribution in the layer Cover xs AttachmentPoint}
 \usage{
-PiecewisePareto_Layer_Var(Cover, AttachmentPoint, t, alpha, truncation = NULL,
-  truncation_type = "lp")
+PiecewisePareto_Layer_Var(Cover, AttachmentPoint, t, alpha,
+  truncation = NULL, truncation_type = "lp")
 }
 \arguments{
 \item{Cover}{Numeric. Cover of the reinsurance layer.}

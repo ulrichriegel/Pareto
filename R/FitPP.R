@@ -1,4 +1,4 @@
-Fit_PP <- function(a, s, l, tolerance = 10^(-10), alpha_max = 100, minimize_ratios = T) {
+Fit_PP <- function(a, s, l, truncation, tolerance = 10^(-10), alpha_max = 100, minimize_ratios = T) {
   # a vector of attachment points
   # s vector of frequencies
   # l[i] exp loss of layer a[i+1] - a[i] xs a[i]
@@ -23,7 +23,8 @@ Fit_PP <- function(a, s, l, tolerance = 10^(-10), alpha_max = 100, minimize_rati
   t <- numeric(2*n-1)
   alpha <- numeric(2*n-1)
   t[2*(1:n)-1] <- a
-  alpha[2*n-1] <- s[n] * a[n] / l[n] + 1
+  # alpha[2*n-1] <- s[n] * a[n] / l[n] + 1 # (Formula without truncation!)
+  alpha[2*n-1] <- Pareto_Find_Alpha_btw_FQ_Layer(a[n], s[n], Inf, a[n], l[n], max_alpha = alpha_max, tolerance = tolerance, truncation = truncation)
   for (k in 1:(n-1)) {
     taus <- Calculate_taus(s[k], s[k+1], a[k], a[k+1], l[k], tolerance = tolerance)
     lower_bound <- min(a[k] * (s[k] / s[k+1])^(1/alpha_max), (a[k] + a[k+1]) / 2)

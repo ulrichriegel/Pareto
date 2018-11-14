@@ -4,8 +4,8 @@
 \alias{Pareto_Extrapolation}
 \title{This function extrapolates from the layer Cover_1 xs AttachmentPoint_1 to the layer Cover_2 xs AttachmentPoint_2 using a Pareto distribution Pareto(t, alpha) with t sufficiently small.}
 \usage{
-Pareto_Extrapolation(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2,
-  alpha, ExpLoss_1 = NULL, truncation = NULL)
+Pareto_Extrapolation(Cover_1, AttachmentPoint_1, Cover_2,
+  AttachmentPoint_2, alpha, ExpLoss_1 = NULL, truncation = NULL)
 }
 \arguments{
 \item{Cover_1}{Numeric. Cover of the layer from which we extrapolate. Use Inf for unlimited layers.}

@@ -4,7 +4,8 @@
 \alias{Pareto_Layer_Var}
 \title{This function the variance of the loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint}
 \usage{
-Pareto_Layer_Var(Cover, AttachmentPoint, alpha, t = NULL, truncation = NULL)
+Pareto_Layer_Var(Cover, AttachmentPoint, alpha, t = NULL,
+  truncation = NULL)
 }
 \arguments{
 \item{Cover}{Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.}
