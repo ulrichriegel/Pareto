@@ -69,6 +69,12 @@ Fit_PP <- function(a, s, l, truncation, tolerance = 10^(-10), alpha_max = 100, m
     alpha[(2*k-1):(2*k)] <- Calculate_alphas(s[k], s[k+1], a[k], a[k+1], l[k], t[2*k], tolerance = tolerance, alpha_max = alpha_max)
   }
 
+  q <- 2*n-1
+  is_equal <- alpha[2:q] == alpha[1:(q-1)]
+  is_equal <- c(FALSE, is_equal)
+  t <- t[!is_equal]
+  alpha <- alpha[!is_equal]
+
   Result <- list(t = t, alpha = alpha)
   return(Result)
 }
