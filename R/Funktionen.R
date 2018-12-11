@@ -1245,3 +1245,76 @@ PiecewisePareto_CDF <- function(x, t, alpha, truncation = NULL, truncation_type 
 }
 
 
+# #' This function calculates the partial moments of a Piecewise Pareto Distribution
+# #' @param x Numeric. The function evaluates the CDF at x.
+# #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
+# #' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
+# #' @param ordinal Numeric. Ordinal of the partial moment.
+# #' @export
+
+PiecewisePareto_Partial_Moment <- function(a, t, alpha, ordinal) {
+  if (!is.numeric(t) || !is.numeric(alpha)) {
+    waring("alpha and t must be numeric.")
+    return(NA)
+  }
+  if (length(t) != length(alpha)) {
+    warning("t and alpha must have the same length")
+    return(NA)
+  }
+  if (ordinal == 0) {
+    return(PiecewisePareto_CDF(a, t, alpha))
+  }
+  n <- length(t)
+  if (min(t) <= 0) {
+    warning("t must have positive elements!")
+    return(NA)
+  }
+  if (min(alpha) < 0) {
+    warning("alpha must have non-negative elements!")
+    return(NA)
+  }
+  if (n > 1) {
+    if (min(diff(t)) <= 0) {
+      warning("t must be strictily ascending!")
+      return(NA)
+    }
+  }
+  if (length(a) != 1) {
+    warning("a must have lenght  1!")
+    return(NA)
+  }
+  if (!is.numeric(a)) {
+    warning("a must be numeric!")
+    return(NA)
+  }
+
+  if (a <= t[1]) {
+    return(0)
+  }
+
+  chi <- function(l, alpha, a, b) {
+    if (alpha == l) {
+      return(l * (log(b)-log(a)) * a^alpha)
+    } else if (alpha == l-1) {
+      return(l * (b-a) * a^alpha)
+    } else {
+      return(l / (l-alpha) * (b^(l-alpha) - a^(l-alpha)) * a^alpha)
+    }
+  }
+
+  k <- sum(t < a)
+  l <- ordinal
+
+  t <- c(t[1:k], a)
+  alpha <- c(alpha[1:k], alpha[k])
+
+  result <- 0
+  for (i in 1:k) {
+    result <- result + chi(l, alpha[i], t[i], t[i+1]) * (1 - PiecewisePareto_CDF(t[i], t, alpha))
+  }
+  result <- result - (1 - PiecewisePareto_CDF(a, t, alpha)) * a^l
+
+  return(result)
+}
+
+
