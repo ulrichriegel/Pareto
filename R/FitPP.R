@@ -70,7 +70,7 @@ Fit_PP <- function(a, s, l, truncation, tolerance = 10^(-10), alpha_max = 100, m
   }
 
   q <- 2*n-1
-  is_equal <- alpha[2:q] == alpha[1:(q-1)]
+  is_equal <- abs(alpha[2:q] - alpha[1:(q-1)]) < tolerance
   is_equal <- c(FALSE, is_equal)
   t <- t[!is_equal]
   alpha <- alpha[!is_equal]
