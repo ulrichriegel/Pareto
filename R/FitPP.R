@@ -1,4 +1,4 @@
-Fit_PP <- function(a, s, l, truncation, tolerance = 10^(-10), alpha_max = 100, minimize_ratios = T) {
+Fit_PP <- function(a, s, l, truncation, tolerance = 1e-10, alpha_max = 100, minimize_ratios = T, merge_tolerance = 1e-6) {
   # a vector of attachment points
   # s vector of frequencies
   # l[i] exp loss of layer a[i+1] - a[i] xs a[i]
@@ -70,7 +70,7 @@ Fit_PP <- function(a, s, l, truncation, tolerance = 10^(-10), alpha_max = 100, m
   }
 
   q <- 2*n-1
-  is_equal <- abs(alpha[2:q] - alpha[1:(q-1)]) < tolerance
+  is_equal <- abs(alpha[2:q] - alpha[1:(q-1)]) < merge_tolerance
   is_equal <- c(FALSE, is_equal)
   t <- t[!is_equal]
   alpha <- alpha[!is_equal]
@@ -81,7 +81,7 @@ Fit_PP <- function(a, s, l, truncation, tolerance = 10^(-10), alpha_max = 100, m
 
 
 
-Calculate_taus <- function(s_0, s_1, a_0, a_1, l_0, tolerance = 10^(-10)) {
+Calculate_taus <- function(s_0, s_1, a_0, a_1, l_0, tolerance = 1e-10) {
   # s_0 = s_k
   # s_1 = s_{k+1}
   # a_0 = a_k
@@ -140,7 +140,7 @@ Calculate_taus <- function(s_0, s_1, a_0, a_1, l_0, tolerance = 10^(-10)) {
 
 
 
-Calculate_alphas <- function(s_0, s_1, a_0, a_1, l_0, t, alpha_max = 100, tolerance = 10^(-10)) {
+Calculate_alphas <- function(s_0, s_1, a_0, a_1, l_0, t, alpha_max = 100, tolerance = 1e-10) {
   # s_0 = s_k
   # s_1 = s_{k+1}
   # a_0 = a_k

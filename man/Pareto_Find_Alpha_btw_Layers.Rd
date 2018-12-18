@@ -6,7 +6,7 @@
 \usage{
 Pareto_Find_Alpha_btw_Layers(Cover_1, AttachmentPoint_1, ExpLoss_1,
   Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 100,
-  tolerance = 10^(-10), truncation = NULL)
+  tolerance = 1e-10, truncation = NULL)
 }
 \arguments{
 \item{Cover_1}{Numeric. Cover of the first layer.}

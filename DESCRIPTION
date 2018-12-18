@@ -1,7 +1,7 @@
 Package: Pareto
 Type: Package
 Title: Utilities for Pareto and Piecewise Pareto distribution.
-Version: 1.0.5
+Version: 1.0.6
 Author: Ulrich Riegel
 Maintainer: <ulrich.riegel@gmx.de>
 Description: The package provides functions for the Pareto and Piecewise Pareto distribution.

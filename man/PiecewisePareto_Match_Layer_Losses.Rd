@@ -9,7 +9,7 @@ PiecewisePareto_Match_Layer_Losses(Attachment_Points,
   FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL,
   TotalLoss_Frequencies = NULL, minimize_ratios = TRUE,
   Use_unlimited_Layer_for_FQ = TRUE, truncation = NULL,
-  tolerance = 10^(-10), alpha_max = 100)
+  tolerance = 1e-10, alpha_max = 100, merge_tolerance = 1e-06)
 }
 \arguments{
 \item{Attachment_Points}{Numeric vector. Vector containing the attachment points of consecutive layers in increasing order}
@@ -36,6 +36,8 @@ TotalLoss_Frequencies[i] > Frequencies[i+1] means that there is a point mass of 
 \item{Use_unlimited_Layer_for_FQ.}{Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If TRUE then the frequency is calculated using the Pareto alpha between the last two layers.}
 
 \item{alpha_max.}{Numerical. Maximum alpha to be used for the matching.}
+
+\item{merge_tolerance.}{Numerical. Consecutive Pareto pieces are merged if the alphas deviate by less than merge_tolerance.}
 }
 \value{
 t. Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution.
