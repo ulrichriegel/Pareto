@@ -1112,12 +1112,16 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
 #' @export
 
 Pareto_CDF <- function(x, t, alpha, truncation = NULL) {
+  sapply(x, FUN = function(x) Pareto_CDF_s(x, t, alpha, truncation))
+}
+
+Pareto_CDF_s <- function(x, t, alpha, truncation = NULL) {
   if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(x)) {
     waring("x, t and alpha must be numeric.")
     return(NA)
   }
   if (length(t) != 1 || length(alpha) != 1 || length(x) != 1) {
-    warning("x, t and alpha must have length 1")
+    warning("t and alpha must have length 1")
     return(NA)
   }
   if (t <= 0) {
@@ -1154,6 +1158,10 @@ Pareto_CDF <- function(x, t, alpha, truncation = NULL) {
 #' @export
 
 PiecewisePareto_CDF <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+  sapply(x, FUN = function(x) PiecewisePareto_CDF_s(x, t, alpha, truncation, truncation_type))
+}
+
+PiecewisePareto_CDF_s <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
   if (!is.numeric(t) || !is.numeric(alpha)) {
     waring("alpha and t must be numeric.")
     return(NA)
