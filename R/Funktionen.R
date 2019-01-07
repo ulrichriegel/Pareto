@@ -1175,6 +1175,50 @@ Pareto_CDF_s <- function(x, t, alpha, truncation = NULL) {
 
 
 
+#' This function calculates the probability density function of a Pareto Distribution
+#' @param x Numeric. The function evaluates the CDF at x.
+#' @param t Numeric. Threshold of the piecewise Pareto distribution.
+#' @param alpha Numeric. Pareto alpha.
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @export
+
+Pareto_PDF <- function(x, t, alpha, truncation = NULL) {
+  sapply(x, FUN = function(x) Pareto_PDF_s(x, t, alpha, truncation))
+}
+
+Pareto_PDF_s <- function(x, t, alpha, truncation = NULL) {
+  if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(x)) {
+    waring("x, t and alpha must be numeric.")
+    return(NA)
+  }
+  if (length(t) != 1 || length(alpha) != 1 || length(x) != 1) {
+    warning("t and alpha must have length 1")
+    return(NA)
+  }
+  if (t <= 0) {
+    warning("t must be positive.")
+    return(NA)
+  }
+  if (!is.null(truncation)) {
+    if (truncation <= t) {
+      warning("truncation must be NULL or greater that t.")
+    }
+  }
+  if (x <= t) {
+    return(0)
+  } else if (is.null(truncation)) {
+    Result <- t^alpha * alpha / x^(alpha + 1)
+    return(Result)
+  } else if (x >= truncation) {
+    return(0)
+  } else {
+    Result <- t^alpha * alpha / x^(alpha + 1) / Pareto_CDF(truncation, t, alpha)
+    return(Result)
+  }
+}
+
+
+
 
 #' This function calculates the cumulative distribution function of a Piecewise Pareto Distribution
 #' @param x Numeric. The function evaluates the CDF at x.
@@ -1276,6 +1320,110 @@ PiecewisePareto_CDF_s <- function(x, t, alpha, truncation = NULL, truncation_typ
       factors_t <- t[2:n] / t[1:(n-1)]
       excess_prob <- prod((1/factors_t)^alpha[1:(n-1)])
       return(1 - excess_prob * (1 - (1-(t[n]/x)^alpha[n]) / (1-(t[n]/truncation)^alpha[n])))
+    }
+  }
+}
+
+
+#' This function calculates the probability density function of a Piecewise Pareto Distribution
+#' @param x Numeric. The function evaluates the CDF at x.
+#' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
+#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#' @export
+
+PiecewisePareto_PDF <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+  sapply(x, FUN = function(x) PiecewisePareto_PDF_s(x, t, alpha, truncation, truncation_type))
+}
+
+PiecewisePareto_PDF_s <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+  if (!is.numeric(t) || !is.numeric(alpha)) {
+    waring("alpha and t must be numeric.")
+    return(NA)
+  }
+  if (length(t) != length(alpha)) {
+    warning("t and alpha must have the same length")
+    return(NA)
+  }
+  n <- length(t)
+  if (n == 1) {
+    Result <- Pareto_PDF(x, t, alpha, truncation)
+    return(Result)
+  }
+  if (min(t) <= 0) {
+    warning("t must have positive elements!")
+    return(NA)
+  }
+  if (min(alpha) < 0) {
+    warning("alpha must have non-negative elements!")
+    return(NA)
+  }
+  if (min(diff(t)) <= 0) {
+    warning("t must be strictily ascending!")
+    return(NA)
+  }
+  if (length(x) != 1) {
+    warning("x must have lenght  1!")
+    return(NA)
+  }
+  if (!is.numeric(x)) {
+    warning("x must be numeric!")
+    return(NA)
+  }
+  if (!is.null(truncation)) {
+    if (!is.numeric(truncation)) {
+      warning("truncation must be NULL or numeric")
+      return(NA)
+    }
+    if (truncation <= t[n]) {
+      warning("truncation must be greater than max(t)")
+      return(NA)
+    }
+    if (truncation_type != "wd" && truncation_type != "lp") {
+      warning("truncation_type must be wd or lp")
+      return(NA)
+    }
+  }
+
+  if (x <= t[1]) {
+    return(0)
+  }
+
+
+  if (is.null(truncation)) {
+    t <- t[t<=x]
+    n <- length(t)
+    alpha <- alpha[1:n]
+    excess_prob <- 1 - PiecewisePareto_CDF(x, t, alpha)
+    return(excess_prob * alpha[n] / x)
+
+  } else if (truncation_type == "wd") {
+    if (x >= truncation) {
+      return(0)
+    }
+    scaling <- 1 / PiecewisePareto_CDF(truncation, t, alpha)
+    t <- t[t<=x]
+    n <- length(t)
+    alpha <- alpha[1:n]
+    excess_prob <- 1 - PiecewisePareto_CDF(x, t, alpha)
+    return(excess_prob * alpha[n] / x * scaling)
+
+  } else {
+    if (x >= truncation) {
+      return(0)
+    } else if (x <= t[n]) {
+      t <- t[t<=x]
+      n <- length(t)
+      alpha <- alpha[1:n]
+      excess_prob <- 1 - PiecewisePareto_CDF(x, t, alpha)
+      return(excess_prob * alpha[n] / x)
+    } else {
+      n <- length(t)
+      excess_prob <- 1 - PiecewisePareto_CDF(t[n], t, alpha)
+      excess_prob_trunc <- 1 - PiecewisePareto_CDF(truncation, t, alpha)
+      scaling <- excess_prob / (excess_prob - excess_prob_trunc)
+      return(excess_prob * scaling * Pareto_PDF(x, t[n], alpha[n]))
     }
   }
 }
