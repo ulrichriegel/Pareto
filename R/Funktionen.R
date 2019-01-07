@@ -734,9 +734,10 @@ PiecewisePareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha, truncati
 #' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
 #' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#' @param scale_pieces Numeric vector. If not NULL then the density of the i-th Pareto piece (on the Intervall (t[i], t[i+1])) is scaled with the factor c * scale_pieces[i] (where c is a normalization constant)
 #' @export
 
-rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "lp") {
+rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "lp", scale_pieces = NULL) {
   if (!is.numeric(t) || !is.numeric(alpha)) {
     warning("alpha and t must be numeric.")
     return(NA)
@@ -774,6 +775,28 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
       warning("truncation_type must be wd or lp")
       return(NA)
     }
+    if (!is.null(scale_pieces)) {
+      warning("either truncation or scale_pieces must be NULL")
+      return(NA)
+    }
+  }
+  if (!is.null(scale_pieces)) {
+    if (!is.numeric(scale_pieces)) {
+      warning("scale_pieces must be NULL or numeric")
+      return(NA)
+    }
+    if (length(scale_pieces) != length(t)) {
+      warning("t and scale_pieces must have the same length")
+      return(NA)
+    }
+    if (min(scale_pieces) < 0) {
+      warning("all entries of scale_pieces must be non-negative")
+      return(NA)
+    }
+    if (sum(scale_pieces) <= 0) {
+      warning("scale_pieces must have a positive entry")
+      return(NA)
+    }
   }
 
   factors_t <- t[2:k] / t[1:(k-1)]
@@ -784,6 +807,10 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 
   if (!is.null(truncation) && truncation_type == "wd") {
     prob_for_pieces[k] <- excess_prob[k] - excess_prob[k] * (t[k] / truncation)^alpha[k]
+    prob_for_pieces <- prob_for_pieces / sum(prob_for_pieces)
+  }
+  if (!is.null(scale_pieces)) {
+    prob_for_pieces <- prob_for_pieces * scale_pieces
     prob_for_pieces <- prob_for_pieces / sum(prob_for_pieces)
   }
 

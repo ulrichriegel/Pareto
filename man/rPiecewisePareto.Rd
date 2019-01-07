@@ -5,7 +5,7 @@
 \title{This function generates random deviates of the Piecewise Pareto distribution.}
 \usage{
 rPiecewisePareto(n, t, alpha, truncation = NULL,
-  truncation_type = "lp")
+  truncation_type = "lp", scale_pieces = NULL)
 }
 \arguments{
 \item{n}{Numeric. Number of simulations}
@@ -17,6 +17,8 @@ rPiecewisePareto(n, t, alpha, truncation = NULL,
 \item{truncation}{Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.}
 
 \item{truncation_type}{Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.}
+
+\item{scale_pieces}{Numeric vector. If not NULL then the density of the i-th Pareto piece (on the Intervall (t[i], t[i+1])) is scaled with the factor c * scale_pieces[i] (where c is a normalization constant)}
 }
 \description{
 This function generates random deviates of the Piecewise Pareto distribution.
