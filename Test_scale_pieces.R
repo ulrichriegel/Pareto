@@ -11,9 +11,8 @@ scale_pieces <- c(0.5,1,1,4,1)
 losses_wo_scaling <- rPiecewisePareto(number_of_simulations, ap, alpha)
 losses_with_scaling <- rPiecewisePareto(number_of_simulations, ap, alpha, scale_pieces = scale_pieces)
 
-df <- data.frame(losses_wo_scaling = losses_wo_scaling, losses_with_scaling = losses_with_scaling)
+df_plot <- data.frame(losses_wo_scaling = losses_wo_scaling, losses_with_scaling = losses_with_scaling)
 
-ggplot(df) + stat_ecdf(aes(x = losses_with_scaling), color = "red") +
+ggplot(df_plot) + stat_ecdf(aes(x = losses_with_scaling), color = "red") +
   stat_ecdf(aes(x = losses_wo_scaling)) +
   coord_cartesian(xlim = c(0,6000))
-

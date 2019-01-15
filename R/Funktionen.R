@@ -1427,3 +1427,157 @@ PiecewisePareto_PDF_s <- function(x, t, alpha, truncation = NULL, truncation_typ
     }
   }
 }
+
+
+
+
+#' This function calculates the inverse of the cumulative distribution function of a Piecewise Pareto Distribution
+#' @param y Numeric. The function evaluates the inverse CDF at y.
+#' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
+#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#' @export
+
+PiecewisePareto_Inverse_CDF <- function(y, t, alpha, truncation = NULL, truncation_type = "lp") {
+  sapply(y, FUN = function(y) PiecewisePareto_Inverse_CDF_s(y, t, alpha, truncation, truncation_type))
+}
+
+PiecewisePareto_Inverse_CDF_s <- function(y, t, alpha, truncation = NULL, truncation_type = "lp") {
+  if (!is.numeric(t) || !is.numeric(alpha)) {
+    waring("alpha and t must be numeric.")
+    return(NA)
+  }
+  if (length(t) != length(alpha)) {
+    warning("t and alpha must have the same length")
+    return(NA)
+  }
+  n <- length(t)
+  if (n == 1) {
+    Result <- Pareto_Inverse_CDF(y, t, alpha, truncation)
+    return(Result)
+  }
+  if (min(t) <= 0) {
+    warning("t must have positive elements!")
+    return(NA)
+  }
+  if (min(alpha) < 0) {
+    warning("alpha must have non-negative elements!")
+    return(NA)
+  }
+  if (min(diff(t)) <= 0) {
+    warning("t must be strictily ascending!")
+    return(NA)
+  }
+  if (length(y) != 1) {
+    warning("y must have lenght  1!")
+    return(NA)
+  }
+  if (!is.numeric(y)) {
+    warning("y must be numeric!")
+    return(NA)
+  }
+  if (y < 0 | y > 1) {
+    warning("y must be in the interval [0,1]!")
+  }
+  if (y == 1) {
+    if (is.null(truncation)) {
+      return(Inf)
+    } else {
+      return(truncation)
+    }
+  }
+  if (!is.null(truncation)) {
+    if (!is.numeric(truncation)) {
+      warning("truncation must be NULL or numeric")
+      return(NA)
+    }
+    if (truncation <= t[n]) {
+      warning("truncation must be greater than max(t)")
+      return(NA)
+    }
+    if (truncation_type != "wd" && truncation_type != "lp") {
+      warning("truncation_type must be wd or lp")
+      return(NA)
+    }
+  }
+
+  n <- length(t)
+
+  CDF_untruncated_at_t <- PiecewisePareto_CDF(t, t, alpha)
+  if (!is.null(truncation)) {
+    if (is.infinite(truncation)) {
+      CDF_untruncated_at_truncation <- 1
+    } else {
+      CDF_untruncated_at_truncation <- PiecewisePareto_CDF(truncation, t, alpha)
+    }
+    if (truncation_type == "wd") {
+      y <- y * CDF_untruncated_at_truncation
+    } else {
+      if (y > CDF_untruncated_at_t[n]) {
+        y <- CDF_untruncated_at_t[n] + (y - CDF_untruncated_at_t[n]) * (CDF_untruncated_at_truncation - CDF_untruncated_at_t[n]) / (1 - CDF_untruncated_at_t[n])
+      }
+    }
+  }
+
+  k_0 <- sum(CDF_untruncated_at_t <= y)
+  t_0 <- t[k_0]
+  F_0 <- CDF_untruncated_at_t[k_0]
+
+
+  result <- t_0 / ((1 - y) / (1 - F_0))^(1 / alpha[k_0])
+  return(result)
+}
+
+
+
+
+#' This function calculates the inverse of the cumulative distribution function of a Pareto Distribution
+#' @param y Numeric. The function evaluates the inverse CDF at y.
+#' @param t Numeric. Threshold of the piecewise Pareto distribution.
+#' @param alpha Numeric. Pareto alpha.
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @export
+
+Pareto_Inverse_CDF <- function(y, t, alpha, truncation = NULL) {
+  sapply(y, FUN = function(x) Pareto_Inverse_CDF_s(x, t, alpha, truncation))
+}
+
+Pareto_Inverse_CDF_s <- function(y, t, alpha, truncation = NULL) {
+  if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(x)) {
+    waring("x, t and alpha must be numeric.")
+    return(NA)
+  }
+  if (length(t) != 1 || length(alpha) != 1) {
+    warning("t and alpha must have length 1")
+    return(NA)
+  }
+  if (t <= 0) {
+    warning("t must be positive.")
+    return(NA)
+  }
+  if (!is.null(truncation)) {
+    if (truncation <= t) {
+      warning("truncation must be NULL or greater that t.")
+    }
+  }
+  if (y < 0 | y > 1) {
+    warning("y must be in the interval [0,1]!")
+    return(NA)
+  } else if (y == 1) {
+    if (is.null(truncation)) {
+      return(Inf)
+    } else {
+      return(truncation)
+    }
+  }
+
+  if (!is.null(truncation)) {
+    if (!is.infinite(truncation)) {
+      scale <- Pareto_CDF(truncation, t, alpha)
+      y <- y * scale
+    }
+  }
+  result <- t / (1 - y)^(1 / alpha)
+
+}
