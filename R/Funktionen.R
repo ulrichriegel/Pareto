@@ -986,10 +986,12 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   Limits <- Attachment_Points[2:k] - Attachment_Points[1:(k-1)]
   Limits <- c(Limits, Inf)
   RoLs <- ELL / Limits
+  Merged_Layer <- rep(FALSE, k)
   if (max(diff(RoLs)) >= 0) {
     repeat {
       if (k<3) {
-        stop("Layers cannot be merged to obtain strictly decreasing RoLs.")
+        warning("Layers cannot be merged to obtain strictly decreasing RoLs.")
+        return(NA)
       }
       pos <- order(diff(RoLs))[k-1]
       ELL[pos] <- ELL[pos] + ELL[pos+1]
@@ -1003,6 +1005,8 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       if (!is.null(TotalLoss_Frequencies)) {
         TotalLoss_Frequencies <- TotalLoss_Frequencies[-pos]
       }
+      Merged_Layer <- Merged_Layer[-(pos+1)]
+      Merged_Layer[pos] <- TRUE
       k <- k-1
       RoLs <- ELL / Limits
       if (max(diff(RoLs)) < 0) {break}
@@ -1027,14 +1031,24 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       if (i < k-1) {
         alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Limits[i+1], Attachment_Points[i+1], ELL[i+1])
         Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Limits[i+1], Attachment_Points[i+1], alpha_between_layers[i])
+        if (Merged_Layer[i] & !Merged_Layer[i+1]) {
+          if (RoLs[i] * (1 - tolerance) > RoLs[i+1]) {
+            Frequencies[i+1] <- RoLs[i] * (1 - tolerance)
+          }
+        } else if (!Merged_Layer[i] & Merged_Layer[i+1]) {
+          if (RoLs[i+1] * (1 + tolerance) < RoLs[i]) {
+            Frequencies[i+1] <- RoLs[i+1] * (1 + tolerance)
+          }
+        }
       } else {
         if (Use_unlimited_Layer_for_FQ) {
           if (is.null(truncation)) {
             alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Inf, Attachment_Points[i+1], ELL[i+1])
             Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Inf, Attachment_Points[i+1], alpha_between_layers[i])
+            if (Merged_Layer[i]) {
+              Frequencies[i+1] <- RoLs[i] * (1 - tolerance)
+            }
           } else {
-            #alpha_between_layers[i] <-  NA
-            #try(alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Inf, Attachment_Points[i+1], ELL[i+1], truncation = truncation), silent = T)
             suppressWarnings(alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Inf, Attachment_Points[i+1], ELL[i+1], truncation = truncation))
             if (!is.na(alpha_between_layers[i])) {
               Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Inf, Attachment_Points[i+1], alpha_between_layers[i], truncation = truncation)
@@ -1044,9 +1058,11 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
               Frequencies[i+1] <- (Frequencies[i+1] + RoLs[i]) / 2
             }
             if (Frequencies[i+1] >= RoLs[i] * (1 - tolerance)) {
-              #Frequencies[i+1] = Frequencies[i] * (Attachment_Points[i]/Attachment_Points[i+1])^alpha_between_layers[i-1]
               Frequencies[i+1] <- RoLs[i] * (1 - tolerance)
               Status <- paste0(Status, "Option Use_unlimited_Layer_for_FQ not used! ")
+            }
+            if (Merged_Layer[i]) {
+              Frequencies[i+1] <- RoLs[i] * (1 - tolerance)
             }
           }
         } else {
@@ -1054,7 +1070,11 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
         }
       }
     }
-    Frequencies[1] <- ELL[1] / Pareto_Layer_Mean(Limits[1], Attachment_Points[1], alpha_between_layers[1])
+    if (!Merged_Layer[1]) {
+      Frequencies[1] <- ELL[1] / Pareto_Layer_Mean(Limits[1], Attachment_Points[1], alpha_between_layers[1])
+    } else {
+      Frequencies[1] <- RoLs[1] * (1 + tolerance)
+    }
   }
   if (!is.null(FQ_at_lowest_AttPt)) {
     if (FQ_at_lowest_AttPt > RoLs[1]) {
