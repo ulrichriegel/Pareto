@@ -861,13 +861,14 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #' @param truncation Numeric. If truncation is not NULL and truncation > max(Attachment_Points), then the last Pareto piece is truncated at truncation (truncation_type = "lp").
 #' @param alpha_max. Numerical. Maximum alpha to be used for the matching.
 #' @param merge_tolerance. Numerical. Consecutive Pareto pieces are merged if the alphas deviate by less than merge_tolerance.
+#' @param RoL_tolerance. Numerical. Consecutive layers are merged if RoL decreases less than factor 1 - RoL_tolerange.
 #'
 #' @return t. Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution.
 #' @return alpha. Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution.
 #' @return FQ. Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution.
 #' @export
 
-PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, truncation = NULL, tolerance = 1e-10, alpha_max = 100, merge_tolerance = 1e-6) {
+PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, truncation = NULL, tolerance = 1e-10, alpha_max = 100, merge_tolerance = 1e-6, RoL_tolerance = 1e-6) {
   if (!is.numeric(Attachment_Points)) {
     stop("Attachment_Points must be numeric.")
   }
@@ -987,13 +988,13 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   Limits <- c(Limits, Inf)
   RoLs <- ELL / Limits
   Merged_Layer <- rep(FALSE, k)
-  if (max(diff(RoLs)) >= 0) {
+  if (max(RoLs[2:k] / RoLs[1:(k-1)]) >= 1 - RoL_tolerance) {
     repeat {
       if (k<3) {
         warning("Layers cannot be merged to obtain strictly decreasing RoLs.")
         return(NA)
       }
-      pos <- order(diff(RoLs))[k-1]
+      pos <- order(RoLs[2:k] / RoLs[1:(k-1)])[k-1]
       ELL[pos] <- ELL[pos] + ELL[pos+1]
       ELL <- ELL[-(pos+1)]
       Attachment_Points <- Attachment_Points[-(pos+1)]
@@ -1009,7 +1010,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       Merged_Layer[pos] <- TRUE
       k <- k-1
       RoLs <- ELL / Limits
-      if (max(diff(RoLs)) < 0) {break}
+      if (max(RoLs[2:k] / RoLs[1:(k-1)]) < 1 - RoL_tolerance) {break}
     }
     Status <- paste0(Status, "RoLs not strictly decreasing. Layers have been merged. ")
   }
@@ -1032,12 +1033,12 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
         alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Limits[i+1], Attachment_Points[i+1], ELL[i+1])
         Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Limits[i+1], Attachment_Points[i+1], alpha_between_layers[i])
         if (Merged_Layer[i] & !Merged_Layer[i+1]) {
-          if (RoLs[i] * (1 - tolerance) > RoLs[i+1]) {
-            Frequencies[i+1] <- RoLs[i] * (1 - tolerance)
+          if (RoLs[i] * (1 - RoL_tolerance) > RoLs[i+1]) {
+            Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance)
           }
         } else if (!Merged_Layer[i] & Merged_Layer[i+1]) {
-          if (RoLs[i+1] * (1 + tolerance) < RoLs[i]) {
-            Frequencies[i+1] <- RoLs[i+1] * (1 + tolerance)
+          if (RoLs[i+1] * (1 + RoL_tolerance) < RoLs[i]) {
+            Frequencies[i+1] <- RoLs[i+1] * (1 + RoL_tolerance)
           }
         }
       } else {
@@ -1046,7 +1047,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
             alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Inf, Attachment_Points[i+1], ELL[i+1])
             Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Inf, Attachment_Points[i+1], alpha_between_layers[i])
             if (Merged_Layer[i]) {
-              Frequencies[i+1] <- RoLs[i] * (1 - tolerance)
+              Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance)
             }
           } else {
             suppressWarnings(alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Inf, Attachment_Points[i+1], ELL[i+1], truncation = truncation))
@@ -1057,12 +1058,12 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
               Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Inf, Attachment_Points[i+1], alpha = tolerance, truncation = truncation)
               Frequencies[i+1] <- (Frequencies[i+1] + RoLs[i]) / 2
             }
-            if (Frequencies[i+1] >= RoLs[i] * (1 - tolerance)) {
-              Frequencies[i+1] <- RoLs[i] * (1 - tolerance)
+            if (Frequencies[i+1] >= RoLs[i] * (1 - RoL_tolerance)) {
+              Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance)
               Status <- paste0(Status, "Option Use_unlimited_Layer_for_FQ not used! ")
             }
             if (Merged_Layer[i]) {
-              Frequencies[i+1] <- RoLs[i] * (1 - tolerance)
+              Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance)
             }
           }
         } else {
@@ -1073,7 +1074,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     if (!Merged_Layer[1]) {
       Frequencies[1] <- ELL[1] / Pareto_Layer_Mean(Limits[1], Attachment_Points[1], alpha_between_layers[1])
     } else {
-      Frequencies[1] <- RoLs[1] * (1 + tolerance)
+      Frequencies[1] <- RoLs[1] * (1 + RoL_tolerance)
     }
   }
   if (!is.null(FQ_at_lowest_AttPt)) {
