@@ -1015,12 +1015,12 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     Status <- paste0(Status, "RoLs not strictly decreasing. Layers have been merged. ")
   }
   if (!is.null(Frequencies)) {
-    if (min(Frequencies - RoLs) <= 0) {
+    if (max(RoLs/Frequencies) >= 1 - RoL_tolerance / 2) {
       Frequencies <- NULL
       TotalLoss_Frequencies <- NULL
       Status <- paste0(Status, "Layer entry frequencies not strictly greater than RoLs. Frequencies not used! ")
     }
-    if (max(Frequencies[2:k] - RoLs[1:(k-1)]) >= 0) {
+    if (min(RoLs[1:(k-1)]/Frequencies[2:k]) <= 1 + RoL_tolerance / 2) {
       Frequencies <- NULL
       TotalLoss_Frequencies <- NULL
       Status <- paste0(Status, "Layer exit frequencies not strictly less than RoLs. Frequencies not used! ")
@@ -1033,13 +1033,13 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
         alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Limits[i+1], Attachment_Points[i+1], ELL[i+1])
         Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Limits[i+1], Attachment_Points[i+1], alpha_between_layers[i])
         if (Merged_Layer[i] & !Merged_Layer[i+1]) {
-          if (RoLs[i] * (1 - RoL_tolerance) > RoLs[i+1]) {
-            Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance)
-          }
+          #if (RoLs[i] * (1 - RoL_tolerance) > RoLs[i+1]) {
+            Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
+          #}
         } else if (!Merged_Layer[i] & Merged_Layer[i+1]) {
-          if (RoLs[i+1] * (1 + RoL_tolerance) < RoLs[i]) {
-            Frequencies[i+1] <- RoLs[i+1] * (1 + RoL_tolerance)
-          }
+          #if (RoLs[i+1] * (1 + RoL_tolerance) < RoLs[i]) {
+            Frequencies[i+1] <- RoLs[i+1] * (1 + RoL_tolerance / 2)
+          #}
         }
       } else {
         if (Use_unlimited_Layer_for_FQ) {
@@ -1047,7 +1047,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
             alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Inf, Attachment_Points[i+1], ELL[i+1])
             Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Inf, Attachment_Points[i+1], alpha_between_layers[i])
             if (Merged_Layer[i]) {
-              Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance)
+              Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
             }
           } else {
             suppressWarnings(alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Inf, Attachment_Points[i+1], ELL[i+1], truncation = truncation))
@@ -1059,11 +1059,11 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
               Frequencies[i+1] <- (Frequencies[i+1] + RoLs[i]) / 2
             }
             if (Frequencies[i+1] >= RoLs[i] * (1 - RoL_tolerance)) {
-              Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance)
+              Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
               Status <- paste0(Status, "Option Use_unlimited_Layer_for_FQ not used! ")
             }
             if (Merged_Layer[i]) {
-              Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance)
+              Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
             }
           }
         } else {
@@ -1074,18 +1074,18 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     if (!Merged_Layer[1]) {
       Frequencies[1] <- ELL[1] / Pareto_Layer_Mean(Limits[1], Attachment_Points[1], alpha_between_layers[1])
     } else {
-      Frequencies[1] <- RoLs[1] * (1 + RoL_tolerance)
+      Frequencies[1] <- RoLs[1] * (1 + RoL_tolerance / 2)
     }
   }
   if (!is.null(FQ_at_lowest_AttPt)) {
-    if (FQ_at_lowest_AttPt > RoLs[1]) {
+    if (FQ_at_lowest_AttPt > RoLs[1] * (1 + RoL_tolerance / 2)) {
       Frequencies[1] <- FQ_at_lowest_AttPt
     } else {
       Status <- paste0(Status, "FQ_at_lowest_AttPt too small. Not used! ")
     }
   }
   if (!is.null(FQ_at_highest_AttPt)) {
-    if (FQ_at_highest_AttPt < RoLs[k-1]) {
+    if (FQ_at_highest_AttPt < RoLs[k-1] * (1 - RoL_tolerance)) {
       Frequencies[k] <- FQ_at_highest_AttPt
     } else {
       Status <- paste0(Status, "FQ_at_highest_AttPt too large. Not used! ")

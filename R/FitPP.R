@@ -3,21 +3,28 @@ Fit_PP <- function(a, s, l, truncation, tolerance = 1e-10, alpha_max = 100, mini
   # s vector of frequencies
   # l[i] exp loss of layer a[i+1] - a[i] xs a[i]
 
+  Result <- list(t = NA, alpha = NA)
+
   if (length(a) != length(s)) {
-    return("a and s must have same lenght!")
+    Result$Status <- "a and s must have same lenght!"
+    return(Result)
   }
   n <- length(a)
   if (min(diff(a))<=0) {
-    return("a must be ascending")
+    Result$Status <- "a must be ascending"
+    return(Result)
   }
   if (max(diff(s))>=0) {
-    return("s must be descending")
+    Result$Status <- "s must be descending"
+    return(Result)
   }
   if (a[1] <= 0) {
-    return("a must be positive.")
+    Result$Status <- "a must be positive."
+    return(Result)
   }
   if (s[n] <= 0) {
-    return("s must be positive.")
+    Result$Status <- "s must be positive."
+    return(Result)
   }
 
   t <- numeric(2*n-1)
@@ -75,7 +82,7 @@ Fit_PP <- function(a, s, l, truncation, tolerance = 1e-10, alpha_max = 100, mini
   t <- t[!is_equal]
   alpha <- alpha[!is_equal]
 
-  Result <- list(t = t, alpha = alpha)
+  Result <- list(t = t, alpha = alpha, Status = "OK")
   return(Result)
 }
 
