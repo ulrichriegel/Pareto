@@ -169,7 +169,18 @@ Calculate_alphas <- function(s_0, s_1, a_0, a_1, l_0, t, alpha_max = 100, tolera
   }
 
   f <- function(alpha) {
-    lambda(t, alpha) - l_0
+    Result <- lambda(t, alpha) - l_0
+    if (!is.nan(Result)) {
+      return(Result)
+    } else {
+      for (i in 1:20) {
+        Result <- lambda(t, alpha / 1.1^i) - l_0
+        if (!is.nan(Result)) {
+          return(Result)
+        }
+      }
+      return(Result)
+    }
   }
 
   alpha_0 <- NA
