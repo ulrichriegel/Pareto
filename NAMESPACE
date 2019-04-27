@@ -3,6 +3,7 @@
 export(Pareto_CDF)
 export(Pareto_Extrapolation)
 export(Pareto_Find_Alpha_btw_FQ_Layer)
+export(Pareto_Find_Alpha_btw_FQs)
 export(Pareto_Find_Alpha_btw_Layers)
 export(Pareto_Inverse_CDF)
 export(Pareto_Layer_Mean)

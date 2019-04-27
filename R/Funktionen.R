@@ -404,6 +404,69 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
 }
 
 
+#' This function finds the Pareto alpha between two excess frequencies.
+#' @param Threshold_1 Numeric. Threshold 1
+#' @param Frequency_1 Numeric. Expected frequency in excess of Thershold 1
+#' @param Threshold_2 Numeric. Threshold 2
+#' @param Frequency_2 Numeric. Expected frequency in excess of Thershold 2
+#' @param max_alpha Numeric. Upper limit for the alpha that is returned.
+#' @param tolerance Numeric. Accuracy of the result.
+#' @param truncation Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.
+#' @export
+
+Pareto_Find_Alpha_btw_FQs <- function(Threshold_1, Frequency_1, Threshold_2, Frequency_2, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
+  if (Threshold_1 <= 0 || Frequency_1 <= 0 || Threshold_2 <= 0 || Frequency_2 <= 0) {
+    warning("All input parameters must be positive!")
+    return(NA)
+  }
+  if (Threshold_1 > Threshold_2) {
+    temp1 <- Threshold_1
+    temp2 <- Frequency_1
+    Threshold_1 <- Threshold_2
+    Frequency_1 <- Frequency_2
+    Threshold_2 <- temp1
+    Frequency_2 <- temp2
+  }
+  if (Threshold_2 == Threshold_1) {
+    warning("Thresholds must not be equal")
+    return(NA)
+  }
+  if (Frequency_2 > Frequency_1) {
+    warning("Frequency of larger threshold must be less than or equal to frequency at lower threshold")
+    return(NA)
+  }
+  if (!is.null(truncation)) {
+    if (truncation <= Threshold_2) {
+      warning("Thresholds must be less than truncation")
+      return(NA)
+    }
+  }
+
+  if (is.null(truncation) || is.infinite(truncation)) {
+    alpha <- log(Frequency_1 / Frequency_2) / log(Threshold_2 / Threshold_1)
+  } else {
+    f <- function(alpha) {
+      1 - Pareto_CDF(Threshold_2, Threshold_1, alpha, truncation = truncation) - Frequency_2 / Frequency_1
+    }
+
+    Result <- NA
+    min_alpha <- tolerance
+    if (f(max_alpha) > 0) {
+      Result = max_alpha
+    } else {
+      try(Result <- uniroot(f, c(min_alpha, max_alpha), tol = tolerance)$root, silent = T)
+    }
+    if (is.na(Result)) {
+      warning("Did not find a solution!")
+      return(NA)
+    }
+    alpha <- Result
+  }
+  return(alpha)
+
+}
+
+
 
 
 
