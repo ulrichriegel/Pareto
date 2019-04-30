@@ -1665,3 +1665,53 @@ Pareto_Inverse_CDF_s <- function(y, t, alpha, truncation = NULL) {
   result <- t / (1 - y)^(1 / alpha)
 
 }
+
+
+#' This function calculates the maximum likelihood estimator of the parameter alpha of a Pareto distribution
+#' @param losses Numeric vector. Losses for ML estimation.
+#' @param t Numeric. Threshold of the Pareto distribution.
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @param alpha_min Numeric. Lower bound for alpha.
+#' @param alpha_max Numeric. Upper bound for alpha.
+#' @export
+
+Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, alpha_min = 0.001, alpha_max = 10) {
+  if (!is.numeric(losses) || !is.numeric(t)) {
+    warning("losses and t must be numeric.")
+    return(NA)
+  }
+  if (length(t) != 1) {
+    warning("t must have lenght 1.")
+    return(NA)
+  }
+  if (t <= 0) {
+    warning("t be positive.")
+    return(NA)
+  }
+  losses <- losses[losses > t]
+  n <- length(losses)
+  if (n < 1) {
+    warning("Number of losses > t must be positive.")
+    return(NA)
+  }
+  if (!is.null(truncation)) {
+    if (truncation <= t) {
+      warning("truncation must be larger than t")
+    }
+    if (max(losses) >= truncation) {
+      warning("Losses must be < truncation.")
+      return(NA)
+    }
+  }
+  if (is.null(truncation) || is.infinite(truncation)) {
+    alpha_hat <- n / sum(log(losses / t))
+    alpha_hat <- min(alpha_max, max(alpha_min, alpha_hat))
+  } else {
+    LogLikelihood <- function(alpha) {
+      n * (alpha * log(t) + log(alpha) - log(1 - (t/truncation)^alpha)) - (alpha + 1) * sum(log(losses))
+    }
+    alpha_hat <- optimise(LogLikelihood, c(alpha_min, alpha_max), maximum = T)$maximum
+  }
+  return(alpha_hat)
+}
+
