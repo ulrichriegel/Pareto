@@ -5,7 +5,7 @@
 \title{This function calculates the maximum likelihood estimator of the parameter alpha of a Pareto distribution}
 \usage{
 Pareto_ML_Estimator_Alpha(losses, t, truncation = NULL,
-  alpha_min = 0.01, alpha_max = 10)
+  alpha_min = 0.001, alpha_max = 10)
 }
 \arguments{
 \item{losses}{Numeric vector. Losses for ML estimation.}

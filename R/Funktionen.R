@@ -1715,3 +1715,28 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, alpha_min = 
   return(alpha_hat)
 }
 
+
+#' This function calculates the local Pareto alpha of a distribution
+#' @param x Numeric. Vector of thresholds at which the local Pareto alpha is calculated.
+#' @param distribution Character.
+#' 'lnorm' for lognormal distribution (parameters meanlog, sdlog)
+#' 'norm' for normal distribution (parameters: mean, sd)
+#' "gamma' for gamma distribution (parameters: shape, rate, scale)
+#' @param ... Parameters for distribution
+#' @export
+
+
+Local_Pareto_Alpha <- function(x, distribution, ...) {
+
+  if (distribution == "lnorm") {
+    Result <- x * dlnorm(x, log = FALSE, ...) / (1 - plnorm(x, log.p = FALSE, ...))
+  }
+  if (distribution == "norm") {
+    Result <- x * dnorm(x, log = FALSE, ...) / (1 - pnorm(x, log.p = FALSE, ...))
+  }
+  if (distribution == "gamma") {
+    Result <- x * dgamma(x, log = FALSE, ...) / (1 - pgamma(x, log.p = FALSE, ...))
+  }
+
+  return(Result)
+}
