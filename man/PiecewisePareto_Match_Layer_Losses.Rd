@@ -17,8 +17,7 @@ PiecewisePareto_Match_Layer_Losses(Attachment_Points,
 
 \item{Expected_Layer_Losses}{Numeric vector. Vector containing the expected losses of layers xs the attachment points.}
 
-\item{Unlimited_Layers}{Logical. If true, then Expected_Layer_Losses[i] contains the expected loss of unlimited xs Attachment_Points[i].
-If FALSE then Expected_Layer_Losses[i] contains the expected loss of the layers Attachment_Points[i+1] xs Attachment_Points[i]}
+\item{Unlimited_Layers}{Logical. If true, then Expected_Layer_Losses[i] contains the expected loss of unlimited xs Attachment_Points[i]. If FALSE then Expected_Layer_Losses[i] contains the expected loss of the layers Attachment_Points[i+1] xs Attachment_Points[i]}
 
 \item{truncation}{Numeric. If truncation is not NULL and truncation > max(Attachment_Points), then the last Pareto piece is truncated at truncation (truncation_type = "lp").}
 
@@ -28,9 +27,7 @@ If FALSE then Expected_Layer_Losses[i] contains the expected loss of the layers 
 
 \item{FQ_at_highest_AttPt.}{Numerical. Expected frequency excess Attachment_Points[k]}
 
-\item{TotalLoss_Frequencies.}{Numeric vector. TotalLoss_Frequencies[i] is the frequency of total losses to layer i (i.e. Attachment_Points[i+1]-Attachment_Points[i] xs Attachment_Points[i])
-TotalLoss_Frequencies[i] is the frequency for losses >= Attachment_Points[i+1], whereas Frequencies[i] is the frequency of losses > Attachment_Points[i].
-TotalLoss_Frequencies[i] > Frequencies[i+1] means that there is a point mass of the severity at Attachment_Points[i+1].}
+\item{TotalLoss_Frequencies.}{Numeric vector. TotalLoss_Frequencies[i] is the frequency of total losses to layer i (i.e. Attachment_Points[i+1]-Attachment_Points[i] xs Attachment_Points[i])    TotalLoss_Frequencies[i] is the frequency for losses >= Attachment_Points[i+1], whereas Frequencies[i] is the frequency of losses > Attachment_Points[i].    TotalLoss_Frequencies[i] > Frequencies[i+1] means that there is a point mass of the severity at Attachment_Points[i+1].}
 
 \item{minimize_ratios.}{Logical. If TRUE then ratios between alphas are minimized.}
 

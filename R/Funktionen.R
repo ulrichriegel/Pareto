@@ -235,7 +235,7 @@ rPareto <- function(n, t, alpha, truncation = NULL) {
     }
   }
 
-  return(FinvPareto(runif(n, u, o),t,alpha))
+  return(FinvPareto(stats::runif(n, u, o),t,alpha))
 }
 
 
@@ -304,14 +304,14 @@ Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, 
 
   Result <- NA
   if (!is.infinite(Cover_1) && !is.infinite(Cover_2)) {
-    try(Result <- uniroot(f, c(min_alpha, max_alpha), tol = tolerance)$root, silent = T)
+    try(Result <- stats::uniroot(f, c(min_alpha, max_alpha), tol = tolerance)$root, silent = T)
     if (AttachmentPoint_1 > AttachmentPoint_2 && AttachmentPoint_1 + Cover_1 >= AttachmentPoint_2 + Cover_2 && f(max_alpha) < 0) {
       Result <- max_alpha
     } else if (AttachmentPoint_1 < AttachmentPoint_2 && AttachmentPoint_1 + Cover_1 <= AttachmentPoint_2 + Cover_2 && f(max_alpha) > 0) {
       Result <- max_alpha
     }
   } else {
-    try(Result <- uniroot(f, c(1 + tolerance, max_alpha), tol = tolerance)$root, silent = T)
+    try(Result <- stats::uniroot(f, c(1 + tolerance, max_alpha), tol = tolerance)$root, silent = T)
     if (is.na(Result)) {
       if (Cover_1 == Inf && Cover_2 == Inf) {
         if (AttachmentPoint_1 < AttachmentPoint_2 && f(max_alpha) > 0) {
@@ -386,7 +386,7 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
   } else {
     min_alpha <- 0
   }
-  try(Result <- uniroot(f, c(min_alpha, max_alpha), tol = tolerance)$root, silent = T)
+  try(Result <- stats::uniroot(f, c(min_alpha, max_alpha), tol = tolerance)$root, silent = T)
   if (AttachmentPoint >= Threshold && f(max_alpha) > 0) {
     Result <- max_alpha
   } else if (AttachmentPoint + Cover <= Threshold && f(max_alpha) < 0) {
@@ -454,7 +454,7 @@ Pareto_Find_Alpha_btw_FQs <- function(Threshold_1, Frequency_1, Threshold_2, Fre
     if (f(max_alpha) > 0) {
       Result = max_alpha
     } else {
-      try(Result <- uniroot(f, c(min_alpha, max_alpha), tol = tolerance)$root, silent = T)
+      try(Result <- stats::uniroot(f, c(min_alpha, max_alpha), tol = tolerance)$root, silent = T)
     }
     if (is.na(Result)) {
       warning("Did not find a solution!")
@@ -899,7 +899,7 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
     } else {
       CDF <- 1 - (t[i] / t[i+1])^alpha[i]
     }
-    Result[Simulated_Pieces == i] <- FinvPareto(runif(NumberOfSimulations_for_Pieces[i], min = 0, max = CDF), t[i], alpha[i])
+    Result[Simulated_Pieces == i] <- FinvPareto(stats::runif(NumberOfSimulations_for_Pieces[i], min = 0, max = CDF), t[i], alpha[i])
   }
 
   return(Result)
@@ -911,21 +911,18 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #' This function matches the expected losses of consecutive layers using a piecewise Pareto severity
 #' @param Attachment_Points Numeric vector. Vector containing the attachment points of consecutive layers in increasing order
 #' @param Expected_Layer_Losses Numeric vector. Vector containing the expected losses of layers xs the attachment points.
-#' @param Unlimited_Layers Logical. If true, then Expected_Layer_Losses[i] contains the expected loss of unlimited xs Attachment_Points[i].
-#'        If FALSE then Expected_Layer_Losses[i] contains the expected loss of the layers Attachment_Points[i+1] xs Attachment_Points[i]
+#' @param Unlimited_Layers Logical. If true, then Expected_Layer_Losses[i] contains the expected loss of unlimited xs Attachment_Points[i]. If FALSE then Expected_Layer_Losses[i] contains the expected loss of the layers Attachment_Points[i+1] xs Attachment_Points[i]
 #' @param Frequencies. Numeric vector. Expected frequencies excess the attachment points. If NULL then the function calculates frequencies.
 #' @param FQ_at_lowest_AttPt. Numerical. Expected frequency excess Attachment_Points[1]
 #' @param FQ_at_highest_AttPt. Numerical. Expected frequency excess Attachment_Points[k]
-#' @param TotalLoss_Frequencies. Numeric vector. TotalLoss_Frequencies[i] is the frequency of total losses to layer i (i.e. Attachment_Points[i+1]-Attachment_Points[i] xs Attachment_Points[i])
-#'        TotalLoss_Frequencies[i] is the frequency for losses >= Attachment_Points[i+1], whereas Frequencies[i] is the frequency of losses > Attachment_Points[i].
-#'        TotalLoss_Frequencies[i] > Frequencies[i+1] means that there is a point mass of the severity at Attachment_Points[i+1].
+#' @param TotalLoss_Frequencies. Numeric vector. TotalLoss_Frequencies[i] is the frequency of total losses to layer i (i.e. Attachment_Points[i+1]-Attachment_Points[i] xs Attachment_Points[i])    TotalLoss_Frequencies[i] is the frequency for losses >= Attachment_Points[i+1], whereas Frequencies[i] is the frequency of losses > Attachment_Points[i].    TotalLoss_Frequencies[i] > Frequencies[i+1] means that there is a point mass of the severity at Attachment_Points[i+1].
 #' @param minimize_ratios. Logical. If TRUE then ratios between alphas are minimized.
 #' @param Use_unlimited_Layer_for_FQ. Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If TRUE then the frequency is calculated using the Pareto alpha between the last two layers.
 #' @param truncation Numeric. If truncation is not NULL and truncation > max(Attachment_Points), then the last Pareto piece is truncated at truncation (truncation_type = "lp").
 #' @param alpha_max. Numerical. Maximum alpha to be used for the matching.
 #' @param merge_tolerance. Numerical. Consecutive Pareto pieces are merged if the alphas deviate by less than merge_tolerance.
 #' @param RoL_tolerance. Numerical. Consecutive layers are merged if RoL decreases less than factor 1 - RoL_tolerange.
-#'
+
 #' @return t. Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution.
 #' @return alpha. Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution.
 #' @return FQ. Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution.
@@ -1710,7 +1707,7 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, alpha_min = 
     LogLikelihood <- function(alpha) {
       n * (alpha * log(t) + log(alpha) - log(1 - (t/truncation)^alpha)) - (alpha + 1) * sum(log(losses))
     }
-    alpha_hat <- optimise(LogLikelihood, c(alpha_min, alpha_max), maximum = T)$maximum
+    alpha_hat <- stats::optimise(LogLikelihood, c(alpha_min, alpha_max), maximum = T)$maximum
   }
   return(alpha_hat)
 }
@@ -1729,13 +1726,13 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, alpha_min = 
 Local_Pareto_Alpha <- function(x, distribution, ...) {
 
   if (distribution == "lnorm") {
-    Result <- x * dlnorm(x, log = FALSE, ...) / (1 - plnorm(x, log.p = FALSE, ...))
+    Result <- x * stats::dlnorm(x, log = FALSE, ...) / (1 - stats::plnorm(x, log.p = FALSE, ...))
   }
   if (distribution == "norm") {
-    Result <- x * dnorm(x, log = FALSE, ...) / (1 - pnorm(x, log.p = FALSE, ...))
+    Result <- x * stats::dnorm(x, log = FALSE, ...) / (1 - stats::pnorm(x, log.p = FALSE, ...))
   }
   if (distribution == "gamma") {
-    Result <- x * dgamma(x, log = FALSE, ...) / (1 - pgamma(x, log.p = FALSE, ...))
+    Result <- x * stats::dgamma(x, log = FALSE, ...) / (1 - stats::pgamma(x, log.p = FALSE, ...))
   }
 
   return(Result)

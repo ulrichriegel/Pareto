@@ -67,7 +67,7 @@ Fit_PP <- function(a, s, l, truncation, tolerance = 1e-10, alpha_max = 100, mini
             return(1)
           }
         }
-        t_temp <- optim(t_temp, fn = penalty, lower = taus[1], upper = taus[2], method = "L-BFGS-B")$par
+        t_temp <- stats::optim(t_temp, fn = penalty, lower = taus[1], upper = taus[2], method = "L-BFGS-B")$par
         t[2*k] <- t_temp
       } else {
         t[2*k] <- taus[1]
@@ -115,7 +115,7 @@ Calculate_taus <- function(s_0, s_1, a_0, a_1, l_0, tolerance = 1e-10) {
 
   delta <- tolerance *(a_1 - a_0)
   tau_u <- NA
-  try(tau_u <- uniroot(f, interval = c(a_0 + delta, a_1 - delta), tol = tolerance * (a_1 - a_0))$root, silent = T)
+  try(tau_u <- stats::uniroot(f, interval = c(a_0 + delta, a_1 - delta), tol = tolerance * (a_1 - a_0))$root, silent = T)
   if (is.na(tau_u)) {
     if (f((a_0 + a_1) / 2) < 0) {
       tau_u <- a_1
@@ -129,7 +129,7 @@ Calculate_taus <- function(s_0, s_1, a_0, a_1, l_0, tolerance = 1e-10) {
   }
 
   tau_l <- NA
-  try(tau_l <- uniroot(g, interval = c(a_0, a_1), tol = tolerance * (a_1 - a_0))$root, silent = T)
+  try(tau_l <- stats::uniroot(g, interval = c(a_0, a_1), tol = tolerance * (a_1 - a_0))$root, silent = T)
   if (is.na(tau_l)) {
     if (g((a_0 + a_1) / 2) > 0) {
       tau_l <- a_0
@@ -184,7 +184,7 @@ Calculate_alphas <- function(s_0, s_1, a_0, a_1, l_0, t, alpha_max = 100, tolera
   }
 
   alpha_0 <- NA
-  try(alpha_0 <- uniroot(f, c(0, alpha_max), tol = tolerance * (a_1 - a_0))$root, silent = T)
+  try(alpha_0 <- stats::uniroot(f, c(0, alpha_max), tol = tolerance * (a_1 - a_0))$root, silent = T)
   if (is.na(alpha_0)) {
     if (abs(f(0) < abs(f(alpha_max)))) {
       alpha_0 <- 0
