@@ -493,7 +493,7 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncat
     return(Pareto_Layer_Mean(Cover, AttachmentPoint, alpha, t, truncation))
   }
   if (min(t) <= 0) {
-    waring("t must have positive elements!")
+    warning("t must have positive elements!")
     return(NA)
   }
   if (min(alpha) < 0) {
@@ -517,7 +517,7 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncat
     return(NA)
   }
   if (!is.numeric(Cover)) {
-    waring("AttachmentPoint must be numeric!")
+    warning("AttachmentPoint must be numeric!")
     return(NA)
   } else if (Cover < 0) {
     warning("Cover must be non-negative!")
@@ -646,7 +646,7 @@ PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncatio
     return(Pareto_Layer_SM(Cover, AttachmentPoint, alpha, t, truncation))
   }
   if (min(t) <= 0) {
-    waring("t must have positive elements!")
+    warning("t must have positive elements!")
     return(NA)
   }
   if (min(alpha) < 0) {
@@ -670,7 +670,7 @@ PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncatio
     return(NA)
   }
   if (!is.numeric(Cover)) {
-    waring("AttachmentPoint must be numeric!")
+    warning("AttachmentPoint must be numeric!")
     return(NA)
   } else if (Cover < 0) {
     warning("Cover must be non-negative!")
@@ -912,20 +912,21 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #' @param Attachment_Points Numeric vector. Vector containing the attachment points of consecutive layers in increasing order
 #' @param Expected_Layer_Losses Numeric vector. Vector containing the expected losses of layers xs the attachment points.
 #' @param Unlimited_Layers Logical. If true, then Expected_Layer_Losses[i] contains the expected loss of unlimited xs Attachment_Points[i]. If FALSE then Expected_Layer_Losses[i] contains the expected loss of the layers Attachment_Points[i+1] xs Attachment_Points[i]
-#' @param Frequencies. Numeric vector. Expected frequencies excess the attachment points. If NULL then the function calculates frequencies.
-#' @param FQ_at_lowest_AttPt. Numerical. Expected frequency excess Attachment_Points[1]
-#' @param FQ_at_highest_AttPt. Numerical. Expected frequency excess Attachment_Points[k]
-#' @param TotalLoss_Frequencies. Numeric vector. TotalLoss_Frequencies[i] is the frequency of total losses to layer i (i.e. Attachment_Points[i+1]-Attachment_Points[i] xs Attachment_Points[i])    TotalLoss_Frequencies[i] is the frequency for losses >= Attachment_Points[i+1], whereas Frequencies[i] is the frequency of losses > Attachment_Points[i].    TotalLoss_Frequencies[i] > Frequencies[i+1] means that there is a point mass of the severity at Attachment_Points[i+1].
-#' @param minimize_ratios. Logical. If TRUE then ratios between alphas are minimized.
-#' @param Use_unlimited_Layer_for_FQ. Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If TRUE then the frequency is calculated using the Pareto alpha between the last two layers.
+#' @param Frequencies Numeric vector. Expected frequencies excess the attachment points. If NULL then the function calculates frequencies.
+#' @param FQ_at_lowest_AttPt Numerical. Expected frequency excess Attachment_Points[1]
+#' @param FQ_at_highest_AttPt Numerical. Expected frequency excess Attachment_Points[k]
+#' @param TotalLoss_Frequencies Numeric vector. TotalLoss_Frequencies[i] is the frequency of total losses to layer i (i.e. Attachment_Points[i+1]-Attachment_Points[i] xs Attachment_Points[i])    TotalLoss_Frequencies[i] is the frequency for losses >= Attachment_Points[i+1], whereas Frequencies[i] is the frequency of losses > Attachment_Points[i].    TotalLoss_Frequencies[i] > Frequencies[i+1] means that there is a point mass of the severity at Attachment_Points[i+1].
+#' @param minimize_ratios Logical. If TRUE then ratios between alphas are minimized.
+#' @param Use_unlimited_Layer_for_FQ Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If TRUE then the frequency is calculated using the Pareto alpha between the last two layers.
 #' @param truncation Numeric. If truncation is not NULL and truncation > max(Attachment_Points), then the last Pareto piece is truncated at truncation (truncation_type = "lp").
-#' @param alpha_max. Numerical. Maximum alpha to be used for the matching.
-#' @param merge_tolerance. Numerical. Consecutive Pareto pieces are merged if the alphas deviate by less than merge_tolerance.
-#' @param RoL_tolerance. Numerical. Consecutive layers are merged if RoL decreases less than factor 1 - RoL_tolerange.
+#' @param tolerance Numeric. Numerical tolerance.
+#' @param alpha_max Numerical. Maximum alpha to be used for the matching.
+#' @param merge_tolerance Numerical. Consecutive Pareto pieces are merged if the alphas deviate by less than merge_tolerance.
+#' @param RoL_tolerance Numerical. Consecutive layers are merged if RoL decreases less than factor 1 - RoL_tolerange.
 
-#' @return t. Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution.
-#' @return alpha. Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution.
-#' @return FQ. Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution.
+#' @return t Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution.
+#' @return alpha Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution.
+#' @return FQ Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution.
 #' @export
 
 PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, truncation = NULL, tolerance = 1e-10, alpha_max = 100, merge_tolerance = 1e-6, RoL_tolerance = 1e-6) {
@@ -1225,7 +1226,7 @@ Pareto_CDF <- function(x, t, alpha, truncation = NULL) {
 
 Pareto_CDF_s <- function(x, t, alpha, truncation = NULL) {
   if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(x)) {
-    waring("x, t and alpha must be numeric.")
+    warning("x, t and alpha must be numeric.")
     return(NA)
   }
   if (length(t) != 1 || length(alpha) != 1 || length(x) != 1) {
@@ -1269,7 +1270,7 @@ Pareto_PDF <- function(x, t, alpha, truncation = NULL) {
 
 Pareto_PDF_s <- function(x, t, alpha, truncation = NULL) {
   if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(x)) {
-    waring("x, t and alpha must be numeric.")
+    warning("x, t and alpha must be numeric.")
     return(NA)
   }
   if (length(t) != 1 || length(alpha) != 1 || length(x) != 1) {
@@ -1315,7 +1316,7 @@ PiecewisePareto_CDF <- function(x, t, alpha, truncation = NULL, truncation_type 
 
 PiecewisePareto_CDF_s <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
   if (!is.numeric(t) || !is.numeric(alpha)) {
-    waring("alpha and t must be numeric.")
+    warning("alpha and t must be numeric.")
     return(NA)
   }
   if (length(t) != length(alpha)) {
@@ -1420,7 +1421,7 @@ PiecewisePareto_PDF <- function(x, t, alpha, truncation = NULL, truncation_type 
 
 PiecewisePareto_PDF_s <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
   if (!is.numeric(t) || !is.numeric(alpha)) {
-    waring("alpha and t must be numeric.")
+    warning("alpha and t must be numeric.")
     return(NA)
   }
   if (length(t) != length(alpha)) {
@@ -1526,7 +1527,7 @@ PiecewisePareto_Inverse_CDF <- function(y, t, alpha, truncation = NULL, truncati
 
 PiecewisePareto_Inverse_CDF_s <- function(y, t, alpha, truncation = NULL, truncation_type = "lp") {
   if (!is.numeric(t) || !is.numeric(alpha)) {
-    waring("alpha and t must be numeric.")
+    warning("alpha and t must be numeric.")
     return(NA)
   }
   if (length(t) != length(alpha)) {
@@ -1625,8 +1626,8 @@ Pareto_Inverse_CDF <- function(y, t, alpha, truncation = NULL) {
 }
 
 Pareto_Inverse_CDF_s <- function(y, t, alpha, truncation = NULL) {
-  if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(x)) {
-    waring("x, t and alpha must be numeric.")
+  if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(y)) {
+    warning("x, t and alpha must be numeric.")
     return(NA)
   }
   if (length(t) != 1 || length(alpha) != 1) {

@@ -19,32 +19,34 @@ PiecewisePareto_Match_Layer_Losses(Attachment_Points,
 
 \item{Unlimited_Layers}{Logical. If true, then Expected_Layer_Losses[i] contains the expected loss of unlimited xs Attachment_Points[i]. If FALSE then Expected_Layer_Losses[i] contains the expected loss of the layers Attachment_Points[i+1] xs Attachment_Points[i]}
 
+\item{Frequencies}{Numeric vector. Expected frequencies excess the attachment points. If NULL then the function calculates frequencies.}
+
+\item{FQ_at_lowest_AttPt}{Numerical. Expected frequency excess Attachment_Points[1]}
+
+\item{FQ_at_highest_AttPt}{Numerical. Expected frequency excess Attachment_Points[k]}
+
+\item{TotalLoss_Frequencies}{Numeric vector. TotalLoss_Frequencies[i] is the frequency of total losses to layer i (i.e. Attachment_Points[i+1]-Attachment_Points[i] xs Attachment_Points[i])    TotalLoss_Frequencies[i] is the frequency for losses >= Attachment_Points[i+1], whereas Frequencies[i] is the frequency of losses > Attachment_Points[i].    TotalLoss_Frequencies[i] > Frequencies[i+1] means that there is a point mass of the severity at Attachment_Points[i+1].}
+
+\item{minimize_ratios}{Logical. If TRUE then ratios between alphas are minimized.}
+
+\item{Use_unlimited_Layer_for_FQ}{Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If TRUE then the frequency is calculated using the Pareto alpha between the last two layers.}
+
 \item{truncation}{Numeric. If truncation is not NULL and truncation > max(Attachment_Points), then the last Pareto piece is truncated at truncation (truncation_type = "lp").}
 
-\item{Frequencies.}{Numeric vector. Expected frequencies excess the attachment points. If NULL then the function calculates frequencies.}
+\item{tolerance}{Numeric. Numerical tolerance.}
 
-\item{FQ_at_lowest_AttPt.}{Numerical. Expected frequency excess Attachment_Points[1]}
+\item{alpha_max}{Numerical. Maximum alpha to be used for the matching.}
 
-\item{FQ_at_highest_AttPt.}{Numerical. Expected frequency excess Attachment_Points[k]}
+\item{merge_tolerance}{Numerical. Consecutive Pareto pieces are merged if the alphas deviate by less than merge_tolerance.}
 
-\item{TotalLoss_Frequencies.}{Numeric vector. TotalLoss_Frequencies[i] is the frequency of total losses to layer i (i.e. Attachment_Points[i+1]-Attachment_Points[i] xs Attachment_Points[i])    TotalLoss_Frequencies[i] is the frequency for losses >= Attachment_Points[i+1], whereas Frequencies[i] is the frequency of losses > Attachment_Points[i].    TotalLoss_Frequencies[i] > Frequencies[i+1] means that there is a point mass of the severity at Attachment_Points[i+1].}
-
-\item{minimize_ratios.}{Logical. If TRUE then ratios between alphas are minimized.}
-
-\item{Use_unlimited_Layer_for_FQ.}{Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If TRUE then the frequency is calculated using the Pareto alpha between the last two layers.}
-
-\item{alpha_max.}{Numerical. Maximum alpha to be used for the matching.}
-
-\item{merge_tolerance.}{Numerical. Consecutive Pareto pieces are merged if the alphas deviate by less than merge_tolerance.}
-
-\item{RoL_tolerance.}{Numerical. Consecutive layers are merged if RoL decreases less than factor 1 - RoL_tolerange.}
+\item{RoL_tolerance}{Numerical. Consecutive layers are merged if RoL decreases less than factor 1 - RoL_tolerange.}
 }
 \value{
-t. Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution.
+t Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution.
 
-alpha. Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution.
+alpha Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution.
 
-FQ. Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution.
+FQ Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution.
 }
 \description{
 This function matches the expected losses of consecutive layers using a piecewise Pareto severity
