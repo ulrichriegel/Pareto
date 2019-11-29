@@ -3,7 +3,6 @@ Type: Package
 Title: Utilities for Pareto and Piecewise Pareto distribution
 Version: 1.0.19
 Authors@R: person("Ulrich", "Riegel", email = "ulrich.riegel@gmx.de", role = c("aut", "cre"))
-Maintainer: <ulrich.riegel@gmx.de>
 Description: The package provides utilities for the Pareto and Piecewise Pareto distribution.
 License:  GPL (>= 2)
 Encoding: UTF-8
