@@ -13,7 +13,36 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Abstract
+## Introduction
 
-The Pareto distribution is widely used as severity distribuion for reinsurance pricing. In cases where the Pareto distribuion is not flexible enough, sometimes picewise Pareto distribuions are used in practice. The `Pareto` package provides various tools for the Pareto and the piecewise Pareto distribution, including a fitting algorithm that matches a tower of layer losses by picewise Pareto.
+The (European) Pareto distribution is probably the most popular distribution for modelling large losses in reinsurance pricing. There are good reasons for this popularity, which are discussed in detail in Fackler (2013). We recommend  Philbrick (1985)  and Schmutz *et.al.* (1998) for an impression of how the (European) Pareto distribution is applied in practice. 
+
+In cases where the Pareto distribuion is not flexible enough, pricing actuaries sometimes use picewise Pareto distribuions. For instance, a Pareto alpha of 1.5 is used to model claim sizes between USD 1M and USD 5M and an alpha of 2.5 is used above USD 2.5M. Riegel (2018) provides an algorithm for matching a tower of layer losses with a collective risk model using a Piecewise Pareto distribution.
+
+The main purpose of the Pareto package is to provide this matching algorithm. In addition the package provides various tools for the Pareto and the Piecewise Pareto distribution, which are useful for pricing of reinsurance treaties.
+
+## Pareto distribution
+
+
+
+
+## Piecewise Pareto distribution
+
+
+
+
+## Matching a tower of layer losses
+
+
+## References
+
+Fackler, M. (2013) Reinventing Pareto: Fits for both small and large losses. ASTIN Colloquium Den Haag
+
+Johnson, N.L., and Kotz, S. (1970) Continuous Univariate Distributions-I. Houghton Mifflin Co
+
+Philbrick, S.W. (1985) A Practical Guide to the Single Parameter Pareto Distribution. PCAS LXXII: 44--84
+
+Riegel, U. (2018) Matching tower information with piecewise Pareto. European Actuarial Journal 8(2): 437--460
+
+Schmutz, M., and Doerr, R.R. (1998) Das Pareto-Modell in der Sach-Rueckversicherung. Formeln und Anwendungen. Swiss Re Publications, Zuerich
 

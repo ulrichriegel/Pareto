@@ -4,10 +4,10 @@ Title: Utilities for Pareto and Piecewise Pareto distribution
 Version: 1.0.19
 Authors@R: person("Ulrich", "Riegel", email = "ulrich.riegel@gmx.de", role = c("aut", "cre"))
 Description: The package provides utilities for the Pareto and Piecewise Pareto distribution.
-License:  GPL (>= 2)
+License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.1
 VignetteBuilder: knitr
 Depends: R (>= 2.10)
 Imports:
