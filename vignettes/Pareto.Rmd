@@ -1,5 +1,5 @@
 ---
-title: "Pareto"
+title: "Pareto Package Vignette"
 author: "Ulrich Riegel"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -137,7 +137,7 @@ Pareto_Find_Alpha_btw_FQs(t_1, f_1, t_2, f_2)
 ```
 
 
-add LayerVariance, Simulation etc
+**add LayerVariance, Simulation etc, Hinweis auf truncated versions**
 
 
 ## Piecewise Pareto distribution
@@ -188,12 +188,47 @@ PiecewisePareto_PDF(x, t, alpha)
 plot(PiecewisePareto_PDF(1:5000, t, alpha), xlab = "x", ylab = "PDF(x)")
 ```
 
-## PML Curves
-
-
-
 ## Matching a tower of layer losses
 
+The Pareto distribution can be used to build a collective model which matches the expected loss of two layers. We can use piecewise Pareto
+if we want to match the expected loss of more than two layers.
+
+Consider a sequence of attachment points $0 < a_1 <\dots < a_n<a_{n+1}:=+\infty$. Let $c_i:=a_{i+1}-a_i$ and let $e_i$ be the expected loss of the layer $c_i$ xs $a_i$. Moreover, let $f_1$ be the expected frequency in excess of $a_1$. 
+
+Matching the given data with piecewise Pareto is easy: 
+
+* Calculate the Pareto alpha $\alpha_1$ between the excess frequency $f_1$ and the layer $c_1$ xs $a_1$ 
+* Calculate the frequency $f_2$ in excess of $a_2$: \quad $f_2:=(a_1/a_2)^{\alpha_1}\cdot f_1$ 
+* Calculate the Pareto alpha $\alpha_2$ between the excess frequency $f_2$ and the layer $c_2$ xs $a_2$ 
+* Calculate the frequency $f_3$ in excess of $a_3$: \quad $f_3:=(a_2/a_3)^{\alpha_2}\cdot f_3$ 
+* $\dots$ \pause
+* Use a collective model $\sum_{n=1}^NX_n$ with $E(N)=f_1$ and $X_n\sim\text{PPareto}(\mathbf{t},\boldsymbol\alpha)$.
+
+This approach always works for three layers, but it often does not work if we have three or more layers. For instance, it does not work for the following example:
+
+
+| $i$ | Cover $c_i$ | Att. Pt. $a_i$ | Exp. Loss $e_i$ | Rate on Line $e_i/c_i$ |
+|-----|------------:|---------------:|----------------:|-----------------------:|
+|  1  |         500 |           1000 |             100 |                   0.20 |
+|  2  |         500 |           1500 |              90 |                   0.18 |  
+|  3  |         500 |           2000 |              50 |                   0.10 |  
+|  4  |         500 |           2500 |              40 |                   0.08 |  
+
+The Pareto package provides an improved matching approach, which works for arbitrary numbers of layers with consistent expected losses:
+
+```{r}
+attachment_points <- c(1000, 1500, 2000, 2500, 3000)
+exp_losses <- c(100, 90, 50, 40, 100)
+fit <- PiecewisePareto_Match_Layer_Losses(attachment_points, exp_losses)
+fit
+```
+Check:
+```{R}
+c(PiecewisePareto_Layer_Mean(500, 1000, fit$t, fit$alpha) * fit$FQ,
+  PiecewisePareto_Layer_Mean(500, 1500, fit$t, fit$alpha) * fit$FQ,
+  PiecewisePareto_Layer_Mean(500, 2000, fit$t, fit$alpha) * fit$FQ,
+  PiecewisePareto_Layer_Mean(500, 2500, fit$t, fit$alpha) * fit$FQ)
+```
 
 ## References
 

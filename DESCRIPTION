@@ -10,7 +10,5 @@ LazyData: true
 RoxygenNote: 7.0.1
 VignetteBuilder: knitr
 Depends: R (>= 2.10)
-Imports:
-    knitr, rmarkdown
 Suggests: 
-    testthat
+    testthat, knitr, rmarkdown
