@@ -23,11 +23,172 @@ The main purpose of the Pareto package is to provide this matching algorithm. In
 
 ## Pareto distribution
 
+**Definition:**
+Let $t>0$ and $\alpha>0$. The *Pareto distribution* $\text{Pareto}(t,\alpha)$ is defined by the distribution function $$
+F_{t,\alpha}(x):=\begin{cases}
+0 & \text{ for $x\le t$} \\
+\displaystyle 1-\left(\frac{t}{x}\right)^{\alpha} & \text{ for $x>t$.}
+\end{cases}
+$$
+This version of the Pareto distribution is also known as *Pareto type I*, *European Pareto* or *single-parameter Pareto*.
 
+Why is the Pareto distribution so popular?
+
+**Lemma:**
+
+* Let $X \sim \text{Pareto}(t,\alpha )$. Then $cX \sim \text{Pareto}(ct,\alpha )$ for all $c>0$.
+* Let $X \sim \text{Pareto}(t_{1} ,\alpha )$. For $t_2 > t_1$ we then have $X|(X>t_2 ) \sim \text{Pareto}(t_2 ,\alpha )$
+
+**Consequences:**
+
+* The *Pareto alpha* is invariant wrt scaling (which implies that $\alpha$ does not depend on currencies and inflation) \pause
+* For Pareto distributed data the Pareto alpha does not depend on the reporting threshold \pause
+* For layers and thresholds above $t$ the ratio between expected layer losses and/or excess frequencies  depends only on $\alpha$ (and not on   $t$)
+
+### Layer mean:
+
+Let $X\sim \text{Pareto}(t,\alpha)$ and $a, c\ge 0$. Then
+$$
+E(\min[c,\max(X-a,0)]) = \int_a^{c+a}(1-F_{t,\alpha}(x))\, dx. =: I_{t,\alpha}^{\text{$c$ xs $a$}}
+$$
+is the layer mean of $c$ xs $a$, i.e. the expected loss to the layer given a single loss  $X$.
+
+*Example:* $t=500$, $\alpha = 2$, Layer 4000 xs 1000
+```{r}
+library(Pareto)
+Pareto_Layer_Mean(4000, 1000, 2, t = 500)
+```
+
+### Pareto extrapolation
+
+Consider two layers $c_i$ xs $a_i$ and a $\text{Pareto}(t,\alpha)$ distributed severity with sufficiently small $t$. What is the expected loss of $c_2$ xs $a_2$ given the expected loss of $c_1$ xs $a_1$? 
+
+*Example:* Assume $\alpha = 2$ and the expected loss of 4000 xs 1000 is 500. Calculate the expected loss of the layer 5000 xs 5000.
+
+```{r}
+Pareto_Extrapolation(4000, 1000, 5000, 5000, 2) * 500
+Pareto_Extrapolation(4000, 1000, 5000, 5000, 2, ExpLoss_1 = 500)
+```
+
+
+### Pareto alpha between two layers:
+
+Given the expected losses of two layers, there is typically a unique Pareto alpha $\alpha$ which is consistent with the ratio of the expected layer losses. 
+
+*Example:* Expected loss of 4000 xs 1000 is 500. Expected loss of 5000 xs 5000 is 62.5. Alpha between the two layers:
+
+```{r}
+Pareto_Find_Alpha_btw_Layers(4000, 1000, 500, 5000, 5000, 62.5)
+```
+Check: see previous example
+
+
+### Pareto alpha between a frequency and layer:
+
+Given the expected excess frequency at a threshold and the expected loss of a layer, then there is typically a unique Pareto alpha $\alpha$ which is consistent with this data.
+
+*Example:* Expected frequency in excess of 500 is 2.5. Expected loss of 4000 xs 1000 is 500.  \pause Alpha between the frequency and the layer:
+```{r}
+Pareto_Find_Alpha_btw_FQ_Layer(500, 2.5, 4000, 1000, 500)
+```
+Check:
+```{r}
+Pareto_Layer_Mean(4000, 1000, 2, t = 500) * 2.5
+```
+
+### Matching the expected losses of two layers:
+
+Given the expected losses of two layers, we can use these techniques to obtain a Poisson-Pareto model which matches the expected loss of both layers.
+
+*Example:* Expected loss of 30 xs 10 is 26.66 (Burning Cost).  Expected loss of 60 xs 40 is 15.95 (Exposure model).
+```{r}
+Pareto_Find_Alpha_btw_Layers(30, 10, 26.66, 60, 40, 15.95)
+```
+Frequency @ 10:
+```{r}
+26.66 / Pareto_Layer_Mean(30, 10, 1.086263)
+```
+A collective model $\sum_{n=1}^NX_n$ with $X_N\sim \text{Pareto}(10, 1.09)$ and $N\sim \text{Poisson}(2.04)$ matches both expected layer losses.
+
+
+### Frequency extrapolation and alpha between frequencies:}
+
+Given the frequency $f_1$ in excess of $t_1$ then the frequency $f_2$ in excess of $t_2$ can directly be calculated as follows:
+$$
+f_2 = f_1 \cdot \left(\frac{t_1}{t_2}\right)^\alpha
+$$
+Vice versa, we can calculate the Pareto alpha, if the two excess frequencies $f_1$ and $f_2$ are given:
+$$
+\alpha = \frac{\log(f_2/f_1)}{\log(t_1/t_2)}.
+$$
+
+*Example:*
+
+Expected frequency excess 1000 is 2. What is the expected frequency excess 4000 if we have a Pareto alpha of 2.5?
+```{r}
+t_1 <- 1000
+f_1 <- 2
+t_2 <- 4000
+(f_2 <- f_1 * (t_1 / t_2)^2.5)
+```
+Vice versa:
+```{r}
+Pareto_Find_Alpha_btw_FQs(t_1, f_1, t_2, f_2)
+```
+
+
+add LayerVariance, Simulation etc
 
 
 ## Piecewise Pareto distribution
 
+**Definition:**
+Let $\mathbf{t}:=(t_1,\dots,t_n)$ be a vector of thresholds with $0<t_1<\dots<t_n<t_{n+1}:=+\infty$ and let $\boldsymbol\alpha:=(\alpha_1,\dots,\alpha_n)$ be a vector of Pareto alphas with $\alpha_i\ge 0$ and $\alpha_n>0$. The *piecewise Pareto* distribution} $\text{PPareto}(\mathbf{t},\boldsymbol\alpha)$ is defined by the distribution function $$
+F_{\mathbf{t},\boldsymbol\alpha}(x):=\begin{cases}
+0 & \text{ for $x<t_1$} \\
+\displaystyle 1-\left(\frac{t_{k}}{x}\right)^{\alpha_k}\prod_{i=1}^{k-1}\left(\frac{t_i}{t_{i+1}}\right)^{\alpha_i} & \text{ for $x\in [t_k,t_{k+1}).$}
+\end{cases}
+$$
+
+The family of piecewise Pareto distributions is very flexible:
+
+**Proposition:** The set of Piecewise Pareto distributions is dense in the space of all positive-valued distributions (with respect to the Lévy metric).
+
+This means that we can approximate any positive valued distribution as good as we want with piecewise Pareto. A very good approximation typically comes at the cost of many Pareto pieces. Piecewise Pareto  is often a good alternative to a discrete distribution, since it is much better to handle!
+
+The Pareto package also provides functions for the picewise Pareto distribution. For instance:
+
+*Layer mean:*
+```{r}
+t <- c(1000, 2000, 3000, 4000)
+alpha <- c(2, 1, 3, 20)
+PiecewisePareto_Layer_Mean(4000, 1000, t, alpha)
+```
+
+*Layer variance:*
+```{r}
+PiecewisePareto_Layer_Var(4000, 1000, t, alpha)
+```
+
+*Simulation:*
+```{r}
+rPiecewisePareto(20, t, alpha)
+```
+
+*CDF:*
+```{r}
+x <- c(1:10) * 1000
+PiecewisePareto_CDF(x, t, alpha)
+plot(PiecewisePareto_CDF(1:5000, t, alpha), xlab = "x", ylab = "CDF(x)")
+```
+
+*PDF:*
+```{r}
+PiecewisePareto_PDF(x, t, alpha)
+plot(PiecewisePareto_PDF(1:5000, t, alpha), xlab = "x", ylab = "PDF(x)")
+```
+
+## PML Curves
 
 
 
