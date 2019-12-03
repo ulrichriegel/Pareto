@@ -1,10 +1,22 @@
 
-#' This function calculates the expected loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint
+#' Calculate the expected loss of a Pareto distribution in a reinsurance layer
+#'
 #' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
 #' @param alpha Numeric. Pareto alpha.
 #' @param t Numeric. Threshold of the Pareto distribution. If t = NULL (default) then t <- Attachment Point
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#'
+#' @return The expected loss of the (truncated) Pareto distribution with parameters \code{t} and \code{alpha} in the layer
+#'         \code{Cover} xs \code{AttachmentPoint}
+#'
+#' @examples
+#' Pareto_Layer_Mean(4000, 1000, 2)
+#' Pareto_Layer_Mean(4000, 1000, alpha = 2, t = 1000)
+#' Pareto_Layer_Mean(4000, 1000, alpha = 2, t = 5000)
+#' Pareto_Layer_Mean(4000, 1000, alpha = 2, t = 1000, truncation = 5000)
+#' Pareto_Layer_Mean(9000, 1000, alpha = 2, t = 1000, truncation = 5000)
+#'
 #' @export
 
 Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
@@ -90,11 +102,13 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation 
 
 
 
-# #' This function the second moment of the xs loss of the Pareto Distribution Pareto(AttachmentPoint, alpha) in the layer Cover xs AttachmentPoint
+# #' Calculates the second moment of the xs loss of a Pareto Distribution in a reinsurance layer
+# #'
+# #' Not visible to the user. Used in Pareto_Layer_Var.
 # #' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
 # #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
 # #' @param alpha Numeric. Pareto alpha.
-# This function is not visible to the user. The function is used in Pareto_Layer_Var.
+
 
 Pareto_Layer_Second_Moment_simple <- function(Cover, AttachmentPoint, alpha) {
   if (AttachmentPoint <= 0) {
@@ -133,12 +147,24 @@ Pareto_Layer_Second_Moment_simple <- function(Cover, AttachmentPoint, alpha) {
 
 }
 
-#' This function the variance of the loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint
+#' Calculate the variance of a Pareto distribution in a reinsurance layer
+#'
 #' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
 #' @param alpha Numeric. Pareto alpha.
 #' @param t Numeric. Threshold of the Pareto distribution. If t = NULL (default) then t <- Attachment Point
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#'
+#' @return The variance of the(truncated) Pareto distribution with parameters \code{t} and \code{alpha} in the layer
+#'         \code{Cover} xs \code{AttachmentPoint}
+#'
+#' @examples
+#' Pareto_Layer_Var(4000, 1000, 2)
+#' Pareto_Layer_Var(4000, 1000, alpha = 2, t = 1000)
+#' Pareto_Layer_Var(4000, 1000, alpha = 2, t = 5000)
+#' Pareto_Layer_Var(4000, 1000, alpha = 2, t = 1000, truncation = 5000)
+#' Pareto_Layer_Var(9000, 1000, alpha = 2, t = 1000, truncation = 5000)
+#'
 #' @export
 
 Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
@@ -193,14 +219,26 @@ Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation =
 }
 
 
-#' This function the second moment of the xs-loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint
+#' Calculate the second moment of a Pareto distribution in a reinsurance layer
+#'
 #' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
 #' @param alpha Numeric. Pareto alpha.
 #' @param t Numeric. Threshold of the Pareto distribution. If t = NULL (default) then t <- Attachment Point
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#'
+#' @return The second moment of the (truncated) Pareto distribution with parameters \code{t} and \code{alpha} in the layer
+#'         \code{Cover} xs \code{AttachmentPoint}
+#'
+#' @examples
+#' Pareto_Layer_SM(4000, 1000, 2)
+#' Pareto_Layer_SM(4000, 1000, alpha = 2, t = 1000)
+#' Pareto_Layer_SM(4000, 1000, alpha = 2, t = 5000)
+#' Pareto_Layer_SM(4000, 1000, alpha = 2, t = 1000, truncation = 5000)
+#' Pareto_Layer_SM(9000, 1000, alpha = 2, t = 1000, truncation = 5000)
+#'
 #' @export
-#  Generalized version of Pareto_Layer_Second_Moment_simple
+
 
 Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
   Var <- Pareto_Layer_Var(Cover, AttachmentPoint, alpha, t, truncation = truncation)
@@ -214,11 +252,19 @@ Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = 
 
 
 
-#' This function generates random deviates of the Pareto distribution Pareto(t, alpha).
+#' Generates random deviates of a Pareto distribution
+#'
 #' @param n Number of observations.
 #' @param t Threshold of the Pareto distribution
 #' @param alpha Pareto alpha.
 #' @param truncation If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation (resampled Pareto)
+#'
+#' @return A vector of \code{n} samples from the (truncated) Pareto distribution with parameters \code{t} and \code{alpha}
+#'
+#' @examples
+#' rPareto(100, 1000, 2)
+#' rPareto(100, 1000, 2, truncation = 2000)
+#'
 #' @export
 
 rPareto <- function(n, t, alpha, truncation = NULL) {
@@ -239,7 +285,8 @@ rPareto <- function(n, t, alpha, truncation = NULL) {
 }
 
 
-#' This function extrapolates from the layer Cover_1 xs AttachmentPoint_1 to the layer Cover_2 xs AttachmentPoint_2 using a Pareto distribution Pareto(t, alpha) with t sufficiently small.
+#' Use a Pareto distribution to derive the expected loss of a layer from the expected loss of another layer
+#'
 #' @param Cover_1 Numeric. Cover of the layer from which we extrapolate. Use Inf for unlimited layers.
 #' @param AttachmentPoint_1 Numeric. Attachment point of the layer from which we extrapolate.
 #' @param Cover_2 Numeric. Cover of the layer to which we extrapolate. Use Inf for unlimited layers.
@@ -247,6 +294,16 @@ rPareto <- function(n, t, alpha, truncation = NULL) {
 #' @param alpha Numeric. Pareto alpha used for the extrapolation.
 #' @param ExpLoss_1 Numeric. Expected loss of the layer from which we extrapolate. If NULL (default) then the function provides only the ratio between the expected losses of the layers.
 #' @param truncation Numeric. If truncation is not NULL and truncation > AttachmentPoint_1, then the Pareto distribution is truncated at truncation.
+#'
+#' @return The expected loss of the layer \code{Cover_2} xs \code{AttachmentPoint_2} given that  \code{Cover_1} xs \code{AttachmentPoint_1} has expected
+#' loss \code{ExpLoss_1} and assuming a (truncated) Pareto distribution with parameters \code{t} and \code{alpha}. If missing then \code{ExpLoss_1 == 1} is assumed.
+#'
+#' @examples
+#' Pareto_Extrapolation(1000, 1000, 2000, 2000, 2, ExpLoss_1 = 100)
+#' Pareto_Extrapolation(1000, 1000, 2000, 2000, 2) * 100
+#' Pareto_Extrapolation(1000, 1000, 2000, 2000, 2, truncation = 5000, ExpLoss_1 = 100)
+#' Pareto_Extrapolation(1000, 1000, 2000, 2000, 2, truncation = 5000) * 100
+#'
 #' @export
 
 Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2, alpha, ExpLoss_1 = NULL, truncation = NULL) {
@@ -269,7 +326,8 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
 
 
 
-#' This function finds the Pareto alpha between two layers.
+#' Find the Pareto alpha between two layers.
+#'
 #' @param Cover_1 Numeric. Cover of the first layer.
 #' @param AttachmentPoint_1 Numeric. Cover of the first layer.
 #' @param ExpLoss_1 Numeric. Expected loss of the first layer.
@@ -279,6 +337,14 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
 #' @param max_alpha Numeric. Upper limit for the alpha that is returned.
 #' @param tolerance Numeric. Accuracy of the result.
 #' @param truncation Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.
+#'
+#' @return The Pareto alpha between the layer \code{Cover_1} xs \code{AttachmentPoint_1} with expected loss \code{ExpLoss_1}
+#' and the layer  \code{Cover_2} xs \code{AttachmentPoint_2} with expected loss \code{ExpLoss_2}
+#'
+#' @examples
+#' Pareto_Find_Alpha_btw_Layers(100, 100, 100, 200, 200, 50)
+#' Pareto_Find_Alpha_btw_Layers(100, 100, 100, 200, 200, 50, truncation = 500)
+#'
 #' @export
 
 Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
@@ -341,7 +407,8 @@ Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, 
 }
 
 
-#' This function finds the Pareto alpha between an excess frequency and a layer.
+#' Find the Pareto alpha between an excess frequency and the expected loss of a layer
+#'
 #' @param Threshold Numeric. Threshold
 #' @param Frequency Numeric. Expected frequency in excess of Thershold
 #' @param Cover Numeric. Cover of the second layer.
@@ -350,6 +417,14 @@ Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, 
 #' @param max_alpha Numeric. Upper limit for the alpha that is returned.
 #' @param tolerance Numeric. Accuracy of the result.
 #' @param truncation Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.
+#'
+#' @return The Pareto alpha between the expected number of claims \code{Frequency} excess \code{Threshold}
+#' and the layer  \code{Cover} xs \code{AttachmentPoint} with expected loss \code{ExpLoss}
+#'
+#' @examples
+#' Pareto_Find_Alpha_btw_FQ_Layer(1000, 1, 1000, 1000, 500)
+#' Pareto_Find_Alpha_btw_FQ_Layer(1000, 1, 1000, 1000, 500, truncation = 5000)
+#'
 #' @export
 
 Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, AttachmentPoint, ExpLoss, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
@@ -404,7 +479,8 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
 }
 
 
-#' This function finds the Pareto alpha between two excess frequencies.
+#' Find the Pareto alpha between two excess frequencies
+#'
 #' @param Threshold_1 Numeric. Threshold 1
 #' @param Frequency_1 Numeric. Expected frequency in excess of Thershold 1
 #' @param Threshold_2 Numeric. Threshold 2
@@ -412,6 +488,14 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
 #' @param max_alpha Numeric. Upper limit for the alpha that is returned.
 #' @param tolerance Numeric. Accuracy of the result.
 #' @param truncation Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.
+#'
+#' @return The Pareto alpha between the expected number of claims \code{Frequency_1} excess \code{Threshold_1}
+#' and the expected number of claims \code{Frequency_2} excess \code{Threshold_2}
+#'
+#' @examples
+#' Pareto_Find_Alpha_btw_FQs(1000, 1, 2000, 0.5)
+#' Pareto_Find_Alpha_btw_FQs(1000, 1, 2000, 0.5, truncation = 5000)
+#'
 #' @export
 
 Pareto_Find_Alpha_btw_FQs <- function(Threshold_1, Frequency_1, Threshold_2, Frequency_2, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
@@ -470,13 +554,26 @@ Pareto_Find_Alpha_btw_FQs <- function(Threshold_1, Frequency_1, Threshold_2, Fre
 
 
 
-#' This function calculates the expected loss of a Piecewise Pareto Distribution in the layer Cover xs AttachmentPoint
+#' Calculate the expected loss of a piecewise Pareto distribution in a reinsurance layer
+#'
 #' @param Cover Numeric. Cover of the reinsurance layer.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
 #' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#'
+#' @return The expected loss of the (truncated) piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} in the layer
+#'         \code{Cover} xs \code{AttachmentPoint}
+#'
+#' @examples
+#' t <- c(1000, 2000, 3000)
+#' alpha <- c(1, 1.5, 2)
+#' PiecewisePareto_Layer_Mean(4000, 1000, t, alpha)
+#' PiecewisePareto_Layer_Mean(4000, 1000, t, alpha, truncation = 5000)
+#' PiecewisePareto_Layer_Mean(4000, 1000, t, alpha, truncation = 5000, truncation_type = "lp")
+#' PiecewisePareto_Layer_Mean(4000, 1000, t, alpha, truncation = 5000, truncation_type = "wd")
+#'
 #' @export
 
 PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
@@ -623,13 +720,26 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncat
 
 
 
-#' This function calculates the second moment of a Piecewise Pareto Distribution in the layer Cover xs AttachmentPoint
+#' Calculate the second moment of a piecewise Pareto distribution in a reinsurance layer
+#'
 #' @param Cover Numeric. Cover of the reinsurance layer.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
 #' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#'
+#' @return The second moment of the (truncated) piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} in the layer
+#'         \code{Cover} xs \code{AttachmentPoint}
+#'
+#' @examples
+#' t <- c(1000, 2000, 3000)
+#' alpha <- c(1, 1.5, 2)
+#' PiecewisePareto_Layer_SM(4000, 1000, t, alpha)
+#' PiecewisePareto_Layer_SM(4000, 1000, t, alpha, truncation = 5000)
+#' PiecewisePareto_Layer_SM(4000, 1000, t, alpha, truncation = 5000, truncation_type = "lp")
+#' PiecewisePareto_Layer_SM(4000, 1000, t, alpha, truncation = 5000, truncation_type = "wd")
+#'
 #' @export
 
 PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
@@ -770,14 +880,27 @@ PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncatio
   return(Result)
 }
 
-
-#' This function calculates the variance of a Piecewise Pareto Distribution in the layer Cover xs AttachmentPoint
+#' Calculate the variance of a piecewise Pareto distribution in a reinsurance layer
+#'
 #' @param Cover Numeric. Cover of the reinsurance layer.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
 #' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#'
+#' @return The variance of the (truncated) piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} in the layer
+#'         \code{Cover} xs \code{AttachmentPoint}
+#'
+#' @examples
+#' t <- c(1000, 2000, 3000)
+#' alpha <- c(1, 1.5, 2)
+#' PiecewisePareto_Layer_Var(4000, 1000, t, alpha)
+#' PiecewisePareto_Layer_SM(4000, 1000, t, alpha) - PiecewisePareto_Layer_Mean(4000, 1000, t, alpha)^2
+#' PiecewisePareto_Layer_Var(4000, 1000, t, alpha, truncation = 5000)
+#' PiecewisePareto_Layer_Var(4000, 1000, t, alpha, truncation = 5000, truncation_type = "lp")
+#' PiecewisePareto_Layer_Var(4000, 1000, t, alpha, truncation = 5000, truncation_type = "wd")
+#'
 #' @export
 
 PiecewisePareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
@@ -791,14 +914,27 @@ PiecewisePareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha, truncati
 
 
 
-#' This function generates random deviates of the Piecewise Pareto distribution.
+#' Generates random deviates of a piecewise Pareto distribution
+#'
 #' @param n Numeric. Number of simulations
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
 #' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
 #' @param scale_pieces Numeric vector. If not NULL then the density of the i-th Pareto piece (on the Intervall (t[i], t[i+1])) is scaled with the factor c * scale_pieces[i] (where c is a normalization constant)
+#'
+#' @return A vector of \code{n} samples from the (truncated) piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha}
+#'
+#' @examples
+#' t <- c(1000, 2000, 3000)
+#' alpha <- c(1, 1.5, 2)
+#' rPiecewisePareto(1000, t, alpha)
+#' rPiecewisePareto(1000, t, alpha, truncation = 5000)
+#' rPiecewisePareto(1000, t, alpha, truncation = 5000, truncation_type = "lp")
+#' rPiecewisePareto(1000, t, alpha, truncation = 5000, truncation_type = "wd")
+#'
 #' @export
+
 
 rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "lp", scale_pieces = NULL) {
   if (!is.numeric(t) || !is.numeric(alpha)) {
@@ -908,7 +1044,8 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 
 
 
-#' This function matches the expected losses of consecutive layers using a piecewise Pareto severity
+#' Matches the expected losses of a tower of reinsurance layers using a piecewise Pareto severity
+#'
 #' @param Attachment_Points Numeric vector. Vector containing the attachment points of consecutive layers in increasing order
 #' @param Expected_Layer_Losses Numeric vector. Vector containing the expected losses of layers xs the attachment points.
 #' @param Unlimited_Layers Logical. If true, then Expected_Layer_Losses[i] contains the expected loss of unlimited xs Attachment_Points[i]. If FALSE then Expected_Layer_Losses[i] contains the expected loss of the layers Attachment_Points[i+1] xs Attachment_Points[i]
