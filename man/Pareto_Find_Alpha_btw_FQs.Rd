@@ -2,7 +2,7 @@
 % Please edit documentation in R/Functions.R
 \name{Pareto_Find_Alpha_btw_FQs}
 \alias{Pareto_Find_Alpha_btw_FQs}
-\title{This function finds the Pareto alpha between two excess frequencies.}
+\title{Pareto Alpha Between Two Frequencies}
 \usage{
 Pareto_Find_Alpha_btw_FQs(
   Threshold_1,
@@ -29,6 +29,15 @@ Pareto_Find_Alpha_btw_FQs(
 
 \item{truncation}{Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.}
 }
+\value{
+The Pareto alpha between the expected number of claims \code{Frequency_1} excess \code{Threshold_1}
+and the expected number of claims \code{Frequency_2} excess \code{Threshold_2}
+}
 \description{
-This function finds the Pareto alpha between two excess frequencies.
+Finds the Pareto alpha between two excess frequencies
+}
+\examples{
+Pareto_Find_Alpha_btw_FQs(1000, 1, 2000, 0.5)
+Pareto_Find_Alpha_btw_FQs(1000, 1, 2000, 0.5, truncation = 5000)
+
 }

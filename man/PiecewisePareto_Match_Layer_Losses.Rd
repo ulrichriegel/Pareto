@@ -2,7 +2,7 @@
 % Please edit documentation in R/Functions.R
 \name{PiecewisePareto_Match_Layer_Losses}
 \alias{PiecewisePareto_Match_Layer_Losses}
-\title{This function matches the expected losses of consecutive layers using a piecewise Pareto severity}
+\title{Match a Tower of Expected Layers Losses}
 \usage{
 PiecewisePareto_Match_Layer_Losses(
   Attachment_Points,
@@ -51,12 +51,22 @@ PiecewisePareto_Match_Layer_Losses(
 \item{RoL_tolerance}{Numerical. Consecutive layers are merged if RoL decreases less than factor 1 - RoL_tolerange.}
 }
 \value{
-t Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution.
-
-alpha Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution.
-
-FQ Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution.
+A list containing the following objects: \itemize{
+\item \code{t} Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution
+\item \code{alpha} Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution
+\item \code{Status} Character. Information on whether the fit was succesful
+\item \code{FQ} Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution
+}
 }
 \description{
-This function matches the expected losses of consecutive layers using a piecewise Pareto severity
+Matches the expected losses of a tower of reinsurance layers using a piecewise Pareto severity
+}
+\examples{
+AP <- Example1_AP
+EL <- Example1_EL
+PiecewisePareto_Match_Layer_Losses(AP, EL)
+EL_unlimited <- rev(cumsum(rev(Example1_EL)))
+PiecewisePareto_Match_Layer_Losses(AP, EL_unlimited, Unlimited_Layers = TRUE)
+PiecewisePareto_Match_Layer_Losses(AP, EL, FQ_at_lowest_AttPt = 0.5)
+
 }

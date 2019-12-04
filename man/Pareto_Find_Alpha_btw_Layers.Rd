@@ -2,7 +2,7 @@
 % Please edit documentation in R/Functions.R
 \name{Pareto_Find_Alpha_btw_Layers}
 \alias{Pareto_Find_Alpha_btw_Layers}
-\title{This function finds the Pareto alpha between two layers.}
+\title{Pareto Alpha Between Two Layers}
 \usage{
 Pareto_Find_Alpha_btw_Layers(
   Cover_1,
@@ -35,6 +35,15 @@ Pareto_Find_Alpha_btw_Layers(
 
 \item{truncation}{Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.}
 }
+\value{
+The Pareto alpha between the layer \code{Cover_1} xs \code{AttachmentPoint_1} with expected loss \code{ExpLoss_1}
+and the layer  \code{Cover_2} xs \code{AttachmentPoint_2} with expected loss \code{ExpLoss_2}
+}
 \description{
-This function finds the Pareto alpha between two layers.
+Finds the Pareto alpha between two layers
+}
+\examples{
+Pareto_Find_Alpha_btw_Layers(100, 100, 100, 200, 200, 50)
+Pareto_Find_Alpha_btw_Layers(100, 100, 100, 200, 200, 50, truncation = 500)
+
 }

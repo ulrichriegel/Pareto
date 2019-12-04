@@ -2,7 +2,7 @@
 % Please edit documentation in R/Functions.R
 \name{PiecewisePareto_Layer_Var}
 \alias{PiecewisePareto_Layer_Var}
-\title{This function calculates the variance of a Piecewise Pareto Distribution in the layer Cover xs AttachmentPoint}
+\title{Layer Variance of the Piecewise Pareto Distribution}
 \usage{
 PiecewisePareto_Layer_Var(
   Cover,
@@ -26,6 +26,20 @@ PiecewisePareto_Layer_Var(
 
 \item{truncation_type}{Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.}
 }
+\value{
+The variance of the (truncated) piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} in the layer
+        \code{Cover} xs \code{AttachmentPoint}
+}
 \description{
-This function calculates the variance of a Piecewise Pareto Distribution in the layer Cover xs AttachmentPoint
+Calculate the variance of a piecewise Pareto distribution in a reinsurance layer
+}
+\examples{
+t <- c(1000, 2000, 3000)
+alpha <- c(1, 1.5, 2)
+PiecewisePareto_Layer_Var(4000, 1000, t, alpha)
+PiecewisePareto_Layer_SM(4000, 1000, t, alpha) - PiecewisePareto_Layer_Mean(4000, 1000, t, alpha)^2
+PiecewisePareto_Layer_Var(4000, 1000, t, alpha, truncation = 5000)
+PiecewisePareto_Layer_Var(4000, 1000, t, alpha, truncation = 5000, truncation_type = "lp")
+PiecewisePareto_Layer_Var(4000, 1000, t, alpha, truncation = 5000, truncation_type = "wd")
+
 }

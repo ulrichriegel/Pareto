@@ -2,7 +2,7 @@
 % Please edit documentation in R/Functions.R
 \name{Pareto_Layer_Var}
 \alias{Pareto_Layer_Var}
-\title{This function the variance of the loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint}
+\title{Layer Variance of the Pareto Distribution}
 \usage{
 Pareto_Layer_Var(Cover, AttachmentPoint, alpha, t = NULL, truncation = NULL)
 }
@@ -17,6 +17,18 @@ Pareto_Layer_Var(Cover, AttachmentPoint, alpha, t = NULL, truncation = NULL)
 
 \item{truncation}{Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.}
 }
+\value{
+The variance of the(truncated) Pareto distribution with parameters \code{t} and \code{alpha} in the layer
+        \code{Cover} xs \code{AttachmentPoint}
+}
 \description{
-This function the variance of the loss of the Pareto Distribution Pareto(t, alpha) in the layer Cover xs AttachmentPoint
+Calculates the variance of a Pareto distribution in a reinsurance layer
+}
+\examples{
+Pareto_Layer_Var(4000, 1000, 2)
+Pareto_Layer_Var(4000, 1000, alpha = 2, t = 1000)
+Pareto_Layer_Var(4000, 1000, alpha = 2, t = 5000)
+Pareto_Layer_Var(4000, 1000, alpha = 2, t = 1000, truncation = 5000)
+Pareto_Layer_Var(9000, 1000, alpha = 2, t = 1000, truncation = 5000)
+
 }

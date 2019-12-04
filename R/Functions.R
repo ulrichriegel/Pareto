@@ -1,5 +1,7 @@
 
-#' Calculate the expected loss of a Pareto distribution in a reinsurance layer
+#' Layer Mean of the Pareto Distribution
+#'
+#' @description  Calculates the expected loss of a Pareto distribution in a reinsurance layer
 #'
 #' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
@@ -102,7 +104,7 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation 
 
 
 
-# #' Calculates the second moment of the xs loss of a Pareto Distribution in a reinsurance layer
+# #' Calculates the second moment of the xs loss of a Pareto distribution in a reinsurance layer
 # #'
 # #' Not visible to the user. Used in Pareto_Layer_Var.
 # #' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
@@ -147,7 +149,9 @@ Pareto_Layer_Second_Moment_simple <- function(Cover, AttachmentPoint, alpha) {
 
 }
 
-#' Calculate the variance of a Pareto distribution in a reinsurance layer
+#' Layer Variance of the Pareto Distribution
+#'
+#' @description Calculates the variance of a Pareto distribution in a reinsurance layer
 #'
 #' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
@@ -205,12 +209,12 @@ Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation =
   SM <- Pareto_Layer_Second_Moment_simple(Cover, AttachmentPoint, alpha)
   if (!is.null(truncation)) {
     # probability of truncation if t = AttachmentPoint
-    p <- 1- Pareto_CDF(truncation, AttachmentPoint, alpha)
+    p <- 1- pPareto(truncation, AttachmentPoint, alpha)
     # consider truncation in second moment
     SM <- (SM - p * Cover^2) / (1 - p)
   }
   # consider thresholds t < AttachmentPoint
-  p <- 1 - Pareto_CDF(AttachmentPoint, t, alpha, truncation = truncation)
+  p <- 1 - pPareto(AttachmentPoint, t, alpha, truncation = truncation)
   SM <- p * SM
 
   # calculate Variance
@@ -219,7 +223,9 @@ Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation =
 }
 
 
-#' Calculate the second moment of a Pareto distribution in a reinsurance layer
+#' Second Layer Moment of the Pareto Distribution
+#'
+#' @description Calculates the second moment of a Pareto distribution in a reinsurance layer
 #'
 #' @param Cover Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
@@ -252,7 +258,9 @@ Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = 
 
 
 
-#' Generates random deviates of a Pareto distribution
+#' Simulation of the Pareto Distribution
+#'
+#' @description Generates random deviates of a Pareto distribution
 #'
 #' @param n Number of observations.
 #' @param t Threshold of the Pareto distribution
@@ -285,7 +293,9 @@ rPareto <- function(n, t, alpha, truncation = NULL) {
 }
 
 
-#' Use a Pareto distribution to derive the expected loss of a layer from the expected loss of another layer
+#' Pareto Extrapolation
+#'
+#' @description Uses a Pareto distribution to derive the expected loss of a layer from the expected loss of another layer
 #'
 #' @param Cover_1 Numeric. Cover of the layer from which we extrapolate. Use Inf for unlimited layers.
 #' @param AttachmentPoint_1 Numeric. Attachment point of the layer from which we extrapolate.
@@ -326,7 +336,9 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
 
 
 
-#' Find the Pareto alpha between two layers.
+#' Pareto Alpha Between Two Layers
+#'
+#' @description Finds the Pareto alpha between two layers
 #'
 #' @param Cover_1 Numeric. Cover of the first layer.
 #' @param AttachmentPoint_1 Numeric. Cover of the first layer.
@@ -407,7 +419,9 @@ Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, 
 }
 
 
-#' Find the Pareto alpha between an excess frequency and the expected loss of a layer
+#' Pareto Alpha Between a Frequency and a Layer
+#'
+#' @description Finds the Pareto alpha between an excess frequency and the expected loss of a layer
 #'
 #' @param Threshold Numeric. Threshold
 #' @param Frequency Numeric. Expected frequency in excess of Thershold
@@ -447,9 +461,9 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
   f <- function(alpha) {
   #  Pareto_Layer_Mean(Cover, AttachmentPoint, alpha) * (Threshold / AttachmentPoint)^alpha * Frequency - ExpLoss
     if (AttachmentPoint < Threshold) {
-      FQ_Factor <- 1 / (1 - Pareto_CDF(Threshold, AttachmentPoint, alpha, truncation = truncation))
+      FQ_Factor <- 1 / (1 - pPareto(Threshold, AttachmentPoint, alpha, truncation = truncation))
     } else {
-      FQ_Factor <- 1 - Pareto_CDF(AttachmentPoint, Threshold, alpha, truncation = truncation)
+      FQ_Factor <- 1 - pPareto(AttachmentPoint, Threshold, alpha, truncation = truncation)
     }
 
     Pareto_Layer_Mean(Cover, AttachmentPoint, alpha, truncation = truncation) * FQ_Factor * Frequency - ExpLoss
@@ -479,7 +493,9 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
 }
 
 
-#' Find the Pareto alpha between two excess frequencies
+#' Pareto Alpha Between Two Frequencies
+#'
+#' @description Finds the Pareto alpha between two excess frequencies
 #'
 #' @param Threshold_1 Numeric. Threshold 1
 #' @param Frequency_1 Numeric. Expected frequency in excess of Thershold 1
@@ -530,7 +546,7 @@ Pareto_Find_Alpha_btw_FQs <- function(Threshold_1, Frequency_1, Threshold_2, Fre
     alpha <- log(Frequency_1 / Frequency_2) / log(Threshold_2 / Threshold_1)
   } else {
     f <- function(alpha) {
-      1 - Pareto_CDF(Threshold_2, Threshold_1, alpha, truncation = truncation) - Frequency_2 / Frequency_1
+      1 - pPareto(Threshold_2, Threshold_1, alpha, truncation = truncation) - Frequency_2 / Frequency_1
     }
 
     Result <- NA
@@ -552,9 +568,9 @@ Pareto_Find_Alpha_btw_FQs <- function(Threshold_1, Frequency_1, Threshold_2, Fre
 
 
 
-
-
-#' Calculate the expected loss of a piecewise Pareto distribution in a reinsurance layer
+#' Layer Mean of the Piecewise Pareto Distribution
+#'
+#' @description Calculates the expected loss of a piecewise Pareto distribution in a reinsurance layer
 #'
 #' @param Cover Numeric. Cover of the reinsurance layer.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
@@ -711,7 +727,7 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncat
     Result <- Result + Pareto_Layer_Mean(Inf, Att[n], alpha[n], t[n]) * excess_prob[n]
   }
   if (!is.null(truncation) && truncation_type == "wd") {
-    p <- (1 - Pareto_CDF(truncation, t[n], alpha[n])) * excess_prob[n]
+    p <- (1 - pPareto(truncation, t[n], alpha[n])) * excess_prob[n]
     Result <- (Result - p * Cover_orig) / (1 - p)
   }
 
@@ -720,7 +736,9 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncat
 
 
 
-#' Calculate the second moment of a piecewise Pareto distribution in a reinsurance layer
+#' Second Layer Moment of the Piecewise Pareto Distribution
+#'
+#' @description Calculates the second moment of a piecewise Pareto distribution in a reinsurance layer
 #'
 #' @param Cover Numeric. Cover of the reinsurance layer.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
@@ -859,7 +877,7 @@ PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncatio
   for (i in k1:k2) {
     if (!is.null(truncation) && truncation_type == "lp" && i == n) {
       Result <- Result + Pareto_Layer_SM(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = truncation) * prob[i]
-      Result <- Result + (Att[i] - AttachmentPoint_orig)^2 * prob[i] * (1 - Pareto_CDF(Att[n], t[n], alpha[n]))
+      Result <- Result + (Att[i] - AttachmentPoint_orig)^2 * prob[i] * (1 - pPareto(Att[n], t[n], alpha[n]))
       Result <- Result + 2 * (Att[i] - AttachmentPoint_orig) * Pareto_Layer_Mean(Exit[i]-Att[i], Att[i], alpha[i], t[i], truncation = truncation) * prob[i]
     } else if (i == k2) {
       Result <- Result + Pareto_Layer_SM(Exit[i]-Att[i], Att[i], alpha[i], t[i]) * excess_prob[i]
@@ -872,7 +890,7 @@ PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncatio
     }
   }
   if (!is.null(truncation) && truncation_type == "wd") {
-    p <- (1 - Pareto_CDF(truncation, t[n], alpha[n])) * excess_prob[n]
+    p <- (1 - pPareto(truncation, t[n], alpha[n])) * excess_prob[n]
     Result <- (Result - p * Cover_orig^2) / (1 - p)
   }
 
@@ -880,7 +898,9 @@ PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncatio
   return(Result)
 }
 
-#' Calculate the variance of a piecewise Pareto distribution in a reinsurance layer
+#' Layer Variance of the Piecewise Pareto Distribution
+#'
+#' @description Calculate the variance of a piecewise Pareto distribution in a reinsurance layer
 #'
 #' @param Cover Numeric. Cover of the reinsurance layer.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
@@ -914,7 +934,9 @@ PiecewisePareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha, truncati
 
 
 
-#' Generates random deviates of a piecewise Pareto distribution
+#' Simulation of the Piecewise Pareto Distribution
+#'
+#' @description Generates random deviates of a piecewise Pareto distribution
 #'
 #' @param n Numeric. Number of simulations
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
@@ -1044,7 +1066,9 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 
 
 
-#' Matches the expected losses of a tower of reinsurance layers using a piecewise Pareto severity
+#' Match a Tower of Expected Layers Losses
+#'
+#' @description Matches the expected losses of a tower of reinsurance layers using a piecewise Pareto severity
 #'
 #' @param Attachment_Points Numeric vector. Vector containing the attachment points of consecutive layers in increasing order
 #' @param Expected_Layer_Losses Numeric vector. Vector containing the expected losses of layers xs the attachment points.
@@ -1061,9 +1085,21 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #' @param merge_tolerance Numerical. Consecutive Pareto pieces are merged if the alphas deviate by less than merge_tolerance.
 #' @param RoL_tolerance Numerical. Consecutive layers are merged if RoL decreases less than factor 1 - RoL_tolerange.
 
-#' @return t Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution.
-#' @return alpha Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution.
-#' @return FQ Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution.
+#' @return A list containing the following objects: \itemize{
+#' \item \code{t} Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution
+#' \item \code{alpha} Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution
+#' \item \code{Status} Character. Information on whether the fit was succesful
+#' \item \code{FQ} Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution
+#' }
+#'
+#' @examples
+#' AP <- Example1_AP
+#' EL <- Example1_EL
+#' PiecewisePareto_Match_Layer_Losses(AP, EL)
+#' EL_unlimited <- rev(cumsum(rev(Example1_EL)))
+#' PiecewisePareto_Match_Layer_Losses(AP, EL_unlimited, Unlimited_Layers = TRUE)
+#' PiecewisePareto_Match_Layer_Losses(AP, EL, FQ_at_lowest_AttPt = 0.5)
+#'
 #' @export
 
 PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, truncation = NULL, tolerance = 1e-10, alpha_max = 100, merge_tolerance = 1e-6, RoL_tolerance = 1e-6) {
@@ -1350,18 +1386,30 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
 
 
 
-#' This function calculates the cumulative distribution function of a Pareto Distribution
+#' Distribution Function of the Pareto Distribution
+#'
+#' @description Calculates the cumulative distribution function of a Pareto distribution
+#'
 #' @param x Numeric. The function evaluates the CDF at x.
 #' @param t Numeric. Threshold of the piecewise Pareto distribution.
 #' @param alpha Numeric. Pareto alpha.
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#'
+#' @return Distribution function of the Pareto distribution with parameters \code{t} and \code{alpha} evaluated at \code{x}
+#'
+#' @examples
+#' x <- 0:10 * 1000
+#' pPareto(x, 1000, 2)
+#' pPareto(x, 1000, 2, truncation = 5000)
+#'
+#'
 #' @export
 
-Pareto_CDF <- function(x, t, alpha, truncation = NULL) {
-  sapply(x, FUN = function(x) Pareto_CDF_s(x, t, alpha, truncation))
+pPareto <- function(x, t, alpha, truncation = NULL) {
+  sapply(x, FUN = function(x) pPareto_s(x, t, alpha, truncation))
 }
 
-Pareto_CDF_s <- function(x, t, alpha, truncation = NULL) {
+pPareto_s <- function(x, t, alpha, truncation = NULL) {
   if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(x)) {
     warning("x, t and alpha must be numeric.")
     return(NA)
@@ -1394,18 +1442,29 @@ Pareto_CDF_s <- function(x, t, alpha, truncation = NULL) {
 
 
 
-#' This function calculates the probability density function of a Pareto Distribution
-#' @param x Numeric. The function evaluates the CDF at x.
-#' @param t Numeric. Threshold of the piecewise Pareto distribution.
+#' Density of the Pareto Distribution
+#'
+#' @description Calculates the density function of the Pareto distribution
+#'
+#' @param x Numeric. The function evaluates the density at x.
+#' @param t Numeric. Threshold of the Pareto distribution.
 #' @param alpha Numeric. Pareto alpha.
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#'
+#' @return Density function of the Pareto distribution with parameters \code{t} and \code{alpha} evaluated at \code{x}
+#'
+#' @examples
+#' x <- 0:10 * 1000
+#' dPareto(x, 1000, 2)
+#' dPareto(x, 1000, 2, truncation = 5000)
+#'
 #' @export
 
-Pareto_PDF <- function(x, t, alpha, truncation = NULL) {
-  sapply(x, FUN = function(x) Pareto_PDF_s(x, t, alpha, truncation))
+dPareto <- function(x, t, alpha, truncation = NULL) {
+  sapply(x, FUN = function(x) dPareto_s(x, t, alpha, truncation))
 }
 
-Pareto_PDF_s <- function(x, t, alpha, truncation = NULL) {
+dPareto_s <- function(x, t, alpha, truncation = NULL) {
   if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(x)) {
     warning("x, t and alpha must be numeric.")
     return(NA)
@@ -1431,7 +1490,7 @@ Pareto_PDF_s <- function(x, t, alpha, truncation = NULL) {
   } else if (x >= truncation) {
     return(0)
   } else {
-    Result <- t^alpha * alpha / x^(alpha + 1) / Pareto_CDF(truncation, t, alpha)
+    Result <- t^alpha * alpha / x^(alpha + 1) / pPareto(truncation, t, alpha)
     return(Result)
   }
 }
@@ -1439,19 +1498,33 @@ Pareto_PDF_s <- function(x, t, alpha, truncation = NULL) {
 
 
 
-#' This function calculates the cumulative distribution function of a Piecewise Pareto Distribution
+#' Distribution Function of the Piecewise Pareto Distribution
+#'
+#' @description Calculates the cumulative distribution function of a Piecewise Pareto Distribution
+#'
 #' @param x Numeric. The function evaluates the CDF at x.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
 #' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#'
+#' @return Distribution function of the piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} evaluated at \code{x}
+#'
+#' @examples
+#' t <- c(1000, 2000, 3000)
+#' alpha <- c(1, 1.5, 2)
+#' x <- 0:10 * 1000
+#' pPiecewisePareto(x, t, alpha)
+#' pPiecewisePareto(x, t, alpha, truncation = 5000, truncation_type = "lp")
+#' pPiecewisePareto(x, t, alpha, truncation = 5000, truncation_type = "wd")
+#'
 #' @export
 
-PiecewisePareto_CDF <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
-  sapply(x, FUN = function(x) PiecewisePareto_CDF_s(x, t, alpha, truncation, truncation_type))
+pPiecewisePareto <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+  sapply(x, FUN = function(x) pPiecewisePareto_s(x, t, alpha, truncation, truncation_type))
 }
 
-PiecewisePareto_CDF_s <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+pPiecewisePareto_s <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
   if (!is.numeric(t) || !is.numeric(alpha)) {
     warning("alpha and t must be numeric.")
     return(NA)
@@ -1462,7 +1535,7 @@ PiecewisePareto_CDF_s <- function(x, t, alpha, truncation = NULL, truncation_typ
   }
   n <- length(t)
   if (n == 1) {
-    Result <- Pareto_CDF(x, t, alpha, truncation)
+    Result <- pPareto(x, t, alpha, truncation)
     return(Result)
   }
   if (min(t) <= 0) {
@@ -1544,19 +1617,33 @@ PiecewisePareto_CDF_s <- function(x, t, alpha, truncation = NULL, truncation_typ
 }
 
 
-#' This function calculates the probability density function of a Piecewise Pareto Distribution
-#' @param x Numeric. The function evaluates the CDF at x.
+#' Density of the Piecewise Pareto Distribution
+#'
+#' @description Calculates the density function of the piecewise Pareto distribution
+#'
+#' @param x Numeric. The function evaluates the density at x.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
 #' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#'
+#' @return Density function of the piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} evaluated at \code{x}
+#'
+#' @examples
+#' t <- c(1000, 2000, 3000)
+#' alpha <- c(1, 1.5, 2)
+#' x <- 0:10 * 1000
+#' dPiecewisePareto(x, t, alpha)
+#' dPiecewisePareto(x, t, alpha, truncation = 5000, truncation_type = "lp")
+#' dPiecewisePareto(x, t, alpha, truncation = 5000, truncation_type = "wd")
+#'
 #' @export
 
-PiecewisePareto_PDF <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
-  sapply(x, FUN = function(x) PiecewisePareto_PDF_s(x, t, alpha, truncation, truncation_type))
+dPiecewisePareto <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+  sapply(x, FUN = function(x) dPiecewisePareto_s(x, t, alpha, truncation, truncation_type))
 }
 
-PiecewisePareto_PDF_s <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+dPiecewisePareto_s <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
   if (!is.numeric(t) || !is.numeric(alpha)) {
     warning("alpha and t must be numeric.")
     return(NA)
@@ -1567,7 +1654,7 @@ PiecewisePareto_PDF_s <- function(x, t, alpha, truncation = NULL, truncation_typ
   }
   n <- length(t)
   if (n == 1) {
-    Result <- Pareto_PDF(x, t, alpha, truncation)
+    Result <- dPareto(x, t, alpha, truncation)
     return(Result)
   }
   if (min(t) <= 0) {
@@ -1614,18 +1701,18 @@ PiecewisePareto_PDF_s <- function(x, t, alpha, truncation = NULL, truncation_typ
     t <- t[t<=x]
     n <- length(t)
     alpha <- alpha[1:n]
-    excess_prob <- 1 - PiecewisePareto_CDF(x, t, alpha)
+    excess_prob <- 1 - pPiecewisePareto(x, t, alpha)
     return(excess_prob * alpha[n] / x)
 
   } else if (truncation_type == "wd") {
     if (x >= truncation) {
       return(0)
     }
-    scaling <- 1 / PiecewisePareto_CDF(truncation, t, alpha)
+    scaling <- 1 / pPiecewisePareto(truncation, t, alpha)
     t <- t[t<=x]
     n <- length(t)
     alpha <- alpha[1:n]
-    excess_prob <- 1 - PiecewisePareto_CDF(x, t, alpha)
+    excess_prob <- 1 - pPiecewisePareto(x, t, alpha)
     return(excess_prob * alpha[n] / x * scaling)
 
   } else {
@@ -1635,14 +1722,14 @@ PiecewisePareto_PDF_s <- function(x, t, alpha, truncation = NULL, truncation_typ
       t <- t[t<=x]
       n <- length(t)
       alpha <- alpha[1:n]
-      excess_prob <- 1 - PiecewisePareto_CDF(x, t, alpha)
+      excess_prob <- 1 - pPiecewisePareto(x, t, alpha)
       return(excess_prob * alpha[n] / x)
     } else {
       n <- length(t)
-      excess_prob <- 1 - PiecewisePareto_CDF(t[n], t, alpha)
-      excess_prob_trunc <- 1 - PiecewisePareto_CDF(truncation, t, alpha)
+      excess_prob <- 1 - pPiecewisePareto(t[n], t, alpha)
+      excess_prob_trunc <- 1 - pPiecewisePareto(truncation, t, alpha)
       scaling <- excess_prob / (excess_prob - excess_prob_trunc)
-      return(excess_prob * scaling * Pareto_PDF(x, t[n], alpha[n]))
+      return(excess_prob * scaling * dPareto(x, t[n], alpha[n]))
     }
   }
 }
@@ -1650,19 +1737,33 @@ PiecewisePareto_PDF_s <- function(x, t, alpha, truncation = NULL, truncation_typ
 
 
 
-#' This function calculates the inverse of the cumulative distribution function of a Piecewise Pareto Distribution
-#' @param y Numeric. The function evaluates the inverse CDF at y.
+#' Quantile Function of the Piecewise Pareto Distribution
+#'
+#' @description Calculates the quantile function of a piecewise Pareto distribution
+#'
+#' @param p Numeric. The function evaluates the quantile function at p.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
 #' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#'
+#' @return Quantile function of the piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} evaluated at \code{p}
+#'
+#' @examples
+#' t <- c(1000, 2000, 3000)
+#' alpha <- c(1, 1.5, 2)
+#' p <- 0:10 * 0.1
+#' qPiecewisePareto(p, t, alpha)
+#' qPiecewisePareto(p, t, alpha, truncation = 5000, truncation_type = "lp")
+#' qPiecewisePareto(p, t, alpha, truncation = 5000, truncation_type = "wd")
+#'
 #' @export
 
-PiecewisePareto_Inverse_CDF <- function(y, t, alpha, truncation = NULL, truncation_type = "lp") {
-  sapply(y, FUN = function(y) PiecewisePareto_Inverse_CDF_s(y, t, alpha, truncation, truncation_type))
+qPiecewisePareto <- function(p, t, alpha, truncation = NULL, truncation_type = "lp") {
+  sapply(p, FUN = function(y) qPiecewisePareto_s(y, t, alpha, truncation, truncation_type))
 }
 
-PiecewisePareto_Inverse_CDF_s <- function(y, t, alpha, truncation = NULL, truncation_type = "lp") {
+qPiecewisePareto_s <- function(y, t, alpha, truncation = NULL, truncation_type = "lp") {
   if (!is.numeric(t) || !is.numeric(alpha)) {
     warning("alpha and t must be numeric.")
     return(NA)
@@ -1673,7 +1774,7 @@ PiecewisePareto_Inverse_CDF_s <- function(y, t, alpha, truncation = NULL, trunca
   }
   n <- length(t)
   if (n == 1) {
-    Result <- Pareto_Inverse_CDF(y, t, alpha, truncation)
+    Result <- qPareto(y, t, alpha, truncation)
     return(Result)
   }
   if (min(t) <= 0) {
@@ -1723,12 +1824,12 @@ PiecewisePareto_Inverse_CDF_s <- function(y, t, alpha, truncation = NULL, trunca
 
   n <- length(t)
 
-  CDF_untruncated_at_t <- PiecewisePareto_CDF(t, t, alpha)
+  CDF_untruncated_at_t <- pPiecewisePareto(t, t, alpha)
   if (!is.null(truncation)) {
     if (is.infinite(truncation)) {
       CDF_untruncated_at_truncation <- 1
     } else {
-      CDF_untruncated_at_truncation <- PiecewisePareto_CDF(truncation, t, alpha)
+      CDF_untruncated_at_truncation <- pPiecewisePareto(truncation, t, alpha)
     }
     if (truncation_type == "wd") {
       y <- y * CDF_untruncated_at_truncation
@@ -1751,18 +1852,29 @@ PiecewisePareto_Inverse_CDF_s <- function(y, t, alpha, truncation = NULL, trunca
 
 
 
-#' This function calculates the inverse of the cumulative distribution function of a Pareto Distribution
-#' @param y Numeric. The function evaluates the inverse CDF at y.
+#' Quantile Function of the Pareto Distribution
+#'
+#' @description Calculates the quantile function of a Pareto distribution
+#'
+#' @param p Numeric. The function evaluates the inverse CDF at p.
 #' @param t Numeric. Threshold of the piecewise Pareto distribution.
 #' @param alpha Numeric. Pareto alpha.
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#'
+#' @return Quantile function of the Pareto distribution with parameters \code{t} and \code{alpha}, evaluated at \code{p}
+#'
+#' @examples
+#' p <- 0:10 * 0.1
+#' qPiecewisePareto(p, 1000, 2)
+#' qPiecewisePareto(p, 1000, 2, truncation = 5000)
+#'
 #' @export
 
-Pareto_Inverse_CDF <- function(y, t, alpha, truncation = NULL) {
-  sapply(y, FUN = function(x) Pareto_Inverse_CDF_s(x, t, alpha, truncation))
+qPareto <- function(p, t, alpha, truncation = NULL) {
+  sapply(p, FUN = function(y) qPareto_s(y, t, alpha, truncation))
 }
 
-Pareto_Inverse_CDF_s <- function(y, t, alpha, truncation = NULL) {
+qPareto_s <- function(y, t, alpha, truncation = NULL) {
   if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(y)) {
     warning("x, t and alpha must be numeric.")
     return(NA)
@@ -1793,7 +1905,7 @@ Pareto_Inverse_CDF_s <- function(y, t, alpha, truncation = NULL) {
 
   if (!is.null(truncation)) {
     if (!is.infinite(truncation)) {
-      scale <- Pareto_CDF(truncation, t, alpha)
+      scale <- pPareto(truncation, t, alpha)
       y <- y * scale
     }
   }
@@ -1802,12 +1914,18 @@ Pareto_Inverse_CDF_s <- function(y, t, alpha, truncation = NULL) {
 }
 
 
-#' This function calculates the maximum likelihood estimator of the parameter alpha of a Pareto distribution
+#' Maximum Likelihood Estimation of the Pareto Alpha
+#'
+#' @description Calculates the maximum likelihood estimator of the parameter alpha of a Pareto distribution
+#'
 #' @param losses Numeric vector. Losses for ML estimation.
 #' @param t Numeric. Threshold of the Pareto distribution.
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
 #' @param alpha_min Numeric. Lower bound for alpha.
 #' @param alpha_max Numeric. Upper bound for alpha.
+#'
+#' @return Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribution with threshold \code{t} given the observations \code{losses}
+#'
 #' @export
 
 Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, alpha_min = 0.001, alpha_max = 10) {
@@ -1851,13 +1969,20 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, alpha_min = 
 }
 
 
-#' This function calculates the local Pareto alpha of a distribution
+#' Local Pareto Alpha
+#'
+#' @description Calculates the local Pareto alpha of the normal, lognormal and gamma distribution
+#'
 #' @param x Numeric. Vector of thresholds at which the local Pareto alpha is calculated.
-#' @param distribution Character.
-#' 'lnorm' for lognormal distribution (parameters meanlog, sdlog)
-#' 'norm' for normal distribution (parameters: mean, sd)
-#' "gamma' for gamma distribution (parameters: shape, rate, scale)
-#' @param ... Parameters for distribution
+#' @param distribution Character. \itemize{
+#' \item 'lnorm' for lognormal distribution (parameters meanlog, sdlog)
+#' \item 'norm' for normal distribution (parameters: mean, sd)
+#' \item 'gamma' for gamma distribution (parameters: shape, rate, scale)
+#' }
+#' @param ... Parameters for the selected distribution
+#'
+#' @return Local Pareto alpha of the selected distribution at \code{x}
+#'
 #' @export
 
 

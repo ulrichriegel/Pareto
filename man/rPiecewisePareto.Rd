@@ -2,7 +2,7 @@
 % Please edit documentation in R/Functions.R
 \name{rPiecewisePareto}
 \alias{rPiecewisePareto}
-\title{This function generates random deviates of the Piecewise Pareto distribution.}
+\title{Simulation of the Piecewise Pareto Distribution}
 \usage{
 rPiecewisePareto(
   n,
@@ -26,6 +26,18 @@ rPiecewisePareto(
 
 \item{scale_pieces}{Numeric vector. If not NULL then the density of the i-th Pareto piece (on the Intervall (t[i], t[i+1])) is scaled with the factor c * scale_pieces[i] (where c is a normalization constant)}
 }
+\value{
+A vector of \code{n} samples from the (truncated) piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha}
+}
 \description{
-This function generates random deviates of the Piecewise Pareto distribution.
+Generates random deviates of a piecewise Pareto distribution
+}
+\examples{
+t <- c(1000, 2000, 3000)
+alpha <- c(1, 1.5, 2)
+rPiecewisePareto(1000, t, alpha)
+rPiecewisePareto(1000, t, alpha, truncation = 5000)
+rPiecewisePareto(1000, t, alpha, truncation = 5000, truncation_type = "lp")
+rPiecewisePareto(1000, t, alpha, truncation = 5000, truncation_type = "wd")
+
 }

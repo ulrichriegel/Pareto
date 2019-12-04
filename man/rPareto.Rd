@@ -2,7 +2,7 @@
 % Please edit documentation in R/Functions.R
 \name{rPareto}
 \alias{rPareto}
-\title{This function generates random deviates of the Pareto distribution Pareto(t, alpha).}
+\title{Simulation of the Pareto Distribution}
 \usage{
 rPareto(n, t, alpha, truncation = NULL)
 }
@@ -15,6 +15,14 @@ rPareto(n, t, alpha, truncation = NULL)
 
 \item{truncation}{If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation (resampled Pareto)}
 }
+\value{
+A vector of \code{n} samples from the (truncated) Pareto distribution with parameters \code{t} and \code{alpha}
+}
 \description{
-This function generates random deviates of the Pareto distribution Pareto(t, alpha).
+Generates random deviates of a Pareto distribution
+}
+\examples{
+rPareto(100, 1000, 2)
+rPareto(100, 1000, 2, truncation = 2000)
+
 }

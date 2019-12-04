@@ -2,7 +2,7 @@
 % Please edit documentation in R/Functions.R
 \name{Pareto_Extrapolation}
 \alias{Pareto_Extrapolation}
-\title{This function extrapolates from the layer Cover_1 xs AttachmentPoint_1 to the layer Cover_2 xs AttachmentPoint_2 using a Pareto distribution Pareto(t, alpha) with t sufficiently small.}
+\title{Pareto Extrapolation}
 \usage{
 Pareto_Extrapolation(
   Cover_1,
@@ -29,6 +29,17 @@ Pareto_Extrapolation(
 
 \item{truncation}{Numeric. If truncation is not NULL and truncation > AttachmentPoint_1, then the Pareto distribution is truncated at truncation.}
 }
+\value{
+The expected loss of the layer \code{Cover_2} xs \code{AttachmentPoint_2} given that  \code{Cover_1} xs \code{AttachmentPoint_1} has expected
+loss \code{ExpLoss_1} and assuming a (truncated) Pareto distribution with parameters \code{t} and \code{alpha}. If missing then \code{ExpLoss_1 == 1} is assumed.
+}
 \description{
-This function extrapolates from the layer Cover_1 xs AttachmentPoint_1 to the layer Cover_2 xs AttachmentPoint_2 using a Pareto distribution Pareto(t, alpha) with t sufficiently small.
+Uses a Pareto distribution to derive the expected loss of a layer from the expected loss of another layer
+}
+\examples{
+Pareto_Extrapolation(1000, 1000, 2000, 2000, 2, ExpLoss_1 = 100)
+Pareto_Extrapolation(1000, 1000, 2000, 2000, 2) * 100
+Pareto_Extrapolation(1000, 1000, 2000, 2000, 2, truncation = 5000, ExpLoss_1 = 100)
+Pareto_Extrapolation(1000, 1000, 2000, 2000, 2, truncation = 5000) * 100
+
 }

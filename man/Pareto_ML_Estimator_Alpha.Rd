@@ -2,7 +2,7 @@
 % Please edit documentation in R/Functions.R
 \name{Pareto_ML_Estimator_Alpha}
 \alias{Pareto_ML_Estimator_Alpha}
-\title{This function calculates the maximum likelihood estimator of the parameter alpha of a Pareto distribution}
+\title{Maximum Likelihood Estimation of the Pareto Alpha}
 \usage{
 Pareto_ML_Estimator_Alpha(
   losses,
@@ -23,6 +23,9 @@ Pareto_ML_Estimator_Alpha(
 
 \item{alpha_max}{Numeric. Upper bound for alpha.}
 }
+\value{
+Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribution with threshold \code{t} given the observations \code{losses}
+}
 \description{
-This function calculates the maximum likelihood estimator of the parameter alpha of a Pareto distribution
+Calculates the maximum likelihood estimator of the parameter alpha of a Pareto distribution
 }

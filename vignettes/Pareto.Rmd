@@ -178,14 +178,14 @@ rPiecewisePareto(20, t, alpha)
 *CDF:*
 ```{r}
 x <- c(1:10) * 1000
-PiecewisePareto_CDF(x, t, alpha)
-plot(PiecewisePareto_CDF(1:5000, t, alpha), xlab = "x", ylab = "CDF(x)")
+pPiecewisePareto(x, t, alpha)
+plot(pPiecewisePareto(1:5000, t, alpha), xlab = "x", ylab = "CDF(x)")
 ```
 
 *PDF:*
 ```{r}
-PiecewisePareto_PDF(x, t, alpha)
-plot(PiecewisePareto_PDF(1:5000, t, alpha), xlab = "x", ylab = "PDF(x)")
+dPiecewisePareto(x, t, alpha)
+plot(dPiecewisePareto(1:5000, t, alpha), xlab = "x", ylab = "PDF(x)")
 ```
 
 ## Matching a tower of layer losses

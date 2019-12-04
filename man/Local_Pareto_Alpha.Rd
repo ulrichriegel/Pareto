@@ -2,20 +2,24 @@
 % Please edit documentation in R/Functions.R
 \name{Local_Pareto_Alpha}
 \alias{Local_Pareto_Alpha}
-\title{This function calculates the local Pareto alpha of a distribution}
+\title{Local Pareto Alpha}
 \usage{
 Local_Pareto_Alpha(x, distribution, ...)
 }
 \arguments{
 \item{x}{Numeric. Vector of thresholds at which the local Pareto alpha is calculated.}
 
-\item{distribution}{Character.
-'lnorm' for lognormal distribution (parameters meanlog, sdlog)
-'norm' for normal distribution (parameters: mean, sd)
-"gamma' for gamma distribution (parameters: shape, rate, scale)}
+\item{distribution}{Character. \itemize{
+\item 'lnorm' for lognormal distribution (parameters meanlog, sdlog)
+\item 'norm' for normal distribution (parameters: mean, sd)
+\item 'gamma' for gamma distribution (parameters: shape, rate, scale)
+}}
 
-\item{...}{Parameters for distribution}
+\item{...}{Parameters for the selected distribution}
+}
+\value{
+Local Pareto alpha of the selected distribution at \code{x}
 }
 \description{
-This function calculates the local Pareto alpha of a distribution
+Calculates the local Pareto alpha of the normal, lognormal and gamma distribution
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/Functions.R
 \name{Pareto_Find_Alpha_btw_FQ_Layer}
 \alias{Pareto_Find_Alpha_btw_FQ_Layer}
-\title{This function finds the Pareto alpha between an excess frequency and a layer.}
+\title{Pareto Alpha Between a Frequency and a Layer}
 \usage{
 Pareto_Find_Alpha_btw_FQ_Layer(
   Threshold,
@@ -32,6 +32,15 @@ Pareto_Find_Alpha_btw_FQ_Layer(
 
 \item{truncation}{Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.}
 }
+\value{
+The Pareto alpha between the expected number of claims \code{Frequency} excess \code{Threshold}
+and the layer  \code{Cover} xs \code{AttachmentPoint} with expected loss \code{ExpLoss}
+}
 \description{
-This function finds the Pareto alpha between an excess frequency and a layer.
+Finds the Pareto alpha between an excess frequency and the expected loss of a layer
+}
+\examples{
+Pareto_Find_Alpha_btw_FQ_Layer(1000, 1, 1000, 1000, 500)
+Pareto_Find_Alpha_btw_FQ_Layer(1000, 1, 1000, 1000, 500, truncation = 5000)
+
 }
