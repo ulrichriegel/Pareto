@@ -1385,6 +1385,29 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
 }
 
 
+#' Distribution Function of the Pareto Distribution
+#'
+#' @description Calculates the cumulative distribution function of a Pareto distribution. This function is deprecated. Use \code{pPareto} instead.
+#'
+#' @param x Numeric. The function evaluates the CDF at x.
+#' @param t Numeric. Threshold of the piecewise Pareto distribution.
+#' @param alpha Numeric. Pareto alpha.
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#'
+#' @return Distribution function of the Pareto distribution with parameters \code{t} and \code{alpha} evaluated at \code{x}
+#'
+#' @examples
+#' x <- 0:10 * 1000
+#' pPareto(x, 1000, 2)
+#' pPareto(x, 1000, 2, truncation = 5000)
+#'
+#' @export
+
+Pareto_CDF <- function(x, t, alpha, truncation = NULL) {
+  .Deprecated("pPareto")
+  pPareto(x, t, alpha, truncation)
+}
+
 
 #' Distribution Function of the Pareto Distribution
 #'
@@ -1444,6 +1467,33 @@ pPareto_s <- function(x, t, alpha, truncation = NULL) {
 
 #' Density of the Pareto Distribution
 #'
+#' @description Calculates the density function of the Pareto distribution. This function is deprecated. Use \code{dPareto} instead.
+#'
+#' @param x Numeric. The function evaluates the density at x.
+#' @param t Numeric. Threshold of the Pareto distribution.
+#' @param alpha Numeric. Pareto alpha.
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#'
+#' @return Density function of the Pareto distribution with parameters \code{t} and \code{alpha} evaluated at \code{x}
+#'
+#' @examples
+#' x <- 0:10 * 1000
+#' dPareto(x, 1000, 2)
+#' dPareto(x, 1000, 2, truncation = 5000)
+#'
+#' @export
+
+Pareto_PDF <- function(x, t, alpha, truncation = NULL) {
+  .Deprecated("dPareto")
+  dPareto(x, t, alpha, truncation)
+}
+
+
+
+
+
+#' Density of the Pareto Distribution
+#'
 #' @description Calculates the density function of the Pareto distribution
 #'
 #' @param x Numeric. The function evaluates the density at x.
@@ -1494,6 +1544,40 @@ dPareto_s <- function(x, t, alpha, truncation = NULL) {
     return(Result)
   }
 }
+
+
+
+
+#' Distribution Function of the Piecewise Pareto Distribution
+#'
+#' @description Calculates the cumulative distribution function of a Piecewise Pareto Distribution. This function is deprecated. Use \code{pPiecewisePareto} instead.
+#'
+#' @param x Numeric. The function evaluates the CDF at x.
+#' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
+#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#'
+#' @return Distribution function of the piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} evaluated at \code{x}
+#'
+#' @examples
+#' t <- c(1000, 2000, 3000)
+#' alpha <- c(1, 1.5, 2)
+#' x <- 0:10 * 1000
+#' pPiecewisePareto(x, t, alpha)
+#' pPiecewisePareto(x, t, alpha, truncation = 5000, truncation_type = "lp")
+#' pPiecewisePareto(x, t, alpha, truncation = 5000, truncation_type = "wd")
+#'
+#' @export
+
+PiecewisePareto_CDF <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+  .Deprecated("pPiecewisePareto")
+  pPiecewisePareto(x, t, alpha, truncation, truncation_type)
+}
+
+
+
+
 
 
 
@@ -1615,6 +1699,37 @@ pPiecewisePareto_s <- function(x, t, alpha, truncation = NULL, truncation_type =
     }
   }
 }
+
+
+#' Density of the Piecewise Pareto Distribution
+#'
+#' @description Calculates the density function of the piecewise Pareto distribution. This function is deprecated. Use \code{dPiecewisePareto} instead.
+#'
+#' @param x Numeric. The function evaluates the density at x.
+#' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
+#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#'
+#' @return Density function of the piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} evaluated at \code{x}
+#'
+#' @examples
+#' t <- c(1000, 2000, 3000)
+#' alpha <- c(1, 1.5, 2)
+#' x <- 0:10 * 1000
+#' dPiecewisePareto(x, t, alpha)
+#' dPiecewisePareto(x, t, alpha, truncation = 5000, truncation_type = "lp")
+#' dPiecewisePareto(x, t, alpha, truncation = 5000, truncation_type = "wd")
+#'
+#' @export
+
+PiecewisePareto_PDF <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+  .Deprecated("dPiecewisePareto")
+  dPiecewisePareto(x, t, alpha, truncation, truncation_type)
+}
+
+
+
 
 
 #' Density of the Piecewise Pareto Distribution
