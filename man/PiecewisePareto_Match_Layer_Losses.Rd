@@ -26,21 +26,21 @@ PiecewisePareto_Match_Layer_Losses(
 
 \item{Expected_Layer_Losses}{Numeric vector. Vector containing the expected losses of layers xs the attachment points.}
 
-\item{Unlimited_Layers}{Logical. If true, then Expected_Layer_Losses[i] contains the expected loss of unlimited xs Attachment_Points[i]. If FALSE then Expected_Layer_Losses[i] contains the expected loss of the layers Attachment_Points[i+1] xs Attachment_Points[i]}
+\item{Unlimited_Layers}{Logical. If \code{TRUE}, then \code{Expected_Layer_Losses[i]} contains the expected loss of \code{Inf} xs \code{Attachment_Points[i]}. If \code{FALSE} then \code{Expected_Layer_Losses[i]} contains the expected loss of the layer \code{Attachment_Points[i+1]} xs \code{Attachment_Points[i]}}
 
-\item{Frequencies}{Numeric vector. Expected frequencies excess the attachment points. If NULL then the function calculates frequencies.}
+\item{Frequencies}{Numeric vector. Expected frequencies excess the attachment points. If \code{NULL} then the function calculates frequencies.}
 
-\item{FQ_at_lowest_AttPt}{Numerical. Expected frequency excess Attachment_Points[1]}
+\item{FQ_at_lowest_AttPt}{Numerical. Expected frequency excess \code{Attachment_Points[1]}}
 
-\item{FQ_at_highest_AttPt}{Numerical. Expected frequency excess Attachment_Points[k]}
+\item{FQ_at_highest_AttPt}{Numerical. Expected frequency excess \code{Attachment_Points[k]}}
 
-\item{TotalLoss_Frequencies}{Numeric vector. TotalLoss_Frequencies[i] is the frequency of total losses to layer i (i.e. Attachment_Points[i+1]-Attachment_Points[i] xs Attachment_Points[i])    TotalLoss_Frequencies[i] is the frequency for losses >= Attachment_Points[i+1], whereas Frequencies[i] is the frequency of losses > Attachment_Points[i].    TotalLoss_Frequencies[i] > Frequencies[i+1] means that there is a point mass of the severity at Attachment_Points[i+1].}
+\item{TotalLoss_Frequencies}{Numeric vector. \code{TotalLoss_Frequencies[i]} is the frequency of total losses to layer \code{i} (i.e. \code{Attachment_Points[i+1] - Attachment_Points[i]} xs \code{Attachment_Points[i]}).    \code{TotalLoss_Frequencies[i]} is the frequency for losses larger than or equal to \code{Attachment_Points[i+1]}, whereas \code{Frequencies[i]} is the frequency of losses larger than \code{Attachment_Points[i]}.    \code{TotalLoss_Frequencies[i] > Frequencies[i+1]} means that there is a point mass of the severity at \code{Attachment_Points[i+1]}.}
 
-\item{minimize_ratios}{Logical. If TRUE then ratios between alphas are minimized.}
+\item{minimize_ratios}{Logical. If \code{TRUE} then ratios between alphas are minimized.}
 
-\item{Use_unlimited_Layer_for_FQ}{Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If TRUE then the frequency is calculated using the Pareto alpha between the last two layers.}
+\item{Use_unlimited_Layer_for_FQ}{Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If \code{TRUE} then the frequency is calculated using the Pareto alpha between the last two layers.}
 
-\item{truncation}{Numeric. If truncation is not NULL and truncation > max(Attachment_Points), then the last Pareto piece is truncated at truncation (truncation_type = "lp").}
+\item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > max(Attachment_Points)}, then the last Pareto piece is truncated at \code{truncation} (\code{truncation_type = "lp"}).}
 
 \item{tolerance}{Numeric. Numerical tolerance.}
 
@@ -48,7 +48,7 @@ PiecewisePareto_Match_Layer_Losses(
 
 \item{merge_tolerance}{Numerical. Consecutive Pareto pieces are merged if the alphas deviate by less than merge_tolerance.}
 
-\item{RoL_tolerance}{Numerical. Consecutive layers are merged if RoL decreases less than factor 1 - RoL_tolerange.}
+\item{RoL_tolerance}{Numerical. Consecutive layers are merged if RoL decreases less than factor \code{1 - RoL_tolerance}.}
 }
 \value{
 A list containing the following objects: \itemize{

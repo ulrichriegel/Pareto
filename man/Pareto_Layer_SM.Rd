@@ -7,15 +7,15 @@
 Pareto_Layer_SM(Cover, AttachmentPoint, alpha, t = NULL, truncation = NULL)
 }
 \arguments{
-\item{Cover}{Numeric. Cover of the reinsurance layer. Use Inf for unlimited layers.}
+\item{Cover}{Numeric. Cover of the reinsurance layer. Use \code{Inf} for unlimited layers.}
 
 \item{AttachmentPoint}{Numeric. Attachment point of the reinsurance layer.}
 
 \item{alpha}{Numeric. Pareto alpha.}
 
-\item{t}{Numeric. Threshold of the Pareto distribution. If t = NULL (default) then t <- Attachment Point}
+\item{t}{Numeric. Threshold of the Pareto distribution. If \code{t} is \code{NULL} (default) then \code{t <- Attachment Point} is used}
 
-\item{truncation}{Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.}
+\item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.}
 }
 \value{
 The second moment of the (truncated) Pareto distribution with parameters \code{t} and \code{alpha} in the layer

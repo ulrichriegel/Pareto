@@ -10,16 +10,26 @@ Local_Pareto_Alpha(x, distribution, ...)
 \item{x}{Numeric. Vector of thresholds at which the local Pareto alpha is calculated.}
 
 \item{distribution}{Character. \itemize{
-\item 'lnorm' for lognormal distribution (parameters meanlog, sdlog)
-\item 'norm' for normal distribution (parameters: mean, sd)
-\item 'gamma' for gamma distribution (parameters: shape, rate, scale)
+\item \code{'lnorm'} for lognormal distribution (arguments: \code{meanlog}, \code{sdlog})
+\item \code{'norm'} for normal distribution (arguments: \code{mean}, \code{sd})
+\item \code{'gamma'} for gamma distribution (arguments: \code{shape}, \code{rate}, \code{scale})
 }}
 
-\item{...}{Parameters for the selected distribution}
+\item{...}{Arguments for the selected distribution}
 }
 \value{
 Local Pareto alpha of the selected distribution at \code{x}
 }
 \description{
 Calculates the local Pareto alpha of the normal, lognormal and gamma distribution
+}
+\examples{
+x <- 1:10
+Local_Pareto_Alpha(x, "norm", mean = 1, sd = 5)
+x <- 1:10 * 1000000
+Local_Pareto_Alpha(x, "lnorm", meanlog = 1, sdlog = 5)
+
+}
+\references{
+Riegel, U. (2008) Generalizations of common ILF models. Blaetter der DGVFM 29: 45--71
 }

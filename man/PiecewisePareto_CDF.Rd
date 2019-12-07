@@ -32,3 +32,6 @@ pPiecewisePareto(x, t, alpha, truncation = 5000, truncation_type = "lp")
 pPiecewisePareto(x, t, alpha, truncation = 5000, truncation_type = "wd")
 
 }
+\references{
+Riegel, U. (2018) Matching tower information with piecewise Pareto. European Actuarial Journal 8(2): 437--460
+}

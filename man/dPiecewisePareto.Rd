@@ -11,11 +11,11 @@ dPiecewisePareto(x, t, alpha, truncation = NULL, truncation_type = "lp")
 
 \item{t}{Numeric vector. Thresholds of the piecewise Pareto distribution.}
 
-\item{alpha}{Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].}
+\item{alpha}{Numeric vector. \code{alpha[i]} is the Pareto alpha in excess of \code{t[i]}.}
 
 \item{truncation}{Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.}
 
-\item{truncation_type}{Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.}
+\item{truncation_type}{Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.}
 }
 \value{
 Density function of the piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} evaluated at \code{x}

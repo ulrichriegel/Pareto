@@ -20,11 +20,11 @@ PiecewisePareto_Layer_Mean(
 
 \item{t}{Numeric vector. Thresholds of the piecewise Pareto distribution.}
 
-\item{alpha}{Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].}
+\item{alpha}{Numeric vector. \code{alpha[i]} is the Pareto alpha in excess of \code{t[i]}.}
 
-\item{truncation}{Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.}
+\item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.}
 
-\item{truncation_type}{Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.}
+\item{truncation_type}{Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last Pareto piece.}
 }
 \value{
 The expected loss of the (truncated) piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} in the layer
@@ -41,4 +41,7 @@ PiecewisePareto_Layer_Mean(4000, 1000, t, alpha, truncation = 5000)
 PiecewisePareto_Layer_Mean(4000, 1000, t, alpha, truncation = 5000, truncation_type = "lp")
 PiecewisePareto_Layer_Mean(4000, 1000, t, alpha, truncation = 5000, truncation_type = "wd")
 
+}
+\references{
+Riegel, U. (2018) Matching tower information with piecewise Pareto. European Actuarial Journal 8(2): 437--460
 }

@@ -17,17 +17,17 @@ Pareto_Find_Alpha_btw_FQs(
 \arguments{
 \item{Threshold_1}{Numeric. Threshold 1}
 
-\item{Frequency_1}{Numeric. Expected frequency in excess of Thershold 1}
+\item{Frequency_1}{Numeric. Expected frequency in excess of \code{Threshold_1}}
 
 \item{Threshold_2}{Numeric. Threshold 2}
 
-\item{Frequency_2}{Numeric. Expected frequency in excess of Thershold 2}
+\item{Frequency_2}{Numeric. Expected frequency in excess of \code{Threshold_2}}
 
 \item{max_alpha}{Numeric. Upper limit for the alpha that is returned.}
 
 \item{tolerance}{Numeric. Accuracy of the result.}
 
-\item{truncation}{Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.}
+\item{truncation}{Numeric. If \code{truncation} is not \code{NULL} then the Pareto distribution is truncated at \code{truncation}.}
 }
 \value{
 The Pareto alpha between the expected number of claims \code{Frequency_1} excess \code{Threshold_1}
@@ -40,4 +40,7 @@ Finds the Pareto alpha between two excess frequencies
 Pareto_Find_Alpha_btw_FQs(1000, 1, 2000, 0.5)
 Pareto_Find_Alpha_btw_FQs(1000, 1, 2000, 0.5, truncation = 5000)
 
+}
+\references{
+Riegel, U. (2018) Matching tower information with piecewise Pareto. European Actuarial Journal 8(2): 437--460
 }

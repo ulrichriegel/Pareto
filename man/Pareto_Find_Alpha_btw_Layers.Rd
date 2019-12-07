@@ -19,13 +19,13 @@ Pareto_Find_Alpha_btw_Layers(
 \arguments{
 \item{Cover_1}{Numeric. Cover of the first layer.}
 
-\item{AttachmentPoint_1}{Numeric. Cover of the first layer.}
+\item{AttachmentPoint_1}{Numeric. Attachment point of the first layer.}
 
 \item{ExpLoss_1}{Numeric. Expected loss of the first layer.}
 
 \item{Cover_2}{Numeric. Cover of the second layer.}
 
-\item{AttachmentPoint_2}{Numeric. Cover of the second layer.}
+\item{AttachmentPoint_2}{Numeric. Attachment point of the second layer.}
 
 \item{ExpLoss_2}{Numeric. Expected loss of the second layer.}
 
@@ -33,7 +33,7 @@ Pareto_Find_Alpha_btw_Layers(
 
 \item{tolerance}{Numeric. Accuracy of the result.}
 
-\item{truncation}{Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.}
+\item{truncation}{Numeric. If \code{truncation} is not \code{NULL} then the Pareto distribution is truncated at \code{truncation}.}
 }
 \value{
 The Pareto alpha between the layer \code{Cover_1} xs \code{AttachmentPoint_1} with expected loss \code{ExpLoss_1}
@@ -46,4 +46,7 @@ Finds the Pareto alpha between two layers
 Pareto_Find_Alpha_btw_Layers(100, 100, 100, 200, 200, 50)
 Pareto_Find_Alpha_btw_Layers(100, 100, 100, 200, 200, 50, truncation = 500)
 
+}
+\references{
+Riegel, U. (2018) Matching tower information with piecewise Pareto. European Actuarial Journal 8(2): 437--460
 }

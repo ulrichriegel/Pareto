@@ -18,11 +18,11 @@ Pareto_Find_Alpha_btw_FQ_Layer(
 \arguments{
 \item{Threshold}{Numeric. Threshold}
 
-\item{Frequency}{Numeric. Expected frequency in excess of Thershold}
+\item{Frequency}{Numeric. Expected frequency in excess of \code{Thershold}}
 
 \item{Cover}{Numeric. Cover of the second layer.}
 
-\item{AttachmentPoint}{Numeric. Cover of the layer.}
+\item{AttachmentPoint}{Numeric. Attachment point of the layer.}
 
 \item{ExpLoss}{Numeric. Expected loss of the layer.}
 
@@ -30,7 +30,7 @@ Pareto_Find_Alpha_btw_FQ_Layer(
 
 \item{tolerance}{Numeric. Accuracy of the result.}
 
-\item{truncation}{Numeric. If truncation is not NULL then the Pareto distribution is truncated at truncation.}
+\item{truncation}{Numeric. If \code{truncation} is not \code{NULL} then the Pareto distribution is truncated at \code{truncation}.}
 }
 \value{
 The Pareto alpha between the expected number of claims \code{Frequency} excess \code{Threshold}
@@ -43,4 +43,7 @@ Finds the Pareto alpha between an excess frequency and the expected loss of a la
 Pareto_Find_Alpha_btw_FQ_Layer(1000, 1, 1000, 1000, 500)
 Pareto_Find_Alpha_btw_FQ_Layer(1000, 1, 1000, 1000, 500, truncation = 5000)
 
+}
+\references{
+Riegel, U. (2018) Matching tower information with piecewise Pareto. European Actuarial Journal 8(2): 437--460
 }

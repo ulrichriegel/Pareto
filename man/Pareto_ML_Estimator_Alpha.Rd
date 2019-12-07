@@ -13,11 +13,11 @@ Pareto_ML_Estimator_Alpha(
 )
 }
 \arguments{
-\item{losses}{Numeric vector. Losses for ML estimation.}
+\item{losses}{Numeric vector. Losses that are used for the ML estimation.}
 
 \item{t}{Numeric. Threshold of the Pareto distribution.}
 
-\item{truncation}{Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.}
+\item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.}
 
 \item{alpha_min}{Numeric. Lower bound for alpha.}
 
@@ -28,4 +28,12 @@ Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribu
 }
 \description{
 Calculates the maximum likelihood estimator of the parameter alpha of a Pareto distribution
+}
+\examples{
+losses <- rPareto(100, 1000, 2)
+Pareto_ML_Estimator_Alpha(losses, 1000)
+losses <- rPareto(100, 1000, 2, truncation = 2000)
+Pareto_ML_Estimator_Alpha(losses, 1000)
+Pareto_ML_Estimator_Alpha(losses, 1000, truncation = 2000)
+
 }

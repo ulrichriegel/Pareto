@@ -15,19 +15,19 @@ Pareto_Extrapolation(
 )
 }
 \arguments{
-\item{Cover_1}{Numeric. Cover of the layer from which we extrapolate. Use Inf for unlimited layers.}
+\item{Cover_1}{Numeric. Cover of the layer from which we extrapolate. Use \code{Inf} for unlimited layers.}
 
 \item{AttachmentPoint_1}{Numeric. Attachment point of the layer from which we extrapolate.}
 
-\item{Cover_2}{Numeric. Cover of the layer to which we extrapolate. Use Inf for unlimited layers.}
+\item{Cover_2}{Numeric. Cover of the layer to which we extrapolate. Use \code{Inf} for unlimited layers.}
 
 \item{AttachmentPoint_2}{Numeric. Attachment point of the layer to which we extrapolate.}
 
 \item{alpha}{Numeric. Pareto alpha used for the extrapolation.}
 
-\item{ExpLoss_1}{Numeric. Expected loss of the layer from which we extrapolate. If NULL (default) then the function provides only the ratio between the expected losses of the layers.}
+\item{ExpLoss_1}{Numeric. Expected loss of the layer from which we extrapolate. If \code{NULL} (default) then the function provides only the ratio between the expected losses of the layers.}
 
-\item{truncation}{Numeric. If truncation is not NULL and truncation > AttachmentPoint_1, then the Pareto distribution is truncated at truncation.}
+\item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > AttachmentPoint_1}, then the Pareto distribution is truncated at \code{truncation}.}
 }
 \value{
 The expected loss of the layer \code{Cover_2} xs \code{AttachmentPoint_2} given that  \code{Cover_1} xs \code{AttachmentPoint_1} has expected
@@ -42,4 +42,7 @@ Pareto_Extrapolation(1000, 1000, 2000, 2000, 2) * 100
 Pareto_Extrapolation(1000, 1000, 2000, 2000, 2, truncation = 5000, ExpLoss_1 = 100)
 Pareto_Extrapolation(1000, 1000, 2000, 2000, 2, truncation = 5000) * 100
 
+}
+\references{
+Riegel, U. (2018) Matching tower information with piecewise Pareto. European Actuarial Journal 8(2): 437--460
 }

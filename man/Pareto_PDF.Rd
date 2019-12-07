@@ -7,13 +7,13 @@
 Pareto_PDF(x, t, alpha, truncation = NULL)
 }
 \arguments{
-\item{x}{Numeric. The function evaluates the density at x.}
+\item{x}{Numeric. The function evaluates the density at \code{x}}
 
 \item{t}{Numeric. Threshold of the Pareto distribution.}
 
 \item{alpha}{Numeric. Pareto alpha.}
 
-\item{truncation}{Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.}
+\item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.}
 }
 \value{
 Density function of the Pareto distribution with parameters \code{t} and \code{alpha} evaluated at \code{x}
