@@ -1070,6 +1070,8 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #'
 #' @description Matches the expected losses of a tower of reinsurance layers using a piecewise Pareto severity
 #'
+#' @references Riegel, U. (2018) Matching tower information with piecewise Pareto. European Actuarial Journal 8(2): 437--460
+#'
 #' @param Attachment_Points Numeric vector. Vector containing the attachment points of consecutive layers in increasing order
 #' @param Expected_Layer_Losses Numeric vector. Vector containing the expected losses of layers xs the attachment points.
 #' @param Unlimited_Layers Logical. If true, then Expected_Layer_Losses[i] contains the expected loss of unlimited xs Attachment_Points[i]. If FALSE then Expected_Layer_Losses[i] contains the expected loss of the layers Attachment_Points[i+1] xs Attachment_Points[i]

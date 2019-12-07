@@ -17,9 +17,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The (European) Pareto distribution is probably the most popular distribution for modelling large losses in reinsurance pricing. There are good reasons for this popularity, which are discussed in detail in Fackler (2013). We recommend  Philbrick (1985)  and Schmutz *et.al.* (1998) for an impression of how the (European) Pareto distribution is applied in practice. 
 
-In cases where the Pareto distribuion is not flexible enough, pricing actuaries sometimes use picewise Pareto distribuions. For instance, a Pareto alpha of 1.5 is used to model claim sizes between USD 1M and USD 5M and an alpha of 2.5 is used above USD 2.5M. Riegel (2018) provides an algorithm for matching a tower of layer losses with a collective risk model using a Piecewise Pareto distribution.
+In cases where the Pareto distribuion is not flexible enough, pricing actuaries sometimes use picewise Pareto distribuions. For instance, a Pareto alpha of 1.5 is used to model claim sizes between USD 1M and USD 5M and an alpha of 2.5 is used above USD 5M. A particularly useful and non-trivial application of the piecewise Pareto distribution is that it can be used to match a tower of expected layer losses with a layer independent collective loss model. Details are described in Riegel (2018), who also provides a matching algorithm that works for an arbitrary number of reinsurance layers.
 
-The main purpose of the Pareto package is to provide this matching algorithm. In addition the package provides various tools for the Pareto and the Piecewise Pareto distribution, which are useful for pricing of reinsurance treaties.
+The package provides a tool kit for the Pareto and the Piecewise Pareto distribution, which is useful for pricing of reinsurance treaties. In particular,  the package provides the matching algorithm for layer losses. 
 
 ## Pareto distribution
 
@@ -32,7 +32,54 @@ F_{t,\alpha}(x):=\begin{cases}
 $$
 This version of the Pareto distribution is also known as *Pareto type I*, *European Pareto* or *single-parameter Pareto*.
 
-Why is the Pareto distribution so popular?
+### Distribution function and density
+
+The functions `pPareto` and `dPareto` provide the distribution function and the density function of the Pareto distribution:
+```{r}
+library(Pareto)
+x <- c(1:10) * 1000
+pPareto(x, 1000, 2)
+plot(pPareto(1:5000, 1000, 2), xlab = "x", ylab = "CDF(x)")
+dPareto(x, 1000, 2)
+plot(dPareto(1:5000, 1000, 2), xlab = "x", ylab = "PDF(x)")
+```
+
+The package also provides the quantile function:
+```{r}
+qPareto(0:10 / 10, 1000, 2)
+```
+
+
+### Simulation:
+```{r}
+rPareto(20, 1000, 2)
+```
+
+
+### Layer mean:
+
+Let $X\sim \text{Pareto}(t,\alpha)$ and $a, c\ge 0$. Then
+$$
+E(\min[c,\max(X-a,0)]) = \int_a^{c+a}(1-F_{t,\alpha}(x))\, dx =: I_{t,\alpha}^{\text{$c$ xs $a$}}
+$$
+is the layer mean of $c$ xs $a$, i.e. the expected loss to the layer given a single loss  $X$.
+
+*Example:* $t=500$, $\alpha = 2$, Layer 4000 xs 1000
+```{r}
+Pareto_Layer_Mean(4000, 1000, 2, t = 500)
+```
+
+### Layer variance:
+
+Let $X\sim \text{Pareto}(t,\alpha)$ and $a, c\ge 0$. Then the variance of  the layer loss $\min[c,\max(X-a,0)]$ can be calculated with the function `Pareto_Layer_Var`.
+
+*Example:* $t=500$, $\alpha = 2$, Layer 4000 xs 1000
+```{r}
+library(Pareto)
+Pareto_Layer_Var(4000, 1000, 2, t = 500)
+```
+
+### Why is the Pareto distribution so popular?
 
 **Lemma:**
 
@@ -45,19 +92,6 @@ Why is the Pareto distribution so popular?
 * For Pareto distributed data the Pareto alpha does not depend on the reporting threshold \pause
 * For layers and thresholds above $t$ the ratio between expected layer losses and/or excess frequencies  depends only on $\alpha$ (and not on   $t$)
 
-### Layer mean:
-
-Let $X\sim \text{Pareto}(t,\alpha)$ and $a, c\ge 0$. Then
-$$
-E(\min[c,\max(X-a,0)]) = \int_a^{c+a}(1-F_{t,\alpha}(x))\, dx. =: I_{t,\alpha}^{\text{$c$ xs $a$}}
-$$
-is the layer mean of $c$ xs $a$, i.e. the expected loss to the layer given a single loss  $X$.
-
-*Example:* $t=500$, $\alpha = 2$, Layer 4000 xs 1000
-```{r}
-library(Pareto)
-Pareto_Layer_Mean(4000, 1000, 2, t = 500)
-```
 
 ### Pareto extrapolation
 
@@ -111,9 +145,9 @@ Frequency @ 10:
 A collective model $\sum_{n=1}^NX_n$ with $X_N\sim \text{Pareto}(10, 1.09)$ and $N\sim \text{Poisson}(2.04)$ matches both expected layer losses.
 
 
-### Frequency extrapolation and alpha between frequencies:}
+### Frequency extrapolation and alpha between frequencies:
 
-Given the frequency $f_1$ in excess of $t_1$ then the frequency $f_2$ in excess of $t_2$ can directly be calculated as follows:
+Given the frequency $f_1$ in excess of $t_1$ the frequency $f_2$ in excess of $t_2$ can directly be calculated as follows:
 $$
 f_2 = f_1 \cdot \left(\frac{t_1}{t_2}\right)^\alpha
 $$
@@ -137,7 +171,9 @@ Pareto_Find_Alpha_btw_FQs(t_1, f_1, t_2, f_2)
 ```
 
 
-**add LayerVariance, Simulation etc, Hinweis auf truncated versions**
+### Truncation
+
+Let $X\sim \text{Pareto}(t,\alpha)$ and $T>t$. Then $X|(X>T)$ has a *truncated Pareto distribution*. The Pareto functions mentioned above are also available for the truncated Pareto distribution.
 
 
 ## Piecewise Pareto distribution
@@ -158,35 +194,44 @@ This means that we can approximate any positive valued distribution as good as w
 
 The Pareto package also provides functions for the picewise Pareto distribution. For instance:
 
-*Layer mean:*
-```{r}
-t <- c(1000, 2000, 3000, 4000)
-alpha <- c(2, 1, 3, 20)
-PiecewisePareto_Layer_Mean(4000, 1000, t, alpha)
-```
-
-*Layer variance:*
-```{r}
-PiecewisePareto_Layer_Var(4000, 1000, t, alpha)
-```
-
-*Simulation:*
-```{r}
-rPiecewisePareto(20, t, alpha)
-```
-
-*CDF:*
+### Distribution function
 ```{r}
 x <- c(1:10) * 1000
+t <- c(1000, 2000, 3000, 4000)
+alpha <- c(2, 1, 3, 20)
 pPiecewisePareto(x, t, alpha)
 plot(pPiecewisePareto(1:5000, t, alpha), xlab = "x", ylab = "CDF(x)")
 ```
 
-*PDF:*
+### Density
 ```{r}
 dPiecewisePareto(x, t, alpha)
 plot(dPiecewisePareto(1:5000, t, alpha), xlab = "x", ylab = "PDF(x)")
 ```
+
+### Simulation
+```{r}
+rPiecewisePareto(20, t, alpha)
+```
+
+### Layer mean
+```{r}
+PiecewisePareto_Layer_Mean(4000, 1000, t, alpha)
+```
+
+### Layer variance
+```{r}
+PiecewisePareto_Layer_Var(4000, 1000, t, alpha)
+```
+
+### Truncation
+
+The package also provides truncated versions of the piecewise Pareto distribution. In most functions there are two options available:
+
+* `truncation_type = 'lp'`: Below the largest threshold $t_n$, the distribution function equals the distribution of the untruncated piecewise Pareto
+                            distribution. The last Pareto piece, however, is truncated at `truncation`
+* `truncation_type = 'wd'`: The whole piecewise Pareto distribution is truncated at `truncation'
+
 
 ## Matching a tower of layer losses
 
@@ -195,7 +240,7 @@ if we want to match the expected loss of more than two layers.
 
 Consider a sequence of attachment points $0 < a_1 <\dots < a_n<a_{n+1}:=+\infty$. Let $c_i:=a_{i+1}-a_i$ and let $e_i$ be the expected loss of the layer $c_i$ xs $a_i$. Moreover, let $f_1$ be the expected frequency in excess of $a_1$. 
 
-Matching the given data with piecewise Pareto is easy: 
+The following matching algorithm uses one Pareto piece per layer and is straight forward: 
 
 * Calculate the Pareto alpha $\alpha_1$ between the excess frequency $f_1$ and the layer $c_1$ xs $a_1$ 
 * Calculate the frequency $f_2$ in excess of $a_2$: \quad $f_2:=(a_1/a_2)^{\alpha_1}\cdot f_1$ 
@@ -204,7 +249,7 @@ Matching the given data with piecewise Pareto is easy:
 * $\dots$ \pause
 * Use a collective model $\sum_{n=1}^NX_n$ with $E(N)=f_1$ and $X_n\sim\text{PPareto}(\mathbf{t},\boldsymbol\alpha)$.
 
-This approach always works for three layers, but it often does not work if we have three or more layers. For instance, it does not work for the following example:
+This approach always works for three layers, but it often does not work if we have three or more layers. For instance, Riegel (2018) shows that it does not work for the following example:
 
 
 | $i$ | Cover $c_i$ | Att. Pt. $a_i$ | Exp. Loss $e_i$ | Rate on Line $e_i/c_i$ |
@@ -214,7 +259,9 @@ This approach always works for three layers, but it often does not work if we ha
 |  3  |         500 |           2000 |              50 |                   0.10 |  
 |  4  |         500 |           2500 |              40 |                   0.08 |  
 
-The Pareto package provides an improved matching approach, which works for arbitrary numbers of layers with consistent expected losses:
+The Pareto package provides a more complex matching approach that uses two Pareto pieces per layer. Riegel (2018) shows that this approach works for an arbitrary number of layers with consistent expected losses.
+
+*Example:*
 
 ```{r}
 attachment_points <- c(1000, 1500, 2000, 2500, 3000)
@@ -227,7 +274,8 @@ Check:
 c(PiecewisePareto_Layer_Mean(500, 1000, fit$t, fit$alpha) * fit$FQ,
   PiecewisePareto_Layer_Mean(500, 1500, fit$t, fit$alpha) * fit$FQ,
   PiecewisePareto_Layer_Mean(500, 2000, fit$t, fit$alpha) * fit$FQ,
-  PiecewisePareto_Layer_Mean(500, 2500, fit$t, fit$alpha) * fit$FQ)
+  PiecewisePareto_Layer_Mean(500, 2500, fit$t, fit$alpha) * fit$FQ,
+  PiecewisePareto_Layer_Mean(Inf, 3000, fit$t, fit$alpha) * fit$FQ)
 ```
 
 ## References

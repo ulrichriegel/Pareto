@@ -1,9 +1,14 @@
 Package: Pareto
 Type: Package
-Title: Utilities for Pareto and Piecewise Pareto distribution
+Title: A tool kit for the Pareto and the Piecewise Pareto distribution 
 Version: 1.0.21
 Authors@R: person("Ulrich", "Riegel", email = "ulrich.riegel@gmx.de", role = c("aut", "cre"))
-Description: The package provides utilities for the Pareto and Piecewise Pareto distribution.
+Description: The Pareto distribution and the piecewise Pareto distribution 
+    are very useful and popular for pricing of reinsurance treaties.
+    The package provides utilities that are intended for reinsurance pricing
+    actuaries. In particular, the package provides a non-trivial algorithm 
+    that can be used to match the expected losses of a tower of reinsurance 
+    layers with a layer-independent collective risk model.
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
