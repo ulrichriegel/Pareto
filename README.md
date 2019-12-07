@@ -11,7 +11,7 @@ useful for pricing of reinsurance treaties:
 - Finding the Pareto alpha between an excess frequency and the expected loss of a layer
 - Maximum likelihood estimation of the Pareto alpha
 - Calculation of local Pareto alphas for normal, lognormal and gamma distributions
-- Fitting a Piecewise Pareto distribution to a tower of layer losses (for an arbirary number of layers)
+- Fitting a Piecewise Pareto distribution to a tower of layer losses (for an arbitrary number of layers)
 
 Most methods are also available for truncated versions of the (piecewise) Pareto distribution.
 

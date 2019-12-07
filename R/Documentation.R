@@ -1,4 +1,4 @@
-#' Example data: Atachment Points
+#' Example data: Attachment Points
 #'
 "Example1_AP"
 

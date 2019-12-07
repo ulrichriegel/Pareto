@@ -22,9 +22,9 @@ rPiecewisePareto(
 
 \item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the distribution is truncated at \code{truncation}.}
 
-\item{truncation_type}{Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.}
+\item{truncation_type}{Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.}
 
-\item{scale_pieces}{Numeric vector. If not \code{NULL} then the density of the i-th Pareto piece (on the Intervall (\code{t[i], t[i+1])}) is scaled with the factor \code{const * scale_pieces[i]} (where \code{const} is a normalization constant)}
+\item{scale_pieces}{Numeric vector. If not \code{NULL} then the density of the i-th Pareto piece (on the interval (\code{t[i], t[i+1])}) is scaled with the factor \code{const * scale_pieces[i]} (where \code{const} is a normalization constant)}
 }
 \value{
 A vector of \code{n} samples from the (truncated) piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha}

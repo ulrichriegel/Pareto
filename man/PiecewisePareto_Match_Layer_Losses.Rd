@@ -54,7 +54,7 @@ PiecewisePareto_Match_Layer_Losses(
 A list containing the following objects: \itemize{
 \item \code{t} Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution
 \item \code{alpha} Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution
-\item \code{Status} Character. Information on whether the fit was succesful
+\item \code{Status} Character. Information on whether the fit was successful
 \item \code{FQ} Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution
 }
 }

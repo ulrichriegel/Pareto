@@ -16,3 +16,4 @@ Depends: R (>= 2.10)
 Suggests: 
     testthat, knitr, rmarkdown
 URL: https://github.com/ulrichriegel/Pareto#pareto
+Language: en-US

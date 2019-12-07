@@ -3,12 +3,12 @@
 \docType{data}
 \name{Example1_AP}
 \alias{Example1_AP}
-\title{Example data: Atachment Points}
+\title{Example data: Attachment Points}
 \format{An object of class \code{numeric} of length 5.}
 \usage{
 Example1_AP
 }
 \description{
-Example data: Atachment Points
+Example data: Attachment Points
 }
 \keyword{datasets}

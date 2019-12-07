@@ -15,9 +15,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-The (European) Pareto distribution is probably the most popular distribution for modelling large losses in reinsurance pricing. There are good reasons for this popularity, which are discussed in detail in Fackler (2013). We recommend  Philbrick (1985)  and Schmutz *et.al.* (1998) for an impression of how the (European) Pareto distribution is applied in practice. 
+The (European) Pareto distribution is probably the most popular distribution for modeling large losses in reinsurance pricing. There are good reasons for this popularity, which are discussed in detail in Fackler (2013). We recommend  Philbrick (1985)  and Schmutz *et.al.* (1998) for an impression of how the (European) Pareto distribution is applied in practice. 
 
-In cases where the Pareto distribuion is not flexible enough, pricing actuaries sometimes use picewise Pareto distribuions. For instance, a Pareto alpha of 1.5 is used to model claim sizes between USD 1M and USD 5M and an alpha of 2.5 is used above USD 5M. A particularly useful and non-trivial application of the piecewise Pareto distribution is that it can be used to match a tower of expected layer losses with a layer independent collective loss model. Details are described in Riegel (2018), who also provides a matching algorithm that works for an arbitrary number of reinsurance layers.
+In cases where the Pareto distribution is not flexible enough, pricing actuaries sometimes use piecewise Pareto distributions. For instance, a Pareto alpha of 1.5 is used to model claim sizes between USD 1M and USD 5M and an alpha of 2.5 is used above USD 5M. A particularly useful and non-trivial application of the piecewise Pareto distribution is that it can be used to match a tower of expected layer losses with a layer independent collective loss model. Details are described in Riegel (2018), who also provides a matching algorithm that works for an arbitrary number of reinsurance layers.
 
 The package provides a tool kit for the Pareto and the Piecewise Pareto distribution, which is useful for pricing of reinsurance treaties. In particular,  the package provides the matching algorithm for layer losses. 
 
@@ -192,7 +192,7 @@ The family of piecewise Pareto distributions is very flexible:
 
 This means that we can approximate any positive valued distribution as good as we want with piecewise Pareto. A very good approximation typically comes at the cost of many Pareto pieces. Piecewise Pareto  is often a good alternative to a discrete distribution, since it is much better to handle!
 
-The Pareto package also provides functions for the picewise Pareto distribution. For instance:
+The Pareto package also provides functions for the piecewise Pareto distribution. For instance:
 
 ### Distribution function
 ```{r}
@@ -228,8 +228,8 @@ PiecewisePareto_Layer_Var(4000, 1000, t, alpha)
 
 The package also provides truncated versions of the piecewise Pareto distribution. In most functions there are two options available:
 
-* `truncation_type = 'lp'`: Below the largest threshold $t_n$, the distribution function equals the distribution of the untruncated piecewise Pareto
-                            distribution. The last Pareto piece, however, is truncated at `truncation`
+* `truncation_type = 'lp'`: Below the largest threshold $t_n$, the distribution function equals the distribution of the piecewise Pareto
+                            distribution without truncation. The last Pareto piece, however, is truncated at `truncation`
 * `truncation_type = 'wd'`: The whole piecewise Pareto distribution is truncated at `truncation'
 
 
