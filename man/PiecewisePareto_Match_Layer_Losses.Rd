@@ -68,6 +68,8 @@ PiecewisePareto_Match_Layer_Losses(AP, EL)
 EL_unlimited <- rev(cumsum(rev(Example1_EL)))
 PiecewisePareto_Match_Layer_Losses(AP, EL_unlimited, Unlimited_Layers = TRUE)
 PiecewisePareto_Match_Layer_Losses(AP, EL, FQ_at_lowest_AttPt = 0.5)
+Example1_FQ <- c(0.3, 0.15, 0.08, 0.02, 0.005)
+PiecewisePareto_Match_Layer_Losses(AP, EL, Frequencies = Example1_FQ)
 
 }
 \references{

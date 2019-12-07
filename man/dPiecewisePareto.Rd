@@ -7,7 +7,7 @@
 dPiecewisePareto(x, t, alpha, truncation = NULL, truncation_type = "lp")
 }
 \arguments{
-\item{x}{Numeric. The function evaluates the density at x.}
+\item{x}{Numeric. The function evaluates the density at \code{x}.}
 
 \item{t}{Numeric vector. Thresholds of the piecewise Pareto distribution.}
 

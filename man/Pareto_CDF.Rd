@@ -9,7 +9,7 @@ Pareto_CDF(x, t, alpha, truncation = NULL)
 \arguments{
 \item{x}{Numeric. The function evaluates the CDF at \code{x}.}
 
-\item{t}{Numeric. Threshold of the piecewise Pareto distribution.}
+\item{t}{Numeric. Threshold of the Pareto distribution.}
 
 \item{alpha}{Numeric. Pareto alpha.}
 

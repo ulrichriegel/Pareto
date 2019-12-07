@@ -7,13 +7,13 @@
 qPareto(p, t, alpha, truncation = NULL)
 }
 \arguments{
-\item{p}{Numeric. The function evaluates the inverse CDF at p.}
+\item{p}{Numeric. The function evaluates the inverse CDF at \code{p}.}
 
 \item{t}{Numeric. Threshold of the piecewise Pareto distribution.}
 
 \item{alpha}{Numeric. Pareto alpha.}
 
-\item{truncation}{Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.}
+\item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.}
 }
 \value{
 Quantile function of the Pareto distribution with parameters \code{t} and \code{alpha}, evaluated at \code{p}
@@ -23,7 +23,7 @@ Calculates the quantile function of a Pareto distribution
 }
 \examples{
 p <- 0:10 * 0.1
-qPiecewisePareto(p, 1000, 2)
-qPiecewisePareto(p, 1000, 2, truncation = 5000)
+qPareto(p, 1000, 2)
+qPareto(p, 1000, 2, truncation = 5000)
 
 }

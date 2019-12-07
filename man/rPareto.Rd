@@ -13,7 +13,7 @@ rPareto(n, t, alpha, truncation = NULL)
 
 \item{alpha}{Pareto alpha.}
 
-\item{truncation}{If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation (resampled Pareto)}
+\item{truncation}{If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation} (resampled Pareto)}
 }
 \value{
 A vector of \code{n} samples from the (truncated) Pareto distribution with parameters \code{t} and \code{alpha}

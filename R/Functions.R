@@ -265,7 +265,7 @@ Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = 
 #' @param n Number of observations.
 #' @param t Threshold of the Pareto distribution
 #' @param alpha Pareto alpha.
-#' @param truncation If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation (resampled Pareto)
+#' @param truncation If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation} (resampled Pareto)
 #'
 #' @return A vector of \code{n} samples from the (truncated) Pareto distribution with parameters \code{t} and \code{alpha}
 #'
@@ -587,7 +587,7 @@ Pareto_Find_Alpha_btw_FQs <- function(Threshold_1, Frequency_1, Threshold_2, Fre
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. \code{alpha[i]} is the Pareto alpha in excess of \code{t[i]}.
 #' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
-#' @param truncation_type Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last Pareto piece.
+#' @param truncation_type Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
 #'
 #' @return The expected loss of the (truncated) piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} in the layer
 #'         \code{Cover} xs \code{AttachmentPoint}
@@ -755,7 +755,7 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncat
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. \code{alpha[i]} is the Pareto alpha in excess of \code{t[i]}.
 #' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
-#' @param truncation_type Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last Pareto piece.
+#' @param truncation_type Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
 #'
 #' @return The second moment of the (truncated) piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} in the layer
 #'         \code{Cover} xs \code{AttachmentPoint}
@@ -917,7 +917,7 @@ PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncatio
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. \code{alpha[i]} is the Pareto alpha in excess of \code{t[i]}.
 #' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
-#' @param truncation_type Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last Pareto piece.
+#' @param truncation_type Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
 #'
 #' @return The variance of the (truncated) piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} in the layer
 #'         \code{Cover} xs \code{AttachmentPoint}
@@ -950,20 +950,20 @@ PiecewisePareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha, truncati
 #'
 #' @param n Numeric. Number of simulations
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
-#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
-#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
-#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
-#' @param scale_pieces Numeric vector. If not NULL then the density of the i-th Pareto piece (on the Intervall (t[i], t[i+1])) is scaled with the factor c * scale_pieces[i] (where c is a normalization constant)
+#' @param alpha Numeric vector. \code{alpha[i]} is the Pareto alpha in excess of \code{t[i]}.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the distribution is truncated at \code{truncation}.
+#' @param truncation_type Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
+#' @param scale_pieces Numeric vector. If not \code{NULL} then the density of the i-th Pareto piece (on the Intervall (\code{t[i], t[i+1])}) is scaled with the factor \code{const * scale_pieces[i]} (where \code{const} is a normalization constant)
 #'
 #' @return A vector of \code{n} samples from the (truncated) piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha}
 #'
 #' @examples
 #' t <- c(1000, 2000, 3000)
 #' alpha <- c(1, 1.5, 2)
-#' rPiecewisePareto(1000, t, alpha)
-#' rPiecewisePareto(1000, t, alpha, truncation = 5000)
-#' rPiecewisePareto(1000, t, alpha, truncation = 5000, truncation_type = "lp")
-#' rPiecewisePareto(1000, t, alpha, truncation = 5000, truncation_type = "wd")
+#' rPiecewisePareto(100, t, alpha)
+#' rPiecewisePareto(100, t, alpha, truncation = 5000)
+#' rPiecewisePareto(100, t, alpha, truncation = 5000, truncation_type = "lp")
+#' rPiecewisePareto(100, t, alpha, truncation = 5000, truncation_type = "wd")
 #'
 #' @export
 
@@ -1111,6 +1111,8 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #' EL_unlimited <- rev(cumsum(rev(Example1_EL)))
 #' PiecewisePareto_Match_Layer_Losses(AP, EL_unlimited, Unlimited_Layers = TRUE)
 #' PiecewisePareto_Match_Layer_Losses(AP, EL, FQ_at_lowest_AttPt = 0.5)
+#' Example1_FQ <- c(0.3, 0.15, 0.08, 0.02, 0.005)
+#' PiecewisePareto_Match_Layer_Losses(AP, EL, Frequencies = Example1_FQ)
 #'
 #' @export
 
@@ -1402,7 +1404,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
 #' @description Calculates the cumulative distribution function of a Pareto distribution. This function is deprecated. Use \code{pPareto} instead.
 #'
 #' @param x Numeric. The function evaluates the CDF at \code{x}.
-#' @param t Numeric. Threshold of the piecewise Pareto distribution.
+#' @param t Numeric. Threshold of the Pareto distribution.
 #' @param alpha Numeric. Pareto alpha.
 #' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
 #'
@@ -1425,10 +1427,10 @@ Pareto_CDF <- function(x, t, alpha, truncation = NULL) {
 #'
 #' @description Calculates the cumulative distribution function of a Pareto distribution
 #'
-#' @param x Numeric. The function evaluates the CDF at x.
-#' @param t Numeric. Threshold of the piecewise Pareto distribution.
+#' @param x Numeric. The function evaluates the CDF at \code{x}.
+#' @param t Numeric. Threshold of the Pareto distribution.
 #' @param alpha Numeric. Pareto alpha.
-#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
 #'
 #' @return Distribution function of the Pareto distribution with parameters \code{t} and \code{alpha} evaluated at \code{x}
 #'
@@ -1566,11 +1568,11 @@ dPareto_s <- function(x, t, alpha, truncation = NULL) {
 #'
 #' @references Riegel, U. (2018) Matching tower information with piecewise Pareto. European Actuarial Journal 8(2): 437--460
 #'
-#' @param x Numeric. The function evaluates the CDF at x.
+#' @param x Numeric. The function evaluates the CDF at \code{x}.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
-#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
-#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
-#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#' @param alpha Numeric vector. \code{alpha[i]} is the Pareto alpha in excess of \code{t[i]}.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the distribution is truncated at \code{truncation}.
+#' @param truncation_type Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
 #'
 #' @return Distribution function of the piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} evaluated at \code{x}
 #'
@@ -1602,11 +1604,11 @@ PiecewisePareto_CDF <- function(x, t, alpha, truncation = NULL, truncation_type 
 #'
 #' @references Riegel, U. (2018) Matching tower information with piecewise Pareto. European Actuarial Journal 8(2): 437--460
 #'
-#' @param x Numeric. The function evaluates the CDF at x.
+#' @param x Numeric. The function evaluates the CDF at \code{x}.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
-#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
-#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
-#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#' @param alpha Numeric vector. \code{alpha[i]} is the Pareto alpha in excess of \code{t[i]}.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the distribution is truncated at \code{truncation}.
+#' @param truncation_type Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
 #'
 #' @return Distribution function of the piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} evaluated at \code{x}
 #'
@@ -1721,11 +1723,11 @@ pPiecewisePareto_s <- function(x, t, alpha, truncation = NULL, truncation_type =
 #'
 #' @description Calculates the density function of the piecewise Pareto distribution. This function is deprecated. Use \code{dPiecewisePareto} instead.
 #'
-#' @param x Numeric. The function evaluates the density at x.
+#' @param x Numeric. The function evaluates the density at \code{x}.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
-#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
-#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
-#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#' @param alpha Numeric vector. \code{alpha[i]} is the Pareto alpha in excess of \code{t[i]}.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the distribution is truncated at \code{truncation}.
+#' @param truncation_type Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
 #'
 #' @return Density function of the piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} evaluated at \code{x}
 #'
@@ -1752,7 +1754,7 @@ PiecewisePareto_PDF <- function(x, t, alpha, truncation = NULL, truncation_type 
 #'
 #' @description Calculates the density function of the piecewise Pareto distribution
 #'
-#' @param x Numeric. The function evaluates the density at x.
+#' @param x Numeric. The function evaluates the density at \code{x}.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param alpha Numeric vector. \code{alpha[i]} is the Pareto alpha in excess of \code{t[i]}.
 #' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
@@ -1872,11 +1874,11 @@ dPiecewisePareto_s <- function(x, t, alpha, truncation = NULL, truncation_type =
 #'
 #' @description Calculates the quantile function of a piecewise Pareto distribution
 #'
-#' @param p Numeric. The function evaluates the quantile function at p.
+#' @param p Numeric. The function evaluates the quantile function at \code{p}.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
-#' @param alpha Numeric vector. Pareto alpha[i] = Pareto alpha in excess of t[i].
-#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
-#' @param truncation_type Charakter. If truncation_type = "wd" then the whole distribution is truncated. If truncation_type = "lp" then a truncated Pareto is used for the last piece.
+#' @param alpha Numeric vector. \code{alpha[i]} is the Pareto alpha in excess of \code{t[i]}.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the distribution is truncated at \code{truncation}.
+#' @param truncation_type Charakter. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
 #'
 #' @return Quantile function of the piecewise Pareto distribution with parameter vectors \code{t} and \code{alpha} evaluated at \code{p}
 #'
@@ -1987,17 +1989,17 @@ qPiecewisePareto_s <- function(y, t, alpha, truncation = NULL, truncation_type =
 #'
 #' @description Calculates the quantile function of a Pareto distribution
 #'
-#' @param p Numeric. The function evaluates the inverse CDF at p.
+#' @param p Numeric. The function evaluates the inverse CDF at \code{p}.
 #' @param t Numeric. Threshold of the piecewise Pareto distribution.
 #' @param alpha Numeric. Pareto alpha.
-#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the Pareto distribution is truncated at truncation.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
 #'
 #' @return Quantile function of the Pareto distribution with parameters \code{t} and \code{alpha}, evaluated at \code{p}
 #'
 #' @examples
 #' p <- 0:10 * 0.1
-#' qPiecewisePareto(p, 1000, 2)
-#' qPiecewisePareto(p, 1000, 2, truncation = 5000)
+#' qPareto(p, 1000, 2)
+#' qPareto(p, 1000, 2, truncation = 5000)
 #'
 #' @export
 
