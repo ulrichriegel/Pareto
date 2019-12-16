@@ -8,7 +8,7 @@ Description: Utilities for the Pareto and piecewise Pareto distribution
     a non-trivial algorithm that can be used to match the expected losses of a 
     tower of reinsurance layers with a layer-independent collective risk model.
     The theoretical background of the matching algorithm and most other methods
-    is described in Ulrich Riegel (2018) <doi:10.1007/s13385-018-0177-3>.
+    are described in Ulrich Riegel (2018) <doi:10.1007/s13385-018-0177-3>.
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
