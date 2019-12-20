@@ -2108,6 +2108,69 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, alpha_min = 
   return(alpha_hat)
 }
 
+#' Maximum Likelihood Estimation of the Alphas of the Piecewise Pareto Distribution
+#'
+#' @description Calculates the maximum likelihood estimator of the parameter vector alpha of a piecewise Pareto distribution
+#'
+#' @param losses Numeric vector. Losses that are used for the ML estimation.
+#' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > max(t)}, then the distribution is truncated at \code{truncation}.
+#' @param truncation_type Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
+#' @param alpha_min Numeric. Lower bound for last alpha.
+#' @param alpha_max Numeric. Upper bound for last alpha.
+#'
+#' @return Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribution with threshold \code{t} given the observations \code{losses}
+#'
+#' @examples
+#'
+#' @export
+
+PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, truncation_type = "lp", alpha_min = 0.001, alpha_max = 10) {
+  if (!is.numeric(losses) || !is.numeric(t)) {
+    warning("losses and t must be numeric.")
+    return(NA)
+  }
+  k <- length(t)
+  if (k == 1) {
+    #Result <- qPareto(y, t, alpha, truncation)
+    return(Result)
+  }
+  if (min(t) <= 0) {
+    warning("t must have positive elements!")
+    return(NA)
+  }
+  if (min(diff(t)) <= 0) {
+    warning("t must be strictily ascending!")
+    return(NA)
+  }
+
+  losses <- losses[losses > t[1]]
+  n <- length(losses)
+  if (n < 1) {
+    warning("Number of losses > t must be positive.")
+    return(NA)
+  }
+  if (!is.null(truncation)) {
+    if (truncation <= t) {
+      warning("truncation must be larger than t")
+    }
+    if (max(losses) >= truncation) {
+      warning("Losses must be < truncation.")
+      return(NA)
+    }
+  }
+  if (is.null(truncation) || is.infinite(truncation)) {
+    alpha_hat <- n / sum(log(losses / t))
+    alpha_hat <- min(alpha_max, max(alpha_min, alpha_hat))
+  } else {
+    LogLikelihood <- function(alpha) {
+      n * (alpha * log(t) + log(alpha) - log(1 - (t/truncation)^alpha)) - (alpha + 1) * sum(log(losses))
+    }
+    alpha_hat <- stats::optimise(LogLikelihood, c(alpha_min, alpha_max), maximum = T)$maximum
+  }
+  return(alpha_hat)
+}
+
 
 #' Local Pareto Alpha
 #'
