@@ -8,8 +8,10 @@ Pareto_ML_Estimator_Alpha(
   losses,
   t,
   truncation = NULL,
-  alpha_min = 0.001,
-  alpha_max = 10
+  tol = 1e-07,
+  max_iterations = 1000,
+  alpha_min = 0,
+  alpha_max = Inf
 )
 }
 \arguments{
@@ -19,9 +21,13 @@ Pareto_ML_Estimator_Alpha(
 
 \item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.}
 
-\item{alpha_min}{Numeric. Lower bound for alpha.}
+\item{tol}{Numeric. Desired accuracy  (only relevant in the truncated case).}
 
-\item{alpha_max}{Numeric. Upper bound for alpha.}
+\item{max_iterations}{Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).}
+
+\item{alpha_min}{Numeric. Deprecated.}
+
+\item{alpha_max}{Numeric. Deprecated.}
 }
 \value{
 Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribution with threshold \code{t} given the observations \code{losses}

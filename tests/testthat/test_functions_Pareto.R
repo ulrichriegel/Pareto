@@ -20,35 +20,9 @@ test_that("Pareto_Layer_Var", {
 })
 
 
-#####################################################
-# test rPiecewisePareto with truncation_type = "wd" #
-#####################################################
-
-test_that("rPiecewisePareto with truncation wd", {
-  set.seed(1972)
-  NumberOfSimulations <- 1000000
-
-  t <- c(1000,3000,5000)
-  Cover <- 8000
-  AttPoint <- 2000
-  truncation <- 6000
-  alpha <- c(0.7,1.5,2)
-  truncation_type ="wd"
-
-  expect_equal(PiecewisePareto_Layer_Mean(Cover, AttPoint,  t, alpha, truncation = truncation, truncation_type = truncation_type), 868.729076663466)
-
-  losses <- rPiecewisePareto(NumberOfSimulations, t, alpha, truncation = truncation, truncation_type = truncation_type)
-  xs_losses <- pmin(Cover, pmax(0, losses - AttPoint))
-  mean(xs_losses)
-
-  ratio <- round(mean(xs_losses) / PiecewisePareto_Layer_Mean(Cover, AttPoint,  t, alpha, truncation = truncation, truncation_type = truncation_type), 2)
-
-  expect_equal(ratio, 1)
-})
-
-#####################################################
-# test rPiecewisePareto with truncation_type = "lp" #
-#####################################################
+################################
+# test rPareto with truncation #
+################################
 
 test_that("rPareto with truncation", {
   set.seed(1972)
@@ -72,7 +46,7 @@ test_that("rPareto with truncation", {
 })
 
 ############################################
-# test rPiecewisePareto without truncation #
+# test rPareto without truncation #
 ############################################
 
 test_that("rPareto without truncation", {
@@ -118,6 +92,18 @@ test_that("Pareto_Find_Alpha_btw_FQs", {
   expect_equal(Pareto_Find_Alpha_btw_FQs(1000, 1, 2000, 0.5), 1)
   expect_equal(Pareto_Find_Alpha_btw_FQs(2000, 0.25, 1000, 1), 2)
   expect_equal(Pareto_Find_Alpha_btw_FQs(2000, 0.25, 1000, 1, truncation = 4000), 1.5849625007211574)
+})
+
+
+##################################
+# test Pareto_ML_Estimator_alpha #
+##################################
+
+test_that("Pareto_ML_Estimator_alpha", {
+  losses <- c(1622.49986584698, 1025.1735923535, 1142.67198754259, 1598.2131674777, 1369.79742768744, 1006.5249344124,
+              2019.3663238659, 1007.2758879241, 1377.79293040511, 1605.21438984656)
+  expect_equal(round(Pareto_ML_Estimator_Alpha(losses, 1000), 4), 3.4060)
+  expect_equal(round(Pareto_ML_Estimator_Alpha(losses, 1000, truncation = 3000), 4), 2.9601)
 })
 
 

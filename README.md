@@ -13,7 +13,7 @@ useful for pricing of reinsurance treaties:
 - Calculation of local Pareto alphas for normal, lognormal and gamma distributions
 - Fitting a Piecewise Pareto distribution to a tower of layer losses (for an arbitrary number of layers)
 
-Most methods are also available for truncated versions of the (piecewise) Pareto distribution.
+The methods are also available for truncated versions of the (piecewise) Pareto distribution.
 
 ## Installation
 
