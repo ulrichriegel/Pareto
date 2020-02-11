@@ -170,6 +170,19 @@ Vice versa:
 Pareto_Find_Alpha_btw_FQs(t_1, f_1, t_2, f_2)
 ```
 
+### Maximum likelihood estimation of the parameter alpha
+
+For $i=1,\dots,n$ let $X_i\sim \text{Pareto}(t_i,\alpha)$ be Pareto distributed observations. Then we have the ML estimator $$
+\hat{\alpha}^{ML}=\frac{n}{\sum_{i=1}^n\log(X_i/t_i)}.
+$$
+*Example:*
+
+Pareto distributed losses with a reporting threshold of $t=100$ and $\alpha = 2$:
+```{r}
+losses <- rPareto(1000, t = 100, alpha = 2)
+Pareto_ML_Estimator_Alpha(losses, t = 100)
+```
+
 
 ### Truncation
 
@@ -222,6 +235,18 @@ PiecewisePareto_Layer_Mean(4000, 1000, t, alpha)
 ### Layer variance
 ```{r}
 PiecewisePareto_Layer_Var(4000, 1000, t, alpha)
+```
+
+### Maximum likelihood estimation of the alphas
+
+Let $\mathbf{t}:=(t_1,\dots,t_n)$ be a vector of thresholds and let $\boldsymbol\alpha:=(\alpha_1,\dots,\alpha_n)$ be a vector of Pareto alphas. For $i=1,\dots,n$ let $X_i\sim \text{PPareto}(\mathbf{t},\boldsymbol\alpha)$. If the vector $\mathbf{t}$ is known, then the parameter vector $\boldsymbol\alpha$ can be estimated with maximum likelihood.
+
+*Example:*
+
+Piecewise Pareto distributed losses with $\mathbf{t}:=(100,\,200,\, 300)$ and $\boldsymbol\alpha:=(1,\, 2,\, 3)$:
+```{r}
+losses <- rPiecewisePareto(10000, t = c(100,200,300), alpha = c(1,2,3))
+PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300))
 ```
 
 ### Truncation

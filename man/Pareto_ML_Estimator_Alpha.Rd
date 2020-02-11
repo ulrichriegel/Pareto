@@ -17,7 +17,7 @@ Pareto_ML_Estimator_Alpha(
 \arguments{
 \item{losses}{Numeric vector. Losses that are used for the ML estimation.}
 
-\item{t}{Numeric. Threshold of the Pareto distribution.}
+\item{t}{Numeric or numeric vector. Threshold of the Pareto distribution. Alternatively, \code{t} can be a vector of same length as \code{losses}. In this case \code{t[i]} is the reporting threshold of \code{losses[i]}.}
 
 \item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.}
 
@@ -42,4 +42,10 @@ losses <- rPareto(100, 1000, 2, truncation = 2000)
 Pareto_ML_Estimator_Alpha(losses, 1000)
 Pareto_ML_Estimator_Alpha(losses, 1000, truncation = 2000)
 
+t <- rPareto(10000, 100, 2)
+alpha <- 2
+losses <- rPareto(10000, t, alpha)
+Pareto_ML_Estimator_Alpha(losses, t)
+losses <- rPareto(10000, t, alpha, truncation = 2 * max(t))
+Pareto_ML_Estimator_Alpha(losses, t, truncation = 2 * max(t))
 }

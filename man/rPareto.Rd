@@ -7,11 +7,11 @@
 rPareto(n, t, alpha, truncation = NULL)
 }
 \arguments{
-\item{n}{Number of observations.}
+\item{n}{Numeric. Number of observations.}
 
-\item{t}{Threshold of the Pareto distribution}
+\item{t}{Numeric vector. Thresholds of the Pareto distributions}
 
-\item{alpha}{Pareto alpha.}
+\item{alpha}{Numeric vector. Pareto alphas of the Pareto distributions.}
 
 \item{truncation}{If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation} (resampled Pareto)}
 }
@@ -24,5 +24,6 @@ Generates random deviates of a Pareto distribution
 \examples{
 rPareto(100, 1000, 2)
 rPareto(100, 1000, 2, truncation = 2000)
+rPareto(5, t = c(1, 10, 100, 1000, 10000), alpha = c(1,2,4,8,16))
 
 }

@@ -262,9 +262,9 @@ Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = 
 #'
 #' @description Generates random deviates of a Pareto distribution
 #'
-#' @param n Number of observations.
-#' @param t Threshold of the Pareto distribution
-#' @param alpha Pareto alpha.
+#' @param n Numeric. Number of observations.
+#' @param t Numeric vector. Thresholds of the Pareto distributions
+#' @param alpha Numeric vector. Pareto alphas of the Pareto distributions.
 #' @param truncation If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation} (resampled Pareto)
 #'
 #' @return A vector of \code{n} samples from the (truncated) Pareto distribution with parameters \code{t} and \code{alpha}
@@ -272,10 +272,19 @@ Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = 
 #' @examples
 #' rPareto(100, 1000, 2)
 #' rPareto(100, 1000, 2, truncation = 2000)
+#' rPareto(5, t = c(1, 10, 100, 1000, 10000), alpha = c(1,2,4,8,16))
 #'
 #' @export
 
 rPareto <- function(n, t, alpha, truncation = NULL) {
+  if (!is.numeric(alpha) || !is.numeric(t)) {
+    warning("alpha and t must be numeric.")
+    return(NA)
+  }
+  if (min(t) <= 0 || min(alpha) <= 0) {
+    warning("alpha and t must be positive.")
+    return(NA)
+  }
   FinvPareto <- function(x,t,alpha) {
     return(t/(1-x)^(1/alpha))
   }
@@ -283,7 +292,7 @@ rPareto <- function(n, t, alpha, truncation = NULL) {
   o <- 1
   if (!is.null(truncation)) {
     if (is.numeric(truncation)) {
-      if (truncation > t) {
+      if (truncation > max(t)) {
         o <- 1 - (t / truncation)^alpha
       }
     }
@@ -1092,6 +1101,7 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #' @param minimize_ratios Logical. If \code{TRUE} then ratios between alphas are minimized.
 #' @param Use_unlimited_Layer_for_FQ Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If \code{TRUE} then the frequency is calculated using the Pareto alpha between the last two layers.
 #' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > max(Attachment_Points)}, then the last Pareto piece is truncated at \code{truncation} (\code{truncation_type = "lp"}).
+#' @param truncation_type Character. Currently only \code{truncation_type = "lp"} supported. A truncated Pareto is used for the last piece.
 #' @param tolerance Numeric. Numerical tolerance.
 #' @param alpha_max Numerical. Maximum alpha to be used for the matching.
 #' @param merge_tolerance Numerical. Consecutive Pareto pieces are merged if the alphas deviate by less than merge_tolerance.
@@ -1116,7 +1126,7 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #'
 #' @export
 
-PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, truncation = NULL, tolerance = 1e-10, alpha_max = 100, merge_tolerance = 1e-6, RoL_tolerance = 1e-6) {
+PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, truncation = NULL, truncation_type = "lp", tolerance = 1e-10, alpha_max = 100, merge_tolerance = 1e-6, RoL_tolerance = 1e-6) {
   if (!is.numeric(Attachment_Points)) {
     stop("Attachment_Points must be numeric.")
   }
@@ -1209,6 +1219,9 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   }
   if (alpha_max <= 0) {
     stop("alpha_max must be positive.")
+  }
+  if (truncation_type != "lp") {
+    stop("Currently only the truncation type lp is supported.")
   }
   if (!is.null(truncation)) {
     if (!is.numeric(truncation)) {
@@ -2052,7 +2065,7 @@ qPareto_s <- function(y, t, alpha, truncation = NULL) {
 #' @description Calculates the maximum likelihood estimator of the parameter alpha of a Pareto distribution
 #'
 #' @param losses Numeric vector. Losses that are used for the ML estimation.
-#' @param t Numeric. Threshold of the Pareto distribution.
+#' @param t Numeric or numeric vector. Threshold of the Pareto distribution. Alternatively, \code{t} can be a vector of same length as \code{losses}. In this case \code{t[i]} is the reporting threshold of \code{losses[i]}.
 #' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
 #' @param tol Numeric. Desired accuracy  (only relevant in the truncated case).
 #' @param max_iterations Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).
@@ -2068,6 +2081,12 @@ qPareto_s <- function(y, t, alpha, truncation = NULL) {
 #' Pareto_ML_Estimator_Alpha(losses, 1000)
 #' Pareto_ML_Estimator_Alpha(losses, 1000, truncation = 2000)
 #'
+#' t <- rPareto(10000, 100, 2)
+#' alpha <- 2
+#' losses <- rPareto(10000, t, alpha)
+#' Pareto_ML_Estimator_Alpha(losses, t)
+#' losses <- rPareto(10000, t, alpha, truncation = 2 * max(t))
+#' Pareto_ML_Estimator_Alpha(losses, t, truncation = 2 * max(t))
 #' @export
 
 Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, max_iterations = 1000, alpha_min = 0, alpha_max = Inf) {
@@ -2078,11 +2097,11 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, 
     warning("losses and t must be numeric.")
     return(NA)
   }
-  if (length(t) != 1) {
-    warning("t must have lenght 1.")
+  if (length(t) != 1 & length(t) != length(losses)) {
+    warning("t must have lenght 1 or same length as losses.")
     return(NA)
   }
-  if (t <= 0) {
+  if (min(t) <= 0) {
     warning("t be positive.")
     return(NA)
   }
@@ -2093,7 +2112,7 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, 
     return(NA)
   }
   if (!is.null(truncation)) {
-    if (truncation <= t) {
+    if (truncation <= max(t)) {
       warning("truncation must be larger than t")
     }
     if (max(losses) >= truncation) {
@@ -2107,7 +2126,11 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, 
     alpha_hat_iteration <- numeric(max_iterations)
     alpha_hat_iteration[1] <- n / sum(log(losses / t))
     iteration <- function(alpha_hat) {
-      result <- n * (sum(log(losses / t)) - n * log(t / truncation) * (t / truncation)^alpha_hat / (1 - (t / truncation)^alpha_hat))^{-1}
+      if (length(t) == 1) {
+        result <- n * (sum(log(losses / t)) - n * log(t / truncation) * (t / truncation)^alpha_hat / (1 - (t / truncation)^alpha_hat))^{-1}
+      } else {
+        result <- n * (sum(log(losses / t)) - sum(log(t / truncation) * (t / truncation)^alpha_hat / (1 - (t / truncation)^alpha_hat)))^{-1}
+      }
       return(result)
     }
 

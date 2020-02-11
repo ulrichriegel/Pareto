@@ -15,6 +15,7 @@ PiecewisePareto_Match_Layer_Losses(
   minimize_ratios = TRUE,
   Use_unlimited_Layer_for_FQ = TRUE,
   truncation = NULL,
+  truncation_type = "lp",
   tolerance = 1e-10,
   alpha_max = 100,
   merge_tolerance = 1e-06,
@@ -41,6 +42,8 @@ PiecewisePareto_Match_Layer_Losses(
 \item{Use_unlimited_Layer_for_FQ}{Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If \code{TRUE} then the frequency is calculated using the Pareto alpha between the last two layers.}
 
 \item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > max(Attachment_Points)}, then the last Pareto piece is truncated at \code{truncation} (\code{truncation_type = "lp"}).}
+
+\item{truncation_type}{Character. Currently only \code{truncation_type = "lp"} supported. A truncated Pareto is used for the last piece.}
 
 \item{tolerance}{Numeric. Numerical tolerance.}
 
