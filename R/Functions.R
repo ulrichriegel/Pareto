@@ -474,7 +474,6 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
   }
 
   f <- function(alpha) {
-  #  Pareto_Layer_Mean(Cover, AttachmentPoint, alpha) * (Threshold / AttachmentPoint)^alpha * Frequency - ExpLoss
     if (AttachmentPoint < Threshold) {
       FQ_Factor <- 1 / (1 - pPareto(Threshold, AttachmentPoint, alpha, truncation = truncation))
     } else {
@@ -485,10 +484,17 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
   }
 
   Result <- NA
-  if (is.infinite(Cover) || !is.null(truncation)) {
+  if (is.infinite(Cover) && is.null(truncation)) {
+    min_alpha <- 1 + tolerance
+  } else if (is.infinite(Cover) && is.infinite(truncation)) {
+    min_alpha <- 1 + tolerance
+  } else if (!is.null(truncation)) {
     min_alpha <- tolerance
   } else {
     min_alpha <- 0
+  }
+  while (is.infinite(f(max_alpha))) {
+    max_alpha <- max_alpha / 2
   }
   try(Result <- stats::uniroot(f, c(min_alpha, max_alpha), tol = tolerance)$root, silent = T)
   if (AttachmentPoint >= Threshold && f(max_alpha) > 0) {
