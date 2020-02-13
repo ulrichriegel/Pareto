@@ -79,6 +79,7 @@ test_that("Pareto_Extrapolation", {
 test_that("Pareto_Find_Alpha_btw_FQ_Layer", {
   expect_equal(Pareto_Find_Alpha_btw_FQ_Layer(1000, 1, 2000, 2000, 100), 2.9330042139247037)
   expect_equal(Pareto_Find_Alpha_btw_FQ_Layer(1000, 1, 1000, 1000, 500), 2)
+  expect_equal(Pareto_Find_Alpha_btw_FQ_Layer(2000, 0.25, 1000, 1000, 500), 2)
   expect_equal(Pareto_Find_Alpha_btw_FQ_Layer(1000, 1, 1000, 1000, 500, truncation = 5000), 1.8363401129702193)
 })
 
