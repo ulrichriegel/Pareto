@@ -1143,13 +1143,13 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     stop("Expected_Layer_Losses must be positive.")
   }
   k <-length(Attachment_Points)
-  if (k<2) {
-    stop("Attachment_Points must have lenght >= 2.")
+  if (k<1) {
+    stop("Attachment_Points must have lenght >= 1.")
   }
   if (length(Expected_Layer_Losses) != k) {
     stop("Attachment_Points and Expected_Layer_Losses must have the same lenght.")
   }
-  if (min(diff(Attachment_Points)) <= 0) {
+  if (k > 1 && min(diff(Attachment_Points)) <= 0) {
     stop("Attachment_Points must be increasing.")
   }
   if (min(Attachment_Points) <= 0) {
@@ -1244,6 +1244,28 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   }
 
   Status <- ""
+
+  if (k == 1) {
+    Results <- list(t = Attachment_Points)
+    fq <- NULL
+    if (!is.null(Frequencies)) {
+      fq <- Frequencies[1]
+    }
+    if (!is.null(FQ_at_lowest_AttPt)) {
+      fq <- FQ_at_lowest_AttPt
+    }
+    if (is.null(fq)) {
+      alpha <- 2
+      Results$alpha <- alpha
+      Results$Status <- "OK."
+      Results$FQ <- Expected_Layer_Losses / Pareto_Layer_Mean(Inf, Attachment_Points, alpha, truncation = truncation)
+    } else {
+      Results$alpha <- Pareto_Find_Alpha_btw_FQ_Layer(Attachment_Points, fq, Inf, Attachment_Points, Expected_Layer_Losses, truncation = truncation)
+      Results$Status <- "OK."
+      Results$FQ <- fq
+    }
+  return(Results)
+  }
 
   if (Unlimited_Layers) {
     ELL <- Expected_Layer_Losses[1:(k-1)] - Expected_Layer_Losses[2:k]
