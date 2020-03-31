@@ -1134,100 +1134,129 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 
 PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, truncation = NULL, truncation_type = "lp", tolerance = 1e-10, alpha_max = 100, merge_tolerance = 1e-6, RoL_tolerance = 1e-6) {
   if (!is.numeric(Attachment_Points)) {
-    stop("Attachment_Points must be numeric.")
+    warning("Attachment_Points must be numeric.")
+    return(NA)
   }
   if (!is.numeric(Expected_Layer_Losses)) {
-    stop("Expected_Layer_Losses must be numeric.")
+    warning("Expected_Layer_Losses must be numeric.")
+    return(NA)
   }
   if (min(Expected_Layer_Losses) <= 0) {
-    stop("Expected_Layer_Losses must be positive.")
+    warning("Expected_Layer_Losses must be positive.")
+    return((NA))
   }
   k <-length(Attachment_Points)
   if (k<1) {
-    stop("Attachment_Points must have lenght >= 1.")
+    warning("Attachment_Points must have lenght >= 1.")
+    return(NA)
   }
   if (length(Expected_Layer_Losses) != k) {
-    stop("Attachment_Points and Expected_Layer_Losses must have the same lenght.")
+    warning("Attachment_Points and Expected_Layer_Losses must have the same lenght.")
+    return(NA)
   }
   if (k > 1 && min(diff(Attachment_Points)) <= 0) {
-    stop("Attachment_Points must be increasing.")
+    warning("Attachment_Points must be increasing.")
+    return(NA)
   }
   if (min(Attachment_Points) <= 0) {
-    stop("Attachment_Points must be positive.")
+    warning("Attachment_Points must be positive.")
+    return(NA)
   }
   if (!is.logical(Unlimited_Layers)) {
-    stop("Unlimited_Layers must be locigal.")
+    warning("Unlimited_Layers must be locigal.")
+    return(NA)
   }
   if (length(Unlimited_Layers) != 1) {
-    stop("Unlimited_Layers must have length 1.")
+    warning("Unlimited_Layers must have length 1.")
+    return(NA)
   }
   if (!is.null(Frequencies)) {
     if (!is.numeric(Frequencies)) {
-      stop("Frequencies must be numeric or NULL.")
+      warning("Frequencies must be numeric or NULL.")
+      return(NA)
     }
     if (length(Frequencies) != k) {
-      stop("Attachment_Points and Frequencies must have the same lenght.")
+      warning("Attachment_Points and Frequencies must have the same lenght.")
+      return(NA)
     }
   }
   if (!is.null(TotalLoss_Frequencies)) {
     if (!is.numeric(TotalLoss_Frequencies)) {
-      stop("TotalLoss_Frequencies must be numeric or NULL.")
+      warning("TotalLoss_Frequencies must be numeric or NULL.")
+      return(NA)
     }
     if (length(TotalLoss_Frequencies) != (k-1)) {
-      stop("TotalLoss_Frequencies must have lenght of Frequencies - 1.")
+      warning("TotalLoss_Frequencies must have lenght of Frequencies - 1.")
+      return(NA)
     }
     if (is.null(Frequencies)) {
-      stop("TotalLoss_Frequencies must be NULL if Frequencies is NULL.")
+      warning("TotalLoss_Frequencies must be NULL if Frequencies is NULL.")
+      return(NA)
     }
   }
   if (!is.null(FQ_at_lowest_AttPt)) {
     if (!is.numeric(FQ_at_lowest_AttPt)) {
-      stop("FQ_at_lowest_AttPt must be numeric or NULL.")
+      warning("FQ_at_lowest_AttPt must be numeric or NULL.")
+      return(NA)
     }
     if (length(FQ_at_lowest_AttPt) != 1) {
-      stop("FQ_at_lowest_AttPt must have lenght 1.")
+      warning("FQ_at_lowest_AttPt must have lenght 1.")
+      return(NA)
     }
   }
   if (!is.null(FQ_at_highest_AttPt)) {
     if (!is.numeric(FQ_at_highest_AttPt)) {
-      stop("FQ_at_highest_AttPt must be numeric or NULL.")
+      warning("FQ_at_highest_AttPt must be numeric or NULL.")
+      return(NA)
     }
     if (length(FQ_at_highest_AttPt) != 1) {
-      stop("FQ_at_highest_AttPt must have lenght 1.")
+      warning("FQ_at_highest_AttPt must have lenght 1.")
+      return(NA)
     }
   }
   if (!is.logical(minimize_ratios)) {
-    stop("minimize_ratios must be locigal.")
+    warning("minimize_ratios must be locigal.")
+    return(NA)
   }
   if (length(minimize_ratios) != 1) {
-    stop("minimize_ratios must have length 1.")
+    warning("minimize_ratios must have length 1.")
+    return(NA)
   }
   if (!is.logical(Use_unlimited_Layer_for_FQ)) {
-    stop("Use_unlimited_Layer_for_FQ must be locigal.")
+    warning("Use_unlimited_Layer_for_FQ must be locigal.")
+    return(NA)
   }
   if (length(Use_unlimited_Layer_for_FQ) != 1) {
-    stop("Use_unlimited_Layer_for_FQ must have length 1.")
+    warning("Use_unlimited_Layer_for_FQ must have length 1.")
+    return(NA)
   }
   if (!is.numeric(tolerance)) {
-    stop("tolerance must be numeric.")
+    warning("tolerance must be numeric.")
+    return(NA)
   }
   if (length(tolerance) != 1) {
-    stop("tolerance must have length 1.")
+    warning("tolerance must have length 1.")
+    return(NA)
   }
   if (tolerance <= 0) {
-    stop("tolerance must be positive.")
+    warning("tolerance must be positive.")
+    return(NA)
   }
   if (!is.numeric(alpha_max)) {
-    stop("alpha_max must be numeric.")
+    warning("alpha_max must be numeric.")
+    return(NA)
   }
   if (length(alpha_max) != 1) {
-    stop("alpha_max must have length 1.")
+    warning("alpha_max must have length 1.")
+    return(NA)
   }
   if (alpha_max <= 0) {
-    stop("alpha_max must be positive.")
+    warning("alpha_max must be positive.")
+    return(NA)
   }
   if (truncation_type != "lp") {
-    stop("Currently only the truncation type lp is supported.")
+    warning("Currently only the truncation type lp is supported.")
+    return(NA)
   }
   if (!is.null(truncation)) {
     if (!is.numeric(truncation)) {

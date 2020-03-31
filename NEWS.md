@@ -1,3 +1,8 @@
+# Pareto 1.1.4
+
+* PiecewisePareto_Match_Layer_Losses now also works for only one layer
+* Improved error handling in PiecewisePareto_Match_Layer_Losses
+
 # Pareto 1.1.3
 
 * Added maximum likelihood estimation of the alphas of a piecewise Pareto distribution.
