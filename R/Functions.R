@@ -2192,7 +2192,8 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, 
     }
 
     if(max_iterations < 2) {
-      stop("max_iterations must be > 1")
+      warning("max_iterations must be > 1")
+      return(NA)
     }
 
     check_tol <- function(i) {
@@ -2303,7 +2304,8 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
       }
 
       if(max_iterations < 2) {
-        stop("max_iterations must be > 1")
+        warning("max_iterations must be > 1")
+        return(NA)
       }
 
       alpha_hat_iteration <- matrix(NA, nrow = k, ncol = max_iterations)
