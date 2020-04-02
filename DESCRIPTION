@@ -1,7 +1,7 @@
 Package: Pareto
 Type: Package
 Title: The Pareto and the Piecewise Pareto Distribution 
-Version: 1.1.4
+Version: 1.1.5
 Authors@R: person("Ulrich", "Riegel", email = "ulrich.riegel@gmx.de", role = c("aut", "cre"))
 Description: Utilities for the Pareto and piecewise Pareto distribution
     that are useful for reinsurance pricing. In particular, the package provides

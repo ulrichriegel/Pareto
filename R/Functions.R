@@ -1389,7 +1389,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
         }
       }
     }
-    if (!Merged_Layer[1]) {
+    if (!Merged_Layer[1] && !is.na(alpha_between_layers[1])) {
       Frequencies[1] <- ELL[1] / Pareto_Layer_Mean(Limits[1], Attachment_Points[1], alpha_between_layers[1])
     } else {
       Frequencies[1] <- RoLs[1] * (1 + RoL_tolerance / 2)
