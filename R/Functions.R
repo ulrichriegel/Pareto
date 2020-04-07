@@ -1133,146 +1133,228 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #' @export
 
 PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, truncation = NULL, truncation_type = "lp", tolerance = 1e-10, alpha_max = 100, merge_tolerance = 1e-6, RoL_tolerance = 1e-6) {
+
+  Results <- list(t = NULL, alpha = NULL, FQ = NULL, Status = 0, Comment = "")
   if (!is.numeric(Attachment_Points)) {
     warning("Attachment_Points must be numeric.")
-    return(NA)
-  }
-  if (!is.numeric(Expected_Layer_Losses)) {
-    warning("Expected_Layer_Losses must be numeric.")
-    return(NA)
-  }
-  if (min(Expected_Layer_Losses) <= 0) {
-    warning("Expected_Layer_Losses must be positive.")
-    return((NA))
+    Results$Comment <- "Attachment_Points must be numeric."
+    Results$Status <- 2
+    return(Results)
   }
   k <-length(Attachment_Points)
   if (k<1) {
     warning("Attachment_Points must have lenght >= 1.")
-    return(NA)
+    Results$Comment <- "Attachment_Points must have lenght >= 1."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (!is.numeric(Expected_Layer_Losses)) {
+    warning("Expected_Layer_Losses must be numeric.")
+    Results$Comment <- "Expected_Layer_Losses must be numeric."
+    Results$Status <- 2
+    return(Results)
   }
   if (length(Expected_Layer_Losses) != k) {
     warning("Attachment_Points and Expected_Layer_Losses must have the same lenght.")
-    return(NA)
+    Results$Comment <- "Attachment_Points and Expected_Layer_Losses must have the same lenght."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (sum(Attachment_Points > 0, na.rm = T) < k) {
+    warning("Attachment_Points must be positive.")
+    Results$Comment <- "Attachment_Points must be positive."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (sum(Expected_Layer_Losses > 0, na.rm = T) < k) {
+    warning("Expected_Layer_Losses must be positive.")
+    Results$Comment <- "Expected_Layer_Losses must be positive."
+    Results$Status <- 2
+    return(Results)
   }
   if (k > 1 && min(diff(Attachment_Points)) <= 0) {
     warning("Attachment_Points must be increasing.")
-    return(NA)
-  }
-  if (min(Attachment_Points) <= 0) {
-    warning("Attachment_Points must be positive.")
-    return(NA)
+    Results$Comment <- "Attachment_Points must be increasing."
+    Results$Status <- 2
+    return(Results)
   }
   if (!is.logical(Unlimited_Layers)) {
     warning("Unlimited_Layers must be locigal.")
-    return(NA)
+    Results$Comment <- "Unlimited_Layers must be locigal."
+    Results$Status <- 2
+    return(Results)
   }
   if (length(Unlimited_Layers) != 1) {
     warning("Unlimited_Layers must have length 1.")
-    return(NA)
+    Results$Comment <- "Unlimited_Layers must have length 1."
+    Results$Status <- 2
+    return(Results)
   }
   if (!is.null(Frequencies)) {
     if (!is.numeric(Frequencies)) {
       warning("Frequencies must be numeric or NULL.")
-      return(NA)
+      Results$Comment <- "Frequencies must be numeric or NULL."
+      Results$Status <- 2
+      return(Results)
     }
     if (length(Frequencies) != k) {
       warning("Attachment_Points and Frequencies must have the same lenght.")
-      return(NA)
+      Results$Comment <- "Attachment_Points and Frequencies must have the same lenght."
+      Results$Status <- 2
+      return(Results)
+    }
+    if (sum(Frequencies <= 0, na.rm = T) > 0) {
+      warning("Elements of Frequencies must be positive or NA.")
+      Results$Comment <- paste0(Results$Comment, "Elements of Frequencies must be positive or NA. Frequencies are ignored! ")
+      Results$Status <- 1
+      Frequencies <- NULL
     }
   }
   if (!is.null(TotalLoss_Frequencies)) {
     if (!is.numeric(TotalLoss_Frequencies)) {
       warning("TotalLoss_Frequencies must be numeric or NULL.")
-      return(NA)
+      Results$Comment <- paste0(Results$Comment, "TotalLoss_Frequencies must be numeric or NULL. TotalLoss_Frequencies are ignored! ")
+      Results$Status <- 1
+      TotalLoss_Frequencies <- NULL
     }
     if (length(TotalLoss_Frequencies) != (k-1)) {
       warning("TotalLoss_Frequencies must have lenght of Frequencies - 1.")
-      return(NA)
+      Results$Comment <- paste0(Results$Comment, "TotalLoss_Frequencies must have lenght of Frequencies - 1. TotalLoss_Frequencies are ignored! ")
+      Results$Status <- 1
+      TotalLoss_Frequencies <- NULL
+    }
+    if (sum(TotalLoss_Frequencies > 0, na.rm = T) < k-1) {
+      warning("TotalLoss_Frequencies must be positive.")
+      Results$Comment <- paste0(Results$Comment, "TotalLoss_Frequencies must be positive. TotalLoss_Frequencies are ignored!  ")
+      Results$Status <- 1
+      TotalLoss_Frequencies <- NULL
     }
     if (is.null(Frequencies)) {
       warning("TotalLoss_Frequencies must be NULL if Frequencies is NULL.")
-      return(NA)
+      Results$Comment <- paste0(Results$Comment, "TotalLoss_Frequencies must be NULL if Frequencies is NULL. TotalLoss_Frequencies are ignored! ")
+      Results$Status <- 1
+      TotalLoss_Frequencies <- NULL
+    }
+    if (sum(Frequencies > 0, na.rm = T) < k) {
+      warning("Frequencies must be positive if TotalLoss_Frequencies are used.")
+      Results$Comment <- paste0(Results$Comment, "Frequencies must be positive if TotalLoss_Frequencies are used. TotalLoss_Frequencies are ignored!  ")
+      Results$Status <- 1
+      TotalLoss_Frequencies <- NULL
     }
   }
   if (!is.null(FQ_at_lowest_AttPt)) {
     if (!is.numeric(FQ_at_lowest_AttPt)) {
       warning("FQ_at_lowest_AttPt must be numeric or NULL.")
-      return(NA)
+      Results$Comment <- paste0(Results$Comment, "FQ_at_lowest_AttPt must be numeric or NULL. FQ_at_lowest_AttPt is ignored!  ")
+      Results$Status <- 1
+      FQ_at_lowest_AttPt <- NULL
     }
     if (length(FQ_at_lowest_AttPt) != 1) {
       warning("FQ_at_lowest_AttPt must have lenght 1.")
-      return(NA)
+      Results$Comment <- paste0(Results$Comment, "FQ_at_lowest_AttPt must have lenght 1. FQ_at_lowest_AttPt is ignored!  ")
+      Results$Status <- 1
+      FQ_at_lowest_AttPt <- NULL
     }
   }
   if (!is.null(FQ_at_highest_AttPt)) {
     if (!is.numeric(FQ_at_highest_AttPt)) {
       warning("FQ_at_highest_AttPt must be numeric or NULL.")
-      return(NA)
+      Results$Comment <- paste0(Results$Comment, "FQ_at_highest_AttPt must be numeric or NULL. FQ_at_highest_AttPt is ignored!  ")
+      Results$Status <- 1
+      FQ_at_highest_AttPt <- NULL
     }
     if (length(FQ_at_highest_AttPt) != 1) {
       warning("FQ_at_highest_AttPt must have lenght 1.")
-      return(NA)
+      Results$Comment <- paste0(Results$Comment, "FQ_at_highest_AttPt must have lenght 1. FQ_at_highest_AttPt is ignored!  ")
+      Results$Status <- 1
+      FQ_at_highest_AttPt <- NULL
     }
   }
   if (!is.logical(minimize_ratios)) {
     warning("minimize_ratios must be locigal.")
-    return(NA)
+    Results$Comment <- paste0(Results$Comment, "minimize_ratios must be locigal. ")
+    Results$Status <- 2
+    return(Results)
   }
   if (length(minimize_ratios) != 1) {
     warning("minimize_ratios must have length 1.")
-    return(NA)
+    Results$Comment <- paste0(Results$Comment, "minimize_ratios must have length 1.")
+    Results$Status <- 2
+    return(Results)
   }
   if (!is.logical(Use_unlimited_Layer_for_FQ)) {
     warning("Use_unlimited_Layer_for_FQ must be locigal.")
-    return(NA)
+    Results$Comment <- paste0(Results$Comment, "Use_unlimited_Layer_for_FQ must be locigal.")
+    Results$Status <- 2
+    return(Results)
   }
   if (length(Use_unlimited_Layer_for_FQ) != 1) {
     warning("Use_unlimited_Layer_for_FQ must have length 1.")
-    return(NA)
+    Results$Comment <- paste0(Results$Comment, "Use_unlimited_Layer_for_FQ must have length 1.")
+    Results$Status <- 2
+    return(Results)
   }
   if (!is.numeric(tolerance)) {
     warning("tolerance must be numeric.")
-    return(NA)
+    Results$Comment <- paste0(Results$Comment, "tolerance must be numeric.")
+    Results$Status <- 2
+    return(Results)
   }
   if (length(tolerance) != 1) {
     warning("tolerance must have length 1.")
-    return(NA)
+    Results$Comment <- paste0(Results$Comment, "tolerance must have length 1.")
+    Results$Status <- 2
+    return(Results)
   }
   if (tolerance <= 0) {
     warning("tolerance must be positive.")
-    return(NA)
+    Results$Comment <- paste0(Results$Comment, "tolerance must be positive.")
+    Results$Status <- 2
+    return(Results)
   }
   if (!is.numeric(alpha_max)) {
     warning("alpha_max must be numeric.")
-    return(NA)
+    Results$Comment <- paste0(Results$Comment, "alpha_max must be numeric.")
+    Results$Status <- 2
+    return(Results)
   }
   if (length(alpha_max) != 1) {
     warning("alpha_max must have length 1.")
-    return(NA)
+    Results$Comment <- paste0(Results$Comment, "alpha_max must have length 1.")
+    Results$Status <- 2
+    return(Results)
   }
   if (alpha_max <= 0) {
     warning("alpha_max must be positive.")
-    return(NA)
+    Results$Comment <- paste0(Results$Comment, "alpha_max must be positive.")
+    Results$Status <- 2
+    return(Results)
   }
   if (truncation_type != "lp") {
     warning("Currently only the truncation type lp is supported.")
-    return(NA)
+    Results$Comment <- paste0(Results$Comment, "Currently only the truncation type lp is supported.")
+    Results$Status <- 2
+    return(Results)
   }
   if (!is.null(truncation)) {
     if (!is.numeric(truncation)) {
-      warning("truncation must be NULL or numeric")
-      return(NA)
+      warning("truncation must be NULL or numeric.")
+      Results$Comment <- paste0(Results$Comment, "truncation must be NULL or numeric.")
+      Results$Status <- 2
+      return(Results)
     }
     if (truncation <= max(Attachment_Points)) {
-      warning("truncation must be greater than max(Attachment_Points)")
-      return(NA)
+      warning("truncation must be greater than max(Attachment_Points).")
+      Results$Comment <- paste0(Results$Comment, "truncation must be greater than max(Attachment_Points).")
+      Results$Status <- 2
+      return(Results)
     }
     if (is.infinite(truncation)) {
       truncation <- NULL
     }
   }
 
-  Status <- ""
+  #Status <- ""
 
   if (k == 1) {
     Results <- list(t = Attachment_Points)
@@ -1310,7 +1392,9 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     repeat {
       if (k<3) {
         warning("Layers cannot be merged to obtain strictly decreasing RoLs.")
-        return(NA)
+        Results$Comment <- paste0(Results$Comment, "Layers cannot be merged to obtain strictly decreasing RoLs.")
+        Results$Status <- 2
+        return(Results)
       }
       pos <- order(RoLs[2:k] / RoLs[1:(k-1)])[k-1]
       ELL[pos] <- ELL[pos] + ELL[pos+1]
@@ -1330,18 +1414,33 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       RoLs <- ELL / Limits
       if (max(RoLs[2:k] / RoLs[1:(k-1)]) < 1 - RoL_tolerance) {break}
     }
-    Status <- paste0(Status, "RoLs not strictly decreasing. Layers have been merged. ")
+    Results$Comment <- paste0(Results$Comment, "RoLs not strictly decreasing. Layers have been merged. ")
+    Results$Status <- 1
   }
+
+  if (!is.null(truncation)) {
+    RoLs_truncation <- RoLs
+    RoLs_truncation[k] <- ELL[k] / (truncation - Attachment_Points[k])
+    if (RoLs_truncation[k] / RoLs_truncation[k-1] > 1 - RoL_tolerance) {
+      warning("truncation too low!")
+      Results$Comment <- paste0(Results$Comment, "truncation too low!")
+      Results$Status <- 2
+      return(Results)
+    }
+  }
+
   if (!is.null(Frequencies)) {
     if (max(RoLs/Frequencies) >= 1 - RoL_tolerance / 2) {
       Frequencies <- NULL
       TotalLoss_Frequencies <- NULL
-      Status <- paste0(Status, "Layer entry frequencies not strictly greater than RoLs. Frequencies not used! ")
+      Results$Comment <- paste0(Results$Comment, "Layer entry frequencies not strictly greater than RoLs. Frequencies not used!  ")
+      Results$Status <- 1
     }
     if (min(RoLs[1:(k-1)]/Frequencies[2:k]) <= 1 + RoL_tolerance / 2) {
       Frequencies <- NULL
       TotalLoss_Frequencies <- NULL
-      Status <- paste0(Status, "Layer exit frequencies not strictly less than RoLs. Frequencies not used! ")
+      Results$Comment <- paste0(Results$Comment, "Layer exit frequencies not strictly less than RoLs. Frequencies not used! ")
+      Results$Status <- 1
     }
   }
   if (is.null(Frequencies)) {
@@ -1351,13 +1450,9 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
         alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Limits[i+1], Attachment_Points[i+1], ELL[i+1])
         Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Limits[i+1], Attachment_Points[i+1], alpha_between_layers[i])
         if (Merged_Layer[i] & !Merged_Layer[i+1]) {
-          #if (RoLs[i] * (1 - RoL_tolerance) > RoLs[i+1]) {
-            Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
-          #}
+          Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
         } else if (!Merged_Layer[i] & Merged_Layer[i+1]) {
-          #if (RoLs[i+1] * (1 + RoL_tolerance) < RoLs[i]) {
-            Frequencies[i+1] <- RoLs[i+1] * (1 + RoL_tolerance / 2)
-          #}
+          Frequencies[i+1] <- RoLs[i+1] * (1 + RoL_tolerance / 2)
         }
       } else {
         if (Use_unlimited_Layer_for_FQ) {
@@ -1378,7 +1473,8 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
             }
             if (Frequencies[i+1] >= RoLs[i] * (1 - RoL_tolerance)) {
               Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
-              Status <- paste0(Status, "Option Use_unlimited_Layer_for_FQ not used! ")
+              Results$Comment <- paste0(Results$Comment, "Option Use_unlimited_Layer_for_FQ not used! ")
+              Results$Status <- 1
             }
             if (Merged_Layer[i]) {
               Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
@@ -1399,24 +1495,28 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     if (FQ_at_lowest_AttPt > RoLs[1] * (1 + RoL_tolerance / 2)) {
       Frequencies[1] <- FQ_at_lowest_AttPt
     } else {
-      Status <- paste0(Status, "FQ_at_lowest_AttPt too small. Not used! ")
+      Results$Comment <- paste0(Results$Comment, "FQ_at_lowest_AttPt too small. Not used! ")
+      Results$Status <- 1
     }
   }
   if (!is.null(FQ_at_highest_AttPt)) {
     if (FQ_at_highest_AttPt < RoLs[k-1] * (1 - RoL_tolerance)) {
       Frequencies[k] <- FQ_at_highest_AttPt
     } else {
-      Status <- paste0(Status, "FQ_at_highest_AttPt too large. Not used! ")
+      Results$Comment <- paste0(Results$Comment, "FQ_at_highest_AttPt too large. Not used! ")
+      Results$Status <- 1
     }
   }
   if (!is.null(TotalLoss_Frequencies)) {
     if (max(TotalLoss_Frequencies - RoLs[1:(k-1)]) >= 0) {
       TotalLoss_Frequencies <- NULL
-      Status <- paste0(Status, "TotalLoss_Frequencies not strictly less than RoLs. TotalLoss_Frequencies not used! ")
+      Results$Comment <- paste0(Results$Comment, "TotalLoss_Frequencies not strictly less than RoLs. TotalLoss_Frequencies not used! ")
+      Results$Status <- 1
     }
     if (max(TotalLoss_Frequencies - Frequencies[2:k]) < 0) {
       TotalLoss_Frequencies <- NULL
-      Status <- paste0(Status, "TotalLoss_Frequencies not greater than or equal to Frequencies. TotalLoss_Frequencies not used! ")
+      Results$Comment <- paste0(Results$Comment, "TotalLoss_Frequencies not greater than or equal to Frequencies. TotalLoss_Frequencies not used! ")
+      Results$Status <- 1
     }
   }
 
@@ -1452,7 +1552,9 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     AvLossLastLayer <- Pareto_Layer_Mean(Inf, Attachment_Points[k], alpha = tolerance, truncation = truncation)
     if (Frequencies[k] * AvLossLastLayer <= ELL[k]) {
       warning("truncation too low!")
-      return(NA)
+      Results$Comment <- paste0(Results$Comment, "truncation too low!")
+      Results$Status <- 2
+      return(Results)
     }
   }
 
@@ -1460,11 +1562,18 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   s <- Frequencies / Frequencies[1]
   l <- ELL / Frequencies[1]
 
-  Results <- Fit_PP(Attachment_Points, s, l, truncation = truncation, alpha_max = alpha_max, minimize_ratios = minimize_ratios, merge_tolerance = merge_tolerance)
+  Results_Fit_PP <- Fit_PP(Attachment_Points, s, l, truncation = truncation, alpha_max = alpha_max, minimize_ratios = minimize_ratios, merge_tolerance = merge_tolerance)
 
+  if (Results_Fit_PP$Status != "OK") {
+    Results$Comment <- paste0(Results$Comment, "Statis of Fit_PP not OK")
+    Results$Status <- 2
+    return(Results)
+  }
+
+  Results$t <- Results_Fit_PP$t
+  Results$alpha <- Results_Fit_PP$alpha
   Results$FQ <- Frequencies[1]
-  if (Status == "") {Status <- "OK."}
-  Results$Status <- Status
+  if (Results$Comment == "") {Results$Comment <- "OK"}
   return(Results)
 }
 
