@@ -29,11 +29,11 @@ PiecewisePareto_Match_Layer_Losses(
 
 \item{Unlimited_Layers}{Logical. If \code{TRUE}, then \code{Expected_Layer_Losses[i]} contains the expected loss of \code{Inf} xs \code{Attachment_Points[i]}. If \code{FALSE} then \code{Expected_Layer_Losses[i]} contains the expected loss of the layer \code{Attachment_Points[i+1]} xs \code{Attachment_Points[i]}}
 
-\item{Frequencies}{Numeric vector. Expected frequencies excess the attachment points. If \code{NULL} then the function calculates frequencies.}
+\item{Frequencies}{Numeric vector. Expected frequencies excess the attachment points. The vector may contain NAs. If \code{NULL} then the function calculates frequencies.}
 
-\item{FQ_at_lowest_AttPt}{Numerical. Expected frequency excess \code{Attachment_Points[1]}}
+\item{FQ_at_lowest_AttPt}{Numerical. Expected frequency excess \code{Attachment_Points[1]}. Overrules first entry in Frequencies.}
 
-\item{FQ_at_highest_AttPt}{Numerical. Expected frequency excess \code{Attachment_Points[k]}}
+\item{FQ_at_highest_AttPt}{Numerical. Expected frequency excess \code{Attachment_Points[k]}. Overrules last entry in Frequencies.}
 
 \item{TotalLoss_Frequencies}{Numeric vector. \code{TotalLoss_Frequencies[i]} is the frequency of total losses to layer \code{i} (i.e. \code{Attachment_Points[i+1] - Attachment_Points[i]} xs \code{Attachment_Points[i]}).    \code{TotalLoss_Frequencies[i]} is the frequency for losses larger than or equal to \code{Attachment_Points[i+1]}, whereas \code{Frequencies[i]} is the frequency of losses larger than \code{Attachment_Points[i]}.    \code{TotalLoss_Frequencies[i] > Frequencies[i+1]} means that there is a point mass of the severity at \code{Attachment_Points[i+1]}.}
 
@@ -57,8 +57,9 @@ PiecewisePareto_Match_Layer_Losses(
 A list containing the following objects: \itemize{
 \item \code{t} Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution
 \item \code{alpha} Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution
-\item \code{Status} Character. Information on whether the fit was successful
 \item \code{FQ} Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution
+\item \code{Status} Numerical indicator: 0 = success, 1 = some information has been ignored, 2 = no solution found
+\item \code{Comment} Character. Information on whether the fit was successful
 }
 }
 \description{

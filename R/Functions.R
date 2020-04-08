@@ -1100,9 +1100,9 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #' @param Attachment_Points Numeric vector. Vector containing the attachment points of consecutive layers in increasing order
 #' @param Expected_Layer_Losses Numeric vector. Vector containing the expected losses of layers xs the attachment points.
 #' @param Unlimited_Layers Logical. If \code{TRUE}, then \code{Expected_Layer_Losses[i]} contains the expected loss of \code{Inf} xs \code{Attachment_Points[i]}. If \code{FALSE} then \code{Expected_Layer_Losses[i]} contains the expected loss of the layer \code{Attachment_Points[i+1]} xs \code{Attachment_Points[i]}
-#' @param Frequencies Numeric vector. Expected frequencies excess the attachment points. If \code{NULL} then the function calculates frequencies.
-#' @param FQ_at_lowest_AttPt Numerical. Expected frequency excess \code{Attachment_Points[1]}
-#' @param FQ_at_highest_AttPt Numerical. Expected frequency excess \code{Attachment_Points[k]}
+#' @param Frequencies Numeric vector. Expected frequencies excess the attachment points. The vector may contain NAs. If \code{NULL} then the function calculates frequencies.
+#' @param FQ_at_lowest_AttPt Numerical. Expected frequency excess \code{Attachment_Points[1]}. Overrules first entry in Frequencies.
+#' @param FQ_at_highest_AttPt Numerical. Expected frequency excess \code{Attachment_Points[k]}. Overrules last entry in Frequencies.
 #' @param TotalLoss_Frequencies Numeric vector. \code{TotalLoss_Frequencies[i]} is the frequency of total losses to layer \code{i} (i.e. \code{Attachment_Points[i+1] - Attachment_Points[i]} xs \code{Attachment_Points[i]}).    \code{TotalLoss_Frequencies[i]} is the frequency for losses larger than or equal to \code{Attachment_Points[i+1]}, whereas \code{Frequencies[i]} is the frequency of losses larger than \code{Attachment_Points[i]}.    \code{TotalLoss_Frequencies[i] > Frequencies[i+1]} means that there is a point mass of the severity at \code{Attachment_Points[i+1]}.
 #' @param minimize_ratios Logical. If \code{TRUE} then ratios between alphas are minimized.
 #' @param Use_unlimited_Layer_for_FQ Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If \code{TRUE} then the frequency is calculated using the Pareto alpha between the last two layers.
@@ -1116,8 +1116,9 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #' @return A list containing the following objects: \itemize{
 #' \item \code{t} Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution
 #' \item \code{alpha} Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution
-#' \item \code{Status} Character. Information on whether the fit was successful
 #' \item \code{FQ} Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution
+#' \item \code{Status} Numerical indicator: 0 = success, 1 = some information has been ignored, 2 = no solution found
+#' \item \code{Comment} Character. Information on whether the fit was successful
 #' }
 #'
 #' @examples
@@ -1248,10 +1249,14 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       Results$Comment <- paste0(Results$Comment, "FQ_at_lowest_AttPt must be numeric or NULL. FQ_at_lowest_AttPt is ignored!  ")
       Results$Status <- 1
       FQ_at_lowest_AttPt <- NULL
-    }
-    if (length(FQ_at_lowest_AttPt) != 1) {
+    } else if (length(FQ_at_lowest_AttPt) != 1) {
       warning("FQ_at_lowest_AttPt must have lenght 1.")
       Results$Comment <- paste0(Results$Comment, "FQ_at_lowest_AttPt must have lenght 1. FQ_at_lowest_AttPt is ignored!  ")
+      Results$Status <- 1
+      FQ_at_lowest_AttPt <- NULL
+    } else if (FQ_at_lowest_AttPt <= 0) {
+      warning("FQ_at_lowest_AttPt must be positive.")
+      Results$Comment <- paste0(Results$Comment, "FQ_at_lowest_AttPt must be positive. FQ_at_lowest_AttPt is ignored!  ")
       Results$Status <- 1
       FQ_at_lowest_AttPt <- NULL
     }
@@ -1262,10 +1267,14 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       Results$Comment <- paste0(Results$Comment, "FQ_at_highest_AttPt must be numeric or NULL. FQ_at_highest_AttPt is ignored!  ")
       Results$Status <- 1
       FQ_at_highest_AttPt <- NULL
-    }
-    if (length(FQ_at_highest_AttPt) != 1) {
+    } else if (length(FQ_at_highest_AttPt) != 1) {
       warning("FQ_at_highest_AttPt must have lenght 1.")
       Results$Comment <- paste0(Results$Comment, "FQ_at_highest_AttPt must have lenght 1. FQ_at_highest_AttPt is ignored!  ")
+      Results$Status <- 1
+      FQ_at_highest_AttPt <- NULL
+    } else if (FQ_at_highest_AttPt <= 0) {
+      warning("FQ_at_highest_AttPt must be positive.")
+      Results$Comment <- paste0(Results$Comment, "FQ_at_highest_AttPt must be positive. FQ_at_highest_AttPt is ignored!  ")
       Results$Status <- 1
       FQ_at_highest_AttPt <- NULL
     }
@@ -1343,6 +1352,12 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       Results$Status <- 2
       return(Results)
     }
+    if (length(truncation) != 1) {
+      warning("truncation must have length 1.")
+      Results$Comment <- paste0(Results$Comment, "truncation must have length 1.")
+      Results$Status <- 2
+      return(Results)
+    }
     if (truncation <= max(Attachment_Points)) {
       warning("truncation must be greater than max(Attachment_Points).")
       Results$Comment <- paste0(Results$Comment, "truncation must be greater than max(Attachment_Points).")
@@ -1354,13 +1369,14 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     }
   }
 
-  #Status <- ""
-
   if (k == 1) {
-    Results <- list(t = Attachment_Points)
+    Results$t <- Attachment_Points
     fq <- NULL
-    if (!is.null(Frequencies)) {
+    if (!is.null(Frequencies) && !is.na(Frequencies[1])) {
       fq <- Frequencies[1]
+    }
+    if (!is.null(FQ_at_highest_AttPt)) {
+      fq <- FQ_at_highest_AttPt
     }
     if (!is.null(FQ_at_lowest_AttPt)) {
       fq <- FQ_at_lowest_AttPt
@@ -1368,14 +1384,21 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     if (is.null(fq)) {
       alpha <- 2
       Results$alpha <- alpha
-      Results$Status <- "OK."
       Results$FQ <- Expected_Layer_Losses / Pareto_Layer_Mean(Inf, Attachment_Points, alpha, truncation = truncation)
     } else {
-      Results$alpha <- Pareto_Find_Alpha_btw_FQ_Layer(Attachment_Points, fq, Inf, Attachment_Points, Expected_Layer_Losses, truncation = truncation)
-      Results$Status <- "OK."
+      suppressWarnings(Results$alpha <- Pareto_Find_Alpha_btw_FQ_Layer(Attachment_Points, fq, Inf, Attachment_Points, Expected_Layer_Losses, truncation = truncation))
+      if (is.na(Results$alpha)) {
+        warning("truncation too low.")
+        Results$t <- NULL
+        Results$alpha <- NULL
+        Results$Comment <- paste0(Results$Comment, "truncation too low.")
+        Results$Status <- 2
+        return(Results)
+      }
       Results$FQ <- fq
     }
-  return(Results)
+    if (Results$Comment == "") {Results$Comment <- "OK"}
+    return(Results)
   }
 
   if (Unlimited_Layers) {
@@ -1430,71 +1453,80 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   }
 
   if (!is.null(Frequencies)) {
-    if (max(RoLs/Frequencies) >= 1 - RoL_tolerance / 2) {
+    if (max(RoLs/Frequencies, na.rm = T) >= 1 - RoL_tolerance / 2) {
       Frequencies <- NULL
       TotalLoss_Frequencies <- NULL
+      warning("Layer entry frequencies not strictly greater than RoLs.")
       Results$Comment <- paste0(Results$Comment, "Layer entry frequencies not strictly greater than RoLs. Frequencies not used!  ")
       Results$Status <- 1
     }
-    if (min(RoLs[1:(k-1)]/Frequencies[2:k]) <= 1 + RoL_tolerance / 2) {
+    if (min(RoLs[1:(k-1)]/Frequencies[2:k], na.rm = T) <= 1 + RoL_tolerance / 2) {
       Frequencies <- NULL
       TotalLoss_Frequencies <- NULL
+      warning("Layer exit frequencies not strictly less than RoLs.")
       Results$Comment <- paste0(Results$Comment, "Layer exit frequencies not strictly less than RoLs. Frequencies not used! ")
       Results$Status <- 1
     }
   }
   if (is.null(Frequencies)) {
-    alpha_between_layers <- numeric(k-1)
-    for (i in 1:(k-1)) {
-      if (i < k-1) {
-        alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Limits[i+1], Attachment_Points[i+1], ELL[i+1])
-        Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Limits[i+1], Attachment_Points[i+1], alpha_between_layers[i])
-        if (Merged_Layer[i] & !Merged_Layer[i+1]) {
-          Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
-        } else if (!Merged_Layer[i] & Merged_Layer[i+1]) {
-          Frequencies[i+1] <- RoLs[i+1] * (1 + RoL_tolerance / 2)
-        }
-      } else {
+    Frequencies <- rep(NA, k)
+  }
+  alpha_between_layers <- numeric(k-1)
+  for (i in 1:(k-1)) {
+    if (i < k-1 && is.na(Frequencies[i+1])) {
+      alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Limits[i+1], Attachment_Points[i+1], ELL[i+1])
+      Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Limits[i+1], Attachment_Points[i+1], alpha_between_layers[i])
+      if (Merged_Layer[i] & !Merged_Layer[i+1]) {
+        Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
+      } else if (!Merged_Layer[i] & Merged_Layer[i+1]) {
+        Frequencies[i+1] <- RoLs[i+1] * (1 + RoL_tolerance / 2)
+      }
+    } else if (is.na(Frequencies[i+1])) {
+      if (is.null(truncation)) {
         if (Use_unlimited_Layer_for_FQ) {
-          if (is.null(truncation)) {
-            alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Inf, Attachment_Points[i+1], ELL[i+1])
-            Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Inf, Attachment_Points[i+1], alpha_between_layers[i])
-            if (Merged_Layer[i]) {
-              Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
-            }
-          } else {
-            suppressWarnings(alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Inf, Attachment_Points[i+1], ELL[i+1], truncation = truncation))
-            if (!is.na(alpha_between_layers[i])) {
-              Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Inf, Attachment_Points[i+1], alpha_between_layers[i], truncation = truncation)
-            }
-            if (is.na(alpha_between_layers[i]) || Frequencies[i+1] >= RoLs[i]) {
-              Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Inf, Attachment_Points[i+1], alpha = tolerance, truncation = truncation)
-              Frequencies[i+1] <- (Frequencies[i+1] + RoLs[i]) / 2
-            }
-            if (Frequencies[i+1] >= RoLs[i] * (1 - RoL_tolerance)) {
-              Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
-              Results$Comment <- paste0(Results$Comment, "Option Use_unlimited_Layer_for_FQ not used! ")
-              Results$Status <- 1
-            }
-            if (Merged_Layer[i]) {
-              Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
-            }
+          alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Inf, Attachment_Points[i+1], ELL[i+1])
+          Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Inf, Attachment_Points[i+1], alpha_between_layers[i])
+          if (Merged_Layer[i]) {
+            Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
           }
         } else {
           Frequencies[i+1] <- Frequencies[i] * (Attachment_Points[i]/Attachment_Points[i+1])^alpha_between_layers[i-1]
         }
+      } else {
+        suppressWarnings(alpha_between_layers[i] <-  Pareto_Find_Alpha_btw_Layers(Limits[i], Attachment_Points[i], ELL[i], Inf, Attachment_Points[i+1], ELL[i+1], truncation = truncation))
+        if (!is.na(alpha_between_layers[i])) {
+          Frequencies[i+1] <- ELL[i+1] / Pareto_Layer_Mean(Inf, Attachment_Points[i+1], alpha_between_layers[i], truncation = truncation)
+        } else {
+          warning("truncation too low!")
+          Results$Comment <- paste0(Results$Comment, "truncation too low!")
+          Results$Status <- 2
+          return(Results)
+        }
+        if (Frequencies[i+1] >= RoLs[i] * (1 - RoL_tolerance / 2)) {
+          Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
+          warning("Option Use_unlimited_Layer_for_FQ not used!")
+          Results$Comment <- paste0(Results$Comment, "Option Use_unlimited_Layer_for_FQ not used! ")
+          Results$Status <- 1
+        }
+        if (Merged_Layer[i]) {
+          Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
+        }
       }
     }
+  }
+  if (is.na(Frequencies[1])) {
     if (!Merged_Layer[1] && !is.na(alpha_between_layers[1])) {
       Frequencies[1] <- ELL[1] / Pareto_Layer_Mean(Limits[1], Attachment_Points[1], alpha_between_layers[1])
     } else {
       Frequencies[1] <- RoLs[1] * (1 + RoL_tolerance / 2)
     }
   }
+
   if (!is.null(FQ_at_lowest_AttPt)) {
     if (FQ_at_lowest_AttPt > RoLs[1] * (1 + RoL_tolerance / 2)) {
       Frequencies[1] <- FQ_at_lowest_AttPt
     } else {
+      warning("FQ_at_lowest_AttPt too small. Not used!")
       Results$Comment <- paste0(Results$Comment, "FQ_at_lowest_AttPt too small. Not used! ")
       Results$Status <- 1
     }
@@ -1503,6 +1535,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     if (FQ_at_highest_AttPt < RoLs[k-1] * (1 - RoL_tolerance)) {
       Frequencies[k] <- FQ_at_highest_AttPt
     } else {
+      warning("FQ_at_highest_AttPt too large.")
       Results$Comment <- paste0(Results$Comment, "FQ_at_highest_AttPt too large. Not used! ")
       Results$Status <- 1
     }
@@ -1510,16 +1543,29 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   if (!is.null(TotalLoss_Frequencies)) {
     if (max(TotalLoss_Frequencies - RoLs[1:(k-1)]) >= 0) {
       TotalLoss_Frequencies <- NULL
+      warning("TotalLoss_Frequencies not strictly less than RoLs.")
       Results$Comment <- paste0(Results$Comment, "TotalLoss_Frequencies not strictly less than RoLs. TotalLoss_Frequencies not used! ")
       Results$Status <- 1
     }
     if (max(TotalLoss_Frequencies - Frequencies[2:k]) < 0) {
       TotalLoss_Frequencies <- NULL
+      warning("TotalLoss_Frequencies not greater than or equal to Frequencies.")
       Results$Comment <- paste0(Results$Comment, "TotalLoss_Frequencies not greater than or equal to Frequencies. TotalLoss_Frequencies not used! ")
       Results$Status <- 1
     }
   }
 
+  # Check whether frequency at highest attachment point is large enough in case of truncation
+  if (!is.null(truncation)) {
+    suppressWarnings(alpha_test <- Pareto_Find_Alpha_btw_FQ_Layer(Attachment_Points[k], Frequencies[k], Inf, Attachment_Points[k], ELL[k], truncation = truncation))
+    if (is.na(alpha_test)) {
+      warning("truncation too low.")
+      Results$Comment <- paste0(Results$Comment, "truncation too low. ")
+      Results$Status <- 2
+      return(Results)
+
+    }
+  }
 
   if (!is.null(TotalLoss_Frequencies)) {
     if (max(TotalLoss_Frequencies - Frequencies[2:k]) > 0) {
