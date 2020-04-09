@@ -1339,9 +1339,9 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     Results$Status <- 2
     return(Results)
   }
-  if (truncation_type != "lp") {
-    warning("Currently only the truncation type lp is supported.")
-    Results$Comment <- paste0(Results$Comment, "Currently only the truncation type lp is supported.")
+  if (!(truncation_type %in% c("lp", "wd"))) {
+    warning("truncation_type must be lp or wd.")
+    Results$Comment <- paste0(Results$Comment, "truncation_type must be lp or wd.")
     Results$Status <- 2
     return(Results)
   }
@@ -1407,8 +1407,72 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   } else {
     ELL <- Expected_Layer_Losses
   }
+
   Limits <- Attachment_Points[2:k] - Attachment_Points[1:(k-1)]
   Limits <- c(Limits, Inf)
+
+  #######################################################################
+  # Transform truncation of whole distribution into untruncated problem #
+  #######################################################################
+  truncation_wd <- FALSE
+  if (!is.null(truncation) && !is.infinite(truncation) && truncation_type =="wd") {
+    truncation_wd <- TRUE
+
+    k <- k + 1
+    Attachment_Points <- c(Attachment_Points, truncation)
+    truncation <- NULL
+    Limits[k-1] <- Attachment_Points[k] - Attachment_Points[k-1]
+    Limits <- c(Limits, Inf)
+
+    if (is.null(Frequencies)) {
+      Frequencies <- rep(NA, k)
+    } else {
+      Frequencies <- c(Frequencies, NA)
+    }
+    if (!is.null(FQ_at_lowest_AttPt)) {
+      Frequencies[1] <- FQ_at_lowest_AttPt
+      FQ_at_lowest_AttPt <- NULL
+    }
+    if (!is.null(FQ_at_highest_AttPt)) {
+      Frequencies[k-1] <- FQ_at_highest_AttPt
+      FQ_at_highest_AttPt <- NULL
+    }
+    if (is.na(Frequencies[k-1])) {
+      suppressWarnings(alpha_wd <- Pareto_Find_Alpha_btw_Layers(Limits[k-2], Attachment_Points[k-2], ELL[k-2], Limits[k-1], Attachment_Points[k-1], ELL[k-1], truncation = Attachment_Points[k]))
+      if (is.na(alpha_wd)) {
+        warning("truncation too low.")
+        Results$Comment <- paste0(Results$Comment, "truncation too low.")
+        Results$Status <- 2
+        return(Results)
+      }
+      Frequencies[k-1] <- ELL[k-1] / Pareto_Layer_Mean(Limits[k-1], Attachment_Points[k-1], alpha_wd, truncation = Attachment_Points[k])
+    }
+    suppressWarnings(alpha_wd <- Pareto_Find_Alpha_btw_FQ_Layer(Attachment_Points[k-1], Frequencies[k-1], Limits[k-1], Attachment_Points[k-1], ELL[k-1], truncation = Attachment_Points[k]))
+    if (is.na(alpha_wd)) {
+      warning("truncation too low.")
+      Results$Comment <- paste0(Results$Comment, "truncation too low.")
+      Results$Status <- 2
+      return(Results)
+    }
+    alpha_wd <- max(alpha_wd, 1.2)
+    f_wd <- (Attachment_Points[k-1] / Attachment_Points[k])^alpha_wd
+    Frequencies[k] <- Frequencies[k-1] * f_wd / (1 - f_wd) # Frequency xs truncation point if distribution is not truncated
+    Frequencies[1:(k-1)] <- Frequencies[1:(k-1)] + Frequencies[k]
+
+    if (!is.null(TotalLoss_Frequencies)) {
+      TotalLoss_Frequencies <- c(TotalLoss_Frequencies, 0)
+      TotalLoss_Frequencies <- TotalLoss_Frequencies + Frequencies[k]
+    }
+    ELL <- ELL + Limits[1:(k-1)] * Frequencies[k]
+    ELL <- c(ELL, NA)
+    ELL[k] <- Frequencies[k] * Pareto_Layer_Mean(Inf, Attachment_Points[k], alpha_wd)
+  }
+
+  #########################
+  # End of transformation #
+  #########################
+
+
   RoLs <- ELL / Limits
   Merged_Layer <- rep(FALSE, k)
   if (max(RoLs[2:k] / RoLs[1:(k-1)]) >= 1 - RoL_tolerance) {
@@ -1516,6 +1580,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   }
   if (is.na(Frequencies[1])) {
     if (!Merged_Layer[1] && !is.na(alpha_between_layers[1])) {
+      alpha_between_layers[1] <-  Pareto_Find_Alpha_btw_Layers(Limits[1], Attachment_Points[1], ELL[1], Limits[2], Attachment_Points[2], ELL[2])
       Frequencies[1] <- ELL[1] / Pareto_Layer_Mean(Limits[1], Attachment_Points[1], alpha_between_layers[1])
     } else {
       Frequencies[1] <- RoLs[1] * (1 + RoL_tolerance / 2)
@@ -1618,7 +1683,11 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
 
   Results$t <- Results_Fit_PP$t
   Results$alpha <- Results_Fit_PP$alpha
-  Results$FQ <- Frequencies[1]
+  if (truncation_wd) {
+    Results$FQ <- Frequencies[1] - Frequencies[k]
+  } else {
+    Results$FQ <- Frequencies[1]
+  }
   if (Results$Comment == "") {Results$Comment <- "OK"}
   return(Results)
 }

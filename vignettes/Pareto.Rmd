@@ -251,7 +251,7 @@ PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300))
 
 ### Truncation
 
-The package also provides truncated versions of the piecewise Pareto distribution. In most functions there are two options available:
+The package also provides truncated versions of the piecewise Pareto distribution. There are two options available:
 
 * `truncation_type = 'lp'`: Below the largest threshold $t_n$, the distribution function equals the distribution of the piecewise Pareto
                             distribution without truncation. The last Pareto piece, however, is truncated at `truncation`
