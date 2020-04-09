@@ -1135,7 +1135,11 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 
 PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, truncation = NULL, truncation_type = "lp", tolerance = 1e-10, alpha_max = 100, merge_tolerance = 1e-6, RoL_tolerance = 1e-6) {
 
-  Results <- list(t = NULL, alpha = NULL, FQ = NULL, Status = 0, Comment = "")
+  #Results <- list(t = NULL, alpha = NULL, FQ = NULL, Status = 0, Comment = "")
+  Results <- PPP_model()
+  #######################
+  # daten zu Truncation müssen noch eingepflegt werden
+  ##########################
   if (!is.numeric(Attachment_Points)) {
     warning("Attachment_Points must be numeric.")
     Results$Comment <- "Attachment_Points must be numeric."
@@ -1368,6 +1372,9 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       truncation <- NULL
     }
   }
+
+  Results$truncation <- truncation
+  Results$truncation_type <- truncation_type
 
   if (k == 1) {
     Results$t <- Attachment_Points
