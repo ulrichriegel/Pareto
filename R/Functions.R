@@ -1106,17 +1106,21 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #' @param TotalLoss_Frequencies Numeric vector. \code{TotalLoss_Frequencies[i]} is the frequency of total losses to layer \code{i} (i.e. \code{Attachment_Points[i+1] - Attachment_Points[i]} xs \code{Attachment_Points[i]}).    \code{TotalLoss_Frequencies[i]} is the frequency for losses larger than or equal to \code{Attachment_Points[i+1]}, whereas \code{Frequencies[i]} is the frequency of losses larger than \code{Attachment_Points[i]}.    \code{TotalLoss_Frequencies[i] > Frequencies[i+1]} means that there is a point mass of the severity at \code{Attachment_Points[i+1]}.
 #' @param minimize_ratios Logical. If \code{TRUE} then ratios between alphas are minimized.
 #' @param Use_unlimited_Layer_for_FQ Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If \code{TRUE} then the frequency is calculated using the Pareto alpha between the last two layers.
-#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > max(Attachment_Points)}, then the last Pareto piece is truncated at \code{truncation} (\code{truncation_type = "lp"}).
-#' @param truncation_type Character. Currently only \code{truncation_type = "lp"} supported. A truncated Pareto is used for the last piece.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL}, then the distribution is truncated at \code{truncation}.
+#' @param truncation_type Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
+#' @param dispersion Numerical. Dispersion of the claim count distribution in the resulting PPP_Model.
 #' @param tolerance Numeric. Numerical tolerance.
 #' @param alpha_max Numerical. Maximum alpha to be used for the matching.
 #' @param merge_tolerance Numerical. Consecutive Pareto pieces are merged if the alphas deviate by less than merge_tolerance.
 #' @param RoL_tolerance Numerical. Consecutive layers are merged if RoL decreases less than factor \code{1 - RoL_tolerance}.
 
-#' @return A list containing the following objects: \itemize{
+#' @return A PPP_Model object that contains the information about a collective model with a Panjer distributed claim count and a Piecewise Pareto distributed severity. The object contains the following elements: \itemize{
+#' \item \code{FQ} Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution
 #' \item \code{t} Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution
 #' \item \code{alpha} Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution
-#' \item \code{FQ} Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution
+#' \item \code{truncation} Numerical. If \code{truncation} is not \code{NULL} and \code{truncation > max(t)}, then the distribution is truncated at \code{truncation}.
+#' \item \code{truncation_type} Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
+#' \item \code{dispersion} Numerical. Dispersion of the Panjer distribution (i.e. variance to mean ratio).
 #' \item \code{Status} Numerical indicator: 0 = success, 1 = some information has been ignored, 2 = no solution found
 #' \item \code{Comment} Character. Information on whether the fit was successful
 #' }
@@ -1133,10 +1137,19 @@ rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "
 #'
 #' @export
 
-PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, truncation = NULL, truncation_type = "lp", tolerance = 1e-10, alpha_max = 100, merge_tolerance = 1e-6, RoL_tolerance = 1e-6) {
+PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer_Losses, Unlimited_Layers = FALSE, Frequencies = NULL, FQ_at_lowest_AttPt = NULL, FQ_at_highest_AttPt = NULL, TotalLoss_Frequencies = NULL, minimize_ratios = TRUE, Use_unlimited_Layer_for_FQ = TRUE, truncation = NULL, truncation_type = "lp", dispersion = 1, tolerance = 1e-10, alpha_max = 100, merge_tolerance = 1e-6, RoL_tolerance = 1e-6) {
 
-  #Results <- list(t = NULL, alpha = NULL, FQ = NULL, Status = 0, Comment = "")
-  Results <- PPP_model()
+  Results <- PPP_Model()
+  if (!is.positive.finite.number(dispersion)) {
+    warning("Attachment_Points must be numeric.")
+    Results$Comment <- "Attachment_Points must be numeric."
+    Results$Status <- 2
+    return(Results)
+  } else {
+    Results$dispersion <- dispersion
+  }
+
+
   #######################
   # daten zu Truncation müssen noch eingepflegt werden
   ##########################
@@ -1373,8 +1386,10 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     }
   }
 
-  Results$truncation <- truncation
-  Results$truncation_type <- truncation_type
+  if (!is.null(truncation)) {
+    Results$truncation <- truncation
+    Results$truncation_type <- truncation_type
+  }
 
   if (k == 1) {
     Results$t <- Attachment_Points
@@ -1683,9 +1698,11 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   Results_Fit_PP <- Fit_PP(Attachment_Points, s, l, truncation = truncation, alpha_max = alpha_max, minimize_ratios = minimize_ratios, merge_tolerance = merge_tolerance)
 
   if (Results_Fit_PP$Status != "OK") {
-    Results$Comment <- paste0(Results$Comment, "Statis of Fit_PP not OK")
+    Results$Comment <- paste0(Results$Comment, "Status of Fit_PP not OK")
     Results$Status <- 2
     return(Results)
+  } else {
+    Results$Status <- 0
   }
 
   Results$t <- Results_Fit_PP$t
