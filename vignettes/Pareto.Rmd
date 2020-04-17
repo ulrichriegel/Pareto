@@ -294,7 +294,7 @@ exp_losses <- c(100, 90, 50, 40, 100)
 fit <- PiecewisePareto_Match_Layer_Losses(attachment_points, exp_losses)
 fit
 ```
-Check:
+The function `PiecewisePareto_Match_Layer_Losses` returns a `PPP_Model` object (PPP stands for Panjer & Piecewise Pareto) which contains the information required to specify a collective model with a Panjer distributed claim count and a piecewise Pareto distributed severity. The results can be checked using the attributes `FQ`, `t` and `alpha` of the object:
 ```{R}
 c(PiecewisePareto_Layer_Mean(500, 1000, fit$t, fit$alpha) * fit$FQ,
   PiecewisePareto_Layer_Mean(500, 1500, fit$t, fit$alpha) * fit$FQ,
@@ -302,6 +302,65 @@ c(PiecewisePareto_Layer_Mean(500, 1000, fit$t, fit$alpha) * fit$FQ,
   PiecewisePareto_Layer_Mean(500, 2500, fit$t, fit$alpha) * fit$FQ,
   PiecewisePareto_Layer_Mean(Inf, 3000, fit$t, fit$alpha) * fit$FQ)
 ```
+There are, however, functions which can directly use PPP_Models:
+```{R}
+covers <- c(diff(attachment_points), Inf)
+PPP_Model_Exp_Layer_Loss(covers, attachment_points, fit)
+```
+
+## PPP_Models (Panjer & Piecewise Pareto Models)
+
+A `PPP_Model` object contains the information required to specify a collective model with a Panjer distributed claim count and a piecewise Pareto distributed severity. 
+
+**Claim count distribution:** The Panjer class contains the binomial distribution, the poisson distribution and the negative binomial distribution. The distribution of the claim count $N$ is specified by the expected frequency $E(N)$ (attribute `FQ` of the object) and the dispersion $D(N):=Var(N)/E(N)$ (attribute `dispersion` of the object). We have the following cases:
+
+* `dispersion < 1`: binomial distribution
+* `dispersion = 1`: Poisson distribution
+* `dispersion > 1`: negative binomial distribution.
+
+**Severity distribution:** The piecewise Pareto distribution is specified by the vectors `t`, `alpha`, `truncation` and `truncation_type`. 
+
+The function `PiecewisePareto_Match_Layer_Losses` returns `PPP_Model` object. Such an object can also be directly created using the constructor function:
+```{R}
+PPPM <- PPP_Model(FQ = 2, t = c(1000, 2000), alpha = c(1, 2), 
+                  truncation = 10000, truncation_type = "wd", dispersion = 1.5)
+PPPM
+```
+
+### Expected Loss, Standard Deviation and Variance for Reinsurance Layers
+
+A `PPP_Model` can directly be used to calculate the expected loss, the standard deviation or the variance of a reinsurance layer:
+function:
+```{R}
+PPPM <- PPP_Model(FQ = 2, t = c(1000, 2000), alpha = c(1, 2), 
+                  truncation = 10000, truncation_type = "wd", dispersion = 1.5)
+PPP_Model_Exp_Layer_Loss(4000, 1000, PPPM)
+PPP_Model_Layer_Sd(4000, 1000, PPPM)
+PPP_Model_Layer_Var(4000, 1000, PPPM)
+```
+
+### Expected Excess Frequency
+
+A `PPP_Model` can directly be used to calculate the expected frequency in excess of a threshold:
+```{R}
+PPPM <- PPP_Model(FQ = 2, t = c(1000, 2000), alpha = c(1, 2), 
+                  truncation = 10000, truncation_type = "wd", dispersion = 1.5)
+thresholds <- c(0, 1000, 2000, 5000, 10000, Inf)
+PPP_Model_Excess_Frequency(thresholds, PPPM)
+```
+
+### Simulation of Losses
+
+A `PPP_Model` can directly be used to simulate losses with the corresponding collective model:
+```{R}
+PPPM <- PPP_Model(FQ = 2, t = c(1000, 2000), alpha = c(1, 2), 
+                  truncation = 10000, truncation_type = "wd", dispersion = 1.5)
+PPP_Model_Simulate(10, PPPM)
+```
+
+The function `PPP_Model_Simulate` returns a matrix where each row contains the losses from one simulation.
+
+Note that for a given expected frequency `FQ` not every dispersion `dispersion < 1` is possible for the binomial distribution. In this case a binomial distribution with the smallest dispersion larger than or equal to `dispersion` is used for the simulation.
 
 ## References
 

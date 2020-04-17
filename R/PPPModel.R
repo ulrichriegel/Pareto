@@ -339,6 +339,7 @@ dPanjer <- function(x, mean, dispersion) {
     # Binomial distribution
     q <- dispersion
     p <- 1 - q
+    # Not every dispersion < 1 can be realized with a binomial distribution. Round up number of trys n and recalculate p and q:
     n <-  ceiling(mean / p)
     p <- mean / n
     q <- 1 - p
@@ -363,6 +364,7 @@ rPanjer <- function(n, mean, dispersion) {
     # Binomial distribution
     q <- dispersion
     p <- 1 - q
+    # Not every dispersion < 1 can be realized with a binomial distribution. Round up number of trys m and recalculate p and q:
     m <-  ceiling(mean / p)
     p <- mean / m
     q <- 1 - p
