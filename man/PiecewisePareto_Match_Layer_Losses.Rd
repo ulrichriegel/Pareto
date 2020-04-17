@@ -16,6 +16,7 @@ PiecewisePareto_Match_Layer_Losses(
   Use_unlimited_Layer_for_FQ = TRUE,
   truncation = NULL,
   truncation_type = "lp",
+  dispersion = 1,
   tolerance = 1e-10,
   alpha_max = 100,
   merge_tolerance = 1e-06,
@@ -41,9 +42,11 @@ PiecewisePareto_Match_Layer_Losses(
 
 \item{Use_unlimited_Layer_for_FQ}{Logical. Only relevant if no frequency is provided for the highest attachment point by the user. If \code{TRUE} then the frequency is calculated using the Pareto alpha between the last two layers.}
 
-\item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > max(Attachment_Points)}, then the last Pareto piece is truncated at \code{truncation} (\code{truncation_type = "lp"}).}
+\item{truncation}{Numeric. If \code{truncation} is not \code{NULL}, then the distribution is truncated at \code{truncation}.}
 
-\item{truncation_type}{Character. Currently only \code{truncation_type = "lp"} supported. A truncated Pareto is used for the last piece.}
+\item{truncation_type}{Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.}
+
+\item{dispersion}{Numerical. Dispersion of the claim count distribution in the resulting PPP_Model.}
 
 \item{tolerance}{Numeric. Numerical tolerance.}
 
@@ -54,10 +57,13 @@ PiecewisePareto_Match_Layer_Losses(
 \item{RoL_tolerance}{Numerical. Consecutive layers are merged if RoL decreases less than factor \code{1 - RoL_tolerance}.}
 }
 \value{
-A list containing the following objects: \itemize{
+A PPP_Model object that contains the information about a collective model with a Panjer distributed claim count and a Piecewise Pareto distributed severity. The object contains the following elements: \itemize{
+\item \code{FQ} Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution
 \item \code{t} Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution
 \item \code{alpha} Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution
-\item \code{FQ} Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution
+\item \code{truncation} Numerical. If \code{truncation} is not \code{NULL} and \code{truncation > max(t)}, then the distribution is truncated at \code{truncation}.
+\item \code{truncation_type} Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
+\item \code{dispersion} Numerical. Dispersion of the Panjer distribution (i.e. variance to mean ratio).
 \item \code{Status} Numerical indicator: 0 = success, 1 = some information has been ignored, 2 = no solution found
 \item \code{Comment} Character. Information on whether the fit was successful
 }
