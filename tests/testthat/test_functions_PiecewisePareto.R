@@ -1,5 +1,5 @@
 library(Pareto)
-context("test functions")
+context("test functions PiecewisePareto")
 
 test_that("PiecewisePareto_Layer_Mean", {
   expect_equal(PiecewisePareto_Layer_Mean(8000, 2000, 2, t = 1000), 400)

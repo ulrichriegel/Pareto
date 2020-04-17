@@ -34,10 +34,6 @@ PPP_Model <- function(FQ = NULL, t = NULL, alpha = NULL, truncation = NULL, trun
 #'
 #' @description Print method for PPP_Model objects
 #'
-#' @usage
-#' ## S3 method for class 'PPP_Model'
-#' print(x, ...)
-#'
 #' @param x PPP_Model object.
 #' @param ... Other arguments, all currently ignored.
 #'
@@ -179,11 +175,11 @@ is.valid.PPP_Model <- function(x, comment = FALSE) {
 
 
 
-PPP_Model_Exp_Layer_Loss_s <- function(Cover, Attachment_Point, PPP_Model) {
+PPP_Model_Exp_Layer_Loss_s <- function(Cover, AttachmentPoint, PPP_Model) {
   if (!is.valid.PPP_Model(PPP_Model)) {
     return(NA)
   } else {
-    return(PPP_Model$FQ * PiecewisePareto_Layer_Mean(Cover, Attachment_Point, PPP_Model$t, PPP_Model$alpha, truncation = PPP_Model$truncation, truncation_type = PPP_Model$truncation_type))
+    return(PPP_Model$FQ * PiecewisePareto_Layer_Mean(Cover, AttachmentPoint, PPP_Model$t, PPP_Model$alpha, truncation = PPP_Model$truncation, truncation_type = PPP_Model$truncation_type))
   }
 }
 
@@ -208,17 +204,17 @@ PPP_Model_Exp_Layer_Loss_s <- function(Cover, Attachment_Point, PPP_Model) {
 #'
 #' @export
 
-PPP_Model_Exp_Layer_Loss <- Vectorize(PPP_Model_Exp_Layer_Loss_s, c("Cover", "Attachment_Point"))
+PPP_Model_Exp_Layer_Loss <- Vectorize(PPP_Model_Exp_Layer_Loss_s, c("Cover", "AttachmentPoint"))
 
 
-PPP_Model_Layer_Var_s <- function(Cover, Attachment_Point, PPP_Model) {
+PPP_Model_Layer_Var_s <- function(Cover, AttachmentPoint, PPP_Model) {
   if (!is.valid.PPP_Model(PPP_Model)) {
     return(NA)
   } else {
     E_N <- PPP_Model$FQ
     Var_N <- E_N * PPP_Model$dispersion
-    E_X <- PiecewisePareto_Layer_Mean(Cover, Attachment_Point, PPP_Model$t, PPP_Model$alpha, truncation = PPP_Model$truncation, truncation_type = PPP_Model$truncation_type)
-    Var_X <- PiecewisePareto_Layer_Var(Cover, Attachment_Point, PPP_Model$t, PPP_Model$alpha, truncation = PPP_Model$truncation, truncation_type = PPP_Model$truncation_type)
+    E_X <- PiecewisePareto_Layer_Mean(Cover, AttachmentPoint, PPP_Model$t, PPP_Model$alpha, truncation = PPP_Model$truncation, truncation_type = PPP_Model$truncation_type)
+    Var_X <- PiecewisePareto_Layer_Var(Cover, AttachmentPoint, PPP_Model$t, PPP_Model$alpha, truncation = PPP_Model$truncation, truncation_type = PPP_Model$truncation_type)
     return(E_N * Var_X + Var_N * E_X^2)
   }
 }
@@ -241,14 +237,14 @@ PPP_Model_Layer_Var_s <- function(Cover, Attachment_Point, PPP_Model) {
 #'
 #' @export
 
-PPP_Model_Layer_Var <- Vectorize(PPP_Model_Layer_Var_s, c("Cover", "Attachment_Point"))
+PPP_Model_Layer_Var <- Vectorize(PPP_Model_Layer_Var_s, c("Cover", "AttachmentPoint"))
 
 
-PPP_Model_Layer_Sd_s <- function(Cover, Attachment_Point, PPP_Model) {
+PPP_Model_Layer_Sd_s <- function(Cover, AttachmentPoint, PPP_Model) {
   if (!is.valid.PPP_Model(PPP_Model)) {
     return(NA)
   } else {
-    return(sqrt(PPP_Model_Layer_Var(Cover, Attachment_Point, PPP_Model)))
+    return(sqrt(PPP_Model_Layer_Var(Cover, AttachmentPoint, PPP_Model)))
   }
 }
 
@@ -271,12 +267,39 @@ PPP_Model_Layer_Sd_s <- function(Cover, Attachment_Point, PPP_Model) {
 #'
 #' @export
 
-PPP_Model_Layer_Sd <- Vectorize(PPP_Model_Layer_Sd_s, c("Cover", "Attachment_Point"))
+PPP_Model_Layer_Sd <- Vectorize(PPP_Model_Layer_Sd_s, c("Cover", "AttachmentPoint"))
 
 
-PPP_Model_Excess_Frequency <- function(x, PPP_Model) {
-  return(PPP_Model$FQ * (1 - pPiecewisePareto(x, PPP_Model$t, PPP_Model$alpha, truncation = PPP_Model$truncation, truncation_type = PPP_Model$truncation_type)))
+
+PPP_Model_Excess_Frequency_s <- function(x, PPP_Model) {
+  if (!is.valid.PPP_Model(PPP_Model)) {
+    warning(is.valid.PPP_Model(PPP_Model, comment = TRUE))
+    return(NA)
+  } else if (!is.atomic(x) || !is.numeric(x) || length(x) != 1 || is.na(x)) {
+    warning("x must be a number.")
+    return(NA)
+  } else {
+    return(PPP_Model$FQ * (1 - pPiecewisePareto(x, PPP_Model$t, PPP_Model$alpha, truncation = PPP_Model$truncation, truncation_type = PPP_Model$truncation_type)))
+  }
 }
+
+#' Expected Frequency in Excess of a Threshold
+#'
+#' @description  Calculates the expected frequency in excess of a threshold for a PPP_Model
+#'
+#' @param x Numeric. Threshold.
+#' @param PPP_Model PPP_Model object.
+#'
+#' @return The expected frequency in excess of \code{x} for the given \code{PPP_Model}
+#'
+#' @examples
+#' PPPM <- PiecewisePareto_Match_Layer_Losses(Example1_AP, Example1_EL)
+#' PPPM
+#' PPP_Model_Excess_Frequency(c(-Inf, 0, 1000, 2000, 3000, Inf), PPPM)
+#'
+#' @export
+
+PPP_Model_Excess_Frequency <- Vectorize(PPP_Model_Excess_Frequency_s, c("x"))
 
 
 #' Simulate Losses with a PPP_Model
@@ -289,7 +312,8 @@ PPP_Model_Excess_Frequency <- function(x, PPP_Model) {
 #' @return A matrix where row k contains the simulated losses of the kth simulation.
 #'
 #' @examples
-#' PPPM <- PiecewisePareto_Match_Layer_Losses(c(1000, 2000, 3000), c(2000, 1000, 500), truncation = 10000, truncation_type = "wd")
+#' PPPM <- PiecewisePareto_Match_Layer_Losses(c(1000, 2000, 3000), c(2000, 1000, 500),
+#'                                            truncation = 10000, truncation_type = "wd")
 #' PPPM
 #' Simulated_Losses <- PPP_Model_Simulate(100, PPPM)
 #' Simulated_Losses
@@ -310,18 +334,23 @@ PPP_Model_Simulate <- function(n, PPP_Model) {
 dPanjer <- function(x, mean, dispersion) {
   if (dispersion == 1) {
     # Poisson distribution
-    result <- dpois(x, mean)
+    result <- stats::dpois(x, mean)
   } else if (dispersion < 1) {
     # Binomial distribution
     q <- dispersion
     p <- 1 - q
-    n <- mean / p
-    result <- dbinom(x, n, p)
+    n <-  ceiling(mean / p)
+    p <- mean / n
+    q <- 1 - p
+    if (abs(dispersion - q) > 0.01) {
+      warning(paste0("Dispersion has been adjusted from ", round(dispersion, 2)," to ", round(q, 2), " to obtain a matching binomial distribution."))
+    }
+    result <- stats::dbinom(x, n, p)
   } else {
     # Negative binomial distribution
     p <- 1 / dispersion
     alpha <- mean / (dispersion - 1)
-    result <- dnbinom(x, alpha, p)
+    result <- stats::dnbinom(x, alpha, p)
   }
   return(result)
 }
@@ -329,18 +358,23 @@ dPanjer <- function(x, mean, dispersion) {
 rPanjer <- function(n, mean, dispersion) {
   if (dispersion == 1) {
     # Poisson distribution
-    result <- rpois(n, mean)
+    result <- stats::rpois(n, mean)
   } else if (dispersion < 1) {
     # Binomial distribution
     q <- dispersion
     p <- 1 - q
-    m <- mean / p
-    result <- rbinom(n, m, p)
+    m <-  ceiling(mean / p)
+    p <- mean / m
+    q <- 1 - p
+    if (abs(dispersion - q) > 0.01) {
+      warning(paste0("Dispersion has been adjusted from ", round(dispersion, 2)," to ", round(q, 2), " to obtain a matching binomial distribution."))
+    }
+    result <- stats::rbinom(n, m, p)
   } else {
     # Negative binomial distribution
     p <- 1 / dispersion
     alpha <- mean / (dispersion - 1)
-    result <- rnbinom(n, alpha, p)
+    result <- stats::rnbinom(n, alpha, p)
   }
   return(result)
 }

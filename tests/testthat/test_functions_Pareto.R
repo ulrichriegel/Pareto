@@ -1,5 +1,5 @@
 library(Pareto)
-context("test functions")
+context("test functions Pareto")
 
 test_that("Pareto_Layer_Mean", {
   expect_equal(Pareto_Layer_Mean(8000, 2000, 2), 1600)

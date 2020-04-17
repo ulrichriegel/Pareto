@@ -10,6 +10,17 @@ is.positive.vector <- function(x) {
 }
 
 
+is.positive_or_NA.finite.vector <- function(x) {
+  if(!is.atomic(x)) {
+    return(FALSE)
+  }
+  if (!is.positive.finite.vector(x[!is.na(x)])) {
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
+
 is.nonnegative.vector <- function(x) {
   if(!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
     return(FALSE)
@@ -72,6 +83,14 @@ is.nonnegative.finite.number <- function(x) {
     return(FALSE)
   } else {
     return(TRUE)
+  }
+}
+
+is.TRUEorFALSE <- function(x) {
+  if (isTRUE(x) || isFALSE(x)) {
+    return(TRUE)
+  } else {
+    return(FALSE)
   }
 }
 

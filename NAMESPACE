@@ -3,6 +3,7 @@
 S3method(print,PPP_Model)
 export(Local_Pareto_Alpha)
 export(PPP_Model)
+export(PPP_Model_Excess_Frequency)
 export(PPP_Model_Exp_Layer_Loss)
 export(PPP_Model_Layer_Sd)
 export(PPP_Model_Layer_Var)
