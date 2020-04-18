@@ -13,7 +13,13 @@ useful for pricing of reinsurance treaties:
 - Calculation of local Pareto alphas for normal, lognormal and gamma distributions
 - Fitting a Piecewise Pareto distribution to a tower of layer losses (for an arbitrary number of layers)
 
-The methods are also available for truncated versions of the (piecewise) Pareto distribution.
+Moreover, the package provides some functions for collective models with a claim count distribution from the Panjer class 
+(i.e. Binomial, Poisson and Negative Binomial) and a piecewise Paret distributed severity:
+
+- Layer mean, variance and standard deviation
+- Simulation of losses with the collective model
+
+All methods are also available for truncated versions of the (piecewise) Pareto distribution.
 
 ## Installation
 
@@ -38,3 +44,7 @@ library(Pareto)
 ## License
 
 This package is free and open source software, licensed under [GPL](https://www.gnu.org/copyleft/gpl.html).
+
+## Thanks
+
+To Stefan Foerster for his NPAddins which I used a lot in my daily work and which inspired me to create this package.

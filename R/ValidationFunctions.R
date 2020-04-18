@@ -54,6 +54,13 @@ is.nonnegative.finite.vector <- function(x) {
   return(TRUE)
 }
 
+is.number <- function(x) {
+  if(!is.atomic(x) || !is.numeric(x) || length(x) != 1 || is.na(x)) {
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
 is.positive.number <- function(x) {
   if (!is.positive.vector(x) || length(x) != 1) {
     return(FALSE)
@@ -149,7 +156,7 @@ valid.parameters.PiecewisePareto <- function(t, alpha, truncation, truncation_ty
 
 
 valid.parameters.Pareto <- function(t, alpha, truncation, comment = FALSE) {
-  if (!is.positive.finite.number(t) || !is.positive.finite.number(alpha)) {
+  if (!is.positive.finite.number(t) || !is.nonnegative.finite.number(alpha)) {
     if (!comment) {
       return(FALSE)
     } else {

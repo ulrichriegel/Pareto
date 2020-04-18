@@ -22,20 +22,37 @@
 #' @export
 
 Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
+  if (!is.nonnegative.finite.number(AttachmentPoint)) {
+    warning("AttachmentPoint must be a non-negative number.")
+    return(NA)
+  }
+  if(!is.nonnegative.number(Cover)) {
+    warning("Cover must be a non-negative number ('Inf' allowed).")
+    return(NA)
+  }
+  if (!is.nonnegative.finite.number(alpha)) {
+    warning("alpha must be a non-negative number.")
+    return(NA)
+  }
   if (is.null(t)) {
-    t <- AttachmentPoint
     if (AttachmentPoint == 0) {
       warning("If Attachment Point in zero, then a t>0 has to be entered.")
       return(NA)
     }
+    t <- AttachmentPoint
   }
-  if (t <= 0) {
-    warning("t must be greater than 0.")
+  if (!is.positive.finite.number(t)) {
+    warning("t must be a positive number.")
     return(NA)
   }
   if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be NULL or a positive number ('Inf' allowed).")
+      return(NA)
+    }
     if (truncation <= t) {
-      warning("truncation must be larger than t")
+      warning("truncation must be larger than t.")
+      return(NA)
     }
     if (truncation <= AttachmentPoint) {
       return(0)
@@ -45,9 +62,8 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation 
     }
   }
 
-  if (Cover == Inf && AttachmentPoint >= 0 && alpha >= 0) {
+  if (is.infinite(Cover)) {
     if (alpha <= 1) {
-      #warning("alpha must be > 1 for unlimited covers!")
       return(Inf)
     } else if (t <= AttachmentPoint) {
       EP <- -(t / AttachmentPoint)^alpha / (1 - alpha) * AttachmentPoint
@@ -56,7 +72,7 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation 
       EP <- EP - t / (1 - alpha)
     }
     return(EP)
-  } else if (Cover >= 0 && AttachmentPoint >= 0 && alpha >= 0) {
+  } else {
     EP <- NaN
     while (is.nan(EP)) {
       if (t <= AttachmentPoint) {
@@ -93,9 +109,6 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation 
       }
     }
     return(EP)
-  } else {
-    warning("Cover, Attachment Point and alpha must be >= 0; NA produced")
-    return(NA)
   }
 
 }
@@ -113,20 +126,23 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation 
 
 
 Pareto_Layer_Second_Moment_simple <- function(Cover, AttachmentPoint, alpha) {
-  if (AttachmentPoint <= 0) {
+  if (!is.positive.finite.number(AttachmentPoint)) {
+    warning("AttachmentPoint must be a positive number.")
     return(NA)
   }
-  if (Cover < 0) {
+  if(!is.nonnegative.number(Cover)) {
+    warning("Cover must be a non-negative number ('Inf' allowed).")
     return(NA)
   }
   if (Cover == 0) {
     return(0)
   }
-  if (alpha < 0) {
+  if (!is.nonnegative.finite.number(alpha)) {
+    warning("alpha must be a non-negative number.")
     return(NA)
   }
 
-  if (Cover == Inf) {
+  if (is.infinite(Cover)) {
     if (alpha <= 2) {
       # warning("alpha must be > 2 for unlimited covers!")
       return(Inf)
@@ -172,20 +188,37 @@ Pareto_Layer_Second_Moment_simple <- function(Cover, AttachmentPoint, alpha) {
 #' @export
 
 Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
+  if (!is.nonnegative.finite.number(AttachmentPoint)) {
+    warning("AttachmentPoint must be a non-negative number.")
+    return(NA)
+  }
+  if(!is.nonnegative.number(Cover)) {
+    warning("Cover must be a non-negative number ('Inf' allowed).")
+    return(NA)
+  }
+  if (!is.nonnegative.finite.number(alpha)) {
+    warning("alpha must be a non-negative number.")
+    return(NA)
+  }
   if (is.null(t)) {
-    t <- AttachmentPoint
     if (AttachmentPoint == 0) {
-      warning("If Attachment Point in zero, then a t>0 has to be entered.")
+      warning("If Attachment Point is zero, then a t>0 has to be entered.")
       return(NA)
     }
+    t <- AttachmentPoint
   }
-  if (t <= 0) {
-    warning("t must be greater than 0.")
+  if (!is.positive.finite.number(t)) {
+    warning("t must be a positive number.")
     return(NA)
   }
   if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be NULL or a positive number ('Inf' allowed).")
+      return(NA)
+    }
     if (truncation <= t) {
-      warning("truncation must be larger than t")
+      warning("truncation must be larger than t.")
+      return(NA)
     }
     if (truncation <= AttachmentPoint) {
       return(0)
@@ -194,6 +227,7 @@ Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation =
       Cover <- truncation - AttachmentPoint
     }
   }
+
   ExitPoint <- Cover + AttachmentPoint
   if (t >= ExitPoint) {
     return(0)
@@ -247,6 +281,46 @@ Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation =
 
 
 Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
+  if (!is.nonnegative.finite.number(AttachmentPoint)) {
+    warning("AttachmentPoint must be a non-negative number.")
+    return(NA)
+  }
+  if(!is.nonnegative.number(Cover)) {
+    warning("Cover must be a non-negative number ('Inf' allowed).")
+    return(NA)
+  }
+  if (!is.nonnegative.finite.number(alpha)) {
+    warning("alpha must be a non-negative number.")
+    return(NA)
+  }
+  if (is.null(t)) {
+    if (AttachmentPoint == 0) {
+      warning("If Attachment Point is zero, then a t>0 has to be entered.")
+      return(NA)
+    }
+    t <- AttachmentPoint
+  }
+  if (!is.positive.finite.number(t)) {
+    warning("t must be a positive number.")
+    return(NA)
+  }
+  if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be NULL or a positive number ('Inf' allowed).")
+      return(NA)
+    }
+    if (truncation <= t) {
+      warning("truncation must be larger than t.")
+      return(NA)
+    }
+    if (truncation <= AttachmentPoint) {
+      return(0)
+    }
+    if (AttachmentPoint + Cover > truncation) {
+      Cover <- truncation - AttachmentPoint
+    }
+  }
+
   Var <- Pareto_Layer_Var(Cover, AttachmentPoint, alpha, t, truncation = truncation)
   if (is.infinite(Var)) {
     return(Inf)
@@ -277,14 +351,15 @@ Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = 
 #' @export
 
 rPareto <- function(n, t, alpha, truncation = NULL) {
-  if (!is.numeric(alpha) || !is.numeric(t)) {
-    warning("alpha and t must be numeric.")
+  if (!valid.parameters.Pareto(t, alpha, truncation)) {
+    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
+  }
+  if (!is.positive.finite.number(n)) {
+    warning("n must be a positive number.")
     return(NA)
   }
-  if (min(t) <= 0 || min(alpha) <= 0) {
-    warning("alpha and t must be positive.")
-    return(NA)
-  }
+  n <- ceiling(n)
+
   FinvPareto <- function(x,t,alpha) {
     return(t/(1-x)^(1/alpha))
   }
@@ -328,11 +403,35 @@ rPareto <- function(n, t, alpha, truncation = NULL) {
 #' @export
 
 Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2, alpha, ExpLoss_1 = NULL, truncation = NULL) {
+  if (!is.positive.number(Cover_1)) {
+    warning("Cover_1 must be a positive number ('Inf' allowed).")
+    return(NA)
+  }
+  if (!is.positive.finite.number(AttachmentPoint_1)) {
+    warning("AttachmentPoint_1 must be a positive number.")
+    return(NA)
+  }
+  if (!is.nonnegative.number(Cover_2)) {
+    warning("Cover_2 must be a non-negative number ('Inf' allowed).")
+    return(NA)
+  }
+  if (!is.positive.finite.number(AttachmentPoint_2)) {
+    warning("AttachmentPoint_2 must be a positive number.")
+    return(NA)
+  }
   if (is.null(ExpLoss_1)) {
     ExpLoss_1 <- 1
+  } else {
+    if (!is.nonnegative.finite.number(ExpLoss_1)) {
+      warning("ExpLoss_1 must be NULL or a non-negative number.")
+    }
   }
 
   if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be positive ('Inf' allowed).")
+      return(NA)
+    }
     if (truncation <= AttachmentPoint_1) {
       warning("truncation must be greater than AttachmentPoint_1")
       return(NA)
@@ -341,7 +440,6 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
   Smaller_AP <- min(AttachmentPoint_1, AttachmentPoint_2)
   Result <- ExpLoss_1 * Pareto_Layer_Mean(Cover_2, AttachmentPoint_2, alpha, t = Smaller_AP, truncation = truncation) / Pareto_Layer_Mean(Cover_1, AttachmentPoint_1, alpha, t = Smaller_AP, truncation = truncation)
   return(Result)
-  # }
 
 }
 
@@ -373,12 +471,25 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
 #' @export
 
 Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
-  if (Cover_1 <= 0 || AttachmentPoint_1 <= 0 || ExpLoss_1 <= 0 || Cover_2 <= 0 || AttachmentPoint_2 <= 0 || ExpLoss_2 <= 0) {
-    warning("All input parameters must be positive!")
+  if (!is.positive.number(Cover_1) || !is.positive.finite.number(AttachmentPoint_1) || !is.positive.finite.number(ExpLoss_1) || !is.positive.number(Cover_2) || !is.positive.finite.number(AttachmentPoint_2) || !is.positive.finite.number(ExpLoss_2)) {
+    warning("All input parameters must be positive ('Inf' allowed for covers).")
     return(NA)
   }
   min_alpha <- 0
+  if (!is.positive.finite.number(max_alpha)) {
+    warning("max_alpha must be a positive number.")
+    return(NA)
+  }
+  if (!is.positive.finite.number(tolerance)) {
+    warning("tolerance must be a positive number.")
+    return(NA)
+  }
+
   if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("tuncation must be NULL or a positive number ('Inf' allowed).")
+      return(NA)
+    }
     if (truncation <= max(AttachmentPoint_1, AttachmentPoint_2)) {
       warning("tuncation must be NULL or greater than both attachment points!")
       return(NA)
@@ -426,8 +537,7 @@ Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, 
     warning("Did not find a solution!")
     return(NA)
   }
-  alpha <- Result
-  return(alpha)
+  return(Result)
 
 }
 
@@ -457,17 +567,29 @@ Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, 
 #' @export
 
 Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, AttachmentPoint, ExpLoss, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
-  if (Threshold <= 0 || Frequency <= 0 || Cover <= 0 || AttachmentPoint <= 0 || ExpLoss <= 0) {
-    warning("All input parameters must be positive!")
+  if (!is.positive.finite.number(Threshold) || !is.positive.finite.number(Frequency) || !is.positive.number(Cover) || !is.positive.finite.number(AttachmentPoint) || !is.positive.finite.number(ExpLoss)) {
+    warning("All input parameters must be positive ('Inf' allowed for Cover).")
     return(NA)
   }
   if (Threshold > AttachmentPoint && Threshold < AttachmentPoint + Cover) {
     warning("Threshold must be <= AttachmentPoint or >= Cover + AttachmentPoint")
     return(NA)
   }
+  if (!is.positive.finite.number(max_alpha)) {
+    warning("max_alpha must be a positive number.")
+    return(NA)
+  }
+  if (!is.positive.finite.number(tolerance)) {
+    warning("tolerance must be a positive number.")
+    return(NA)
+  }
   if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be NULL or a positive number ('Inf' allowed).")
+      return(NA)
+    }
     if (truncation <= AttachmentPoint || truncation <= Threshold) {
-      warning("Threshold and AttachmentPoint must be less than truncation")
+      warning("Threshold and AttachmentPoint must be <= truncation")
       return(NA)
     }
     Cover <- min(Cover, truncation - AttachmentPoint)
@@ -508,8 +630,7 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
     warning("Did not find a solution!")
     return(NA)
   }
-  alpha <- Result
-  return(alpha)
+  return(Result)
 
 }
 
@@ -538,10 +659,19 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
 #' @export
 
 Pareto_Find_Alpha_btw_FQs <- function(Threshold_1, Frequency_1, Threshold_2, Frequency_2, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
-  if (Threshold_1 <= 0 || Frequency_1 <= 0 || Threshold_2 <= 0 || Frequency_2 <= 0) {
+  if (!is.positive.finite.number(Threshold_1) || !is.positive.finite.number(Frequency_1) || !is.positive.finite.number(Threshold_2) || !is.positive.finite.number(Frequency_2)) {
     warning("All input parameters must be positive!")
     return(NA)
   }
+  if (!is.positive.finite.number(max_alpha)) {
+    warning("max_alpha must be a positive number.")
+    return(NA)
+  }
+  if (!is.positive.finite.number(tolerance)) {
+    warning("tolerance must be a positive number.")
+    return(NA)
+  }
+
   if (Threshold_1 > Threshold_2) {
     temp1 <- Threshold_1
     temp2 <- Frequency_1
@@ -559,6 +689,10 @@ Pareto_Find_Alpha_btw_FQs <- function(Threshold_1, Frequency_1, Threshold_2, Fre
     return(NA)
   }
   if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be NULL or a positive number ('Inf' allowed).")
+      return(NA)
+    }
     if (truncation <= Threshold_2) {
       warning("Thresholds must be less than truncation")
       return(NA)
@@ -618,62 +752,24 @@ Pareto_Find_Alpha_btw_FQs <- function(Threshold_1, Frequency_1, Threshold_2, Fre
 #' @export
 
 PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
-  if (!is.numeric(t) || !is.numeric(alpha)) {
-    warning("alpha and t must be numeric.")
-    return(NA)
-  }
-  if (length(t) != length(alpha)) {
-    warning("t and alpha must have the same length")
+  if(!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
+    warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
     return(NA)
   }
   n <- length(t)
+  if (!is.nonnegative.number(Cover)) {
+    warning("Cover must be a non-negative number ('Inf' allowed).")
+    return(NA)
+  }
+  if (!is.nonnegative.finite.number(AttachmentPoint)) {
+    warning("AttachmentPoint must be a non-negative number.")
+    return(NA)
+  }
+
   if (n == 1) {
     return(Pareto_Layer_Mean(Cover, AttachmentPoint, alpha, t, truncation))
   }
-  if (min(t) <= 0) {
-    warning("t must have positive elements!")
-    return(NA)
-  }
-  if (min(alpha) < 0) {
-    warning("alpha must have non-negative elements!")
-    return(NA)
-  }
-  if (min(diff(t)) <= 0) {
-    warning("t must be strictily ascending!")
-    return(NA)
-  }
-  if (length(AttachmentPoint) != 1 || length(Cover) != 1) {
-    warning("AttachmentPoint and Cover must have length  1!")
-    return(NA)
-  }
-  if (!is.numeric(AttachmentPoint)) {
-    warning("AttachmentPoint must be numeric!")
-    return(NA)
-  }
-  if (AttachmentPoint < 0) {
-    warning("AttachmentPoint must be non-negative!")
-    return(NA)
-  }
-  if (!is.numeric(Cover)) {
-    warning("AttachmentPoint must be numeric!")
-    return(NA)
-  } else if (Cover < 0) {
-    warning("Cover must be non-negative!")
-    return(NA)
-  }
   if (!is.null(truncation)) {
-    if (!is.numeric(truncation)) {
-      warning("truncation must be NULL or numeric")
-      return(NA)
-    }
-    if (truncation <= t[n]) {
-      warning("truncation must be greater than max(t)")
-      return(NA)
-    }
-    if (truncation_type != "wd" && truncation_type != "lp") {
-      warning("truncation_type must be wd or lp")
-      return(NA)
-    }
     if (truncation <= AttachmentPoint) {
       return(0)
     }
@@ -786,62 +882,27 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncat
 #' @export
 
 PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
-  if (!is.numeric(t) || !is.numeric(alpha)) {
-    warning("alpha and t must be numeric.")
-    return(NA)
-  }
-  if (length(t) != length(alpha)) {
-    warning("t and alpha must have the same length")
+  if(!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
+    warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
     return(NA)
   }
   n <- length(t)
+
+  if (!is.nonnegative.number(Cover)) {
+    warning("Cover must be a non-negative number ('Inf' allowed).")
+    return(NA)
+  }
+  if (!is.nonnegative.finite.number(AttachmentPoint)) {
+    warning("AttachmentPoint must be a non-negative number.")
+    return(NA)
+  }
+
+
   if (n == 1) {
     return(Pareto_Layer_SM(Cover, AttachmentPoint, alpha, t, truncation))
   }
-  if (min(t) <= 0) {
-    warning("t must have positive elements!")
-    return(NA)
-  }
-  if (min(alpha) < 0) {
-    warning("alpha must have non-negative elements!")
-    return(NA)
-  }
-  if (min(diff(t)) <= 0) {
-    warning("t must be strictily ascending!")
-    return(NA)
-  }
-  if (length(AttachmentPoint) != 1 || length(Cover) != 1) {
-    warning("AttachmentPoint and Cover must have length  1!")
-    return(NA)
-  }
-  if (!is.numeric(AttachmentPoint)) {
-    warning("AttachmentPoint must be numeric!")
-    return(NA)
-  }
-  if (AttachmentPoint < 0) {
-    warning("AttachmentPoint must be non-negative!")
-    return(NA)
-  }
-  if (!is.numeric(Cover)) {
-    warning("AttachmentPoint must be numeric!")
-    return(NA)
-  } else if (Cover < 0) {
-    warning("Cover must be non-negative!")
-    return(NA)
-  }
+
   if (!is.null(truncation)) {
-    if (!is.numeric(truncation)) {
-      warning("truncation must be NULL or numeric")
-      return(NA)
-    }
-    if (truncation <= t[n]) {
-      warning("truncation must be greater than max(t)")
-      return(NA)
-    }
-    if (truncation_type != "wd" && truncation_type != "lp") {
-      warning("truncation_type must be wd or lp")
-      return(NA)
-    }
     if (truncation <= AttachmentPoint) {
       return(0)
     }
@@ -949,6 +1010,22 @@ PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncatio
 #' @export
 
 PiecewisePareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
+
+  if(!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
+    warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
+    return(NA)
+  }
+  n <- length(t)
+
+  if (!is.nonnegative.number(Cover)) {
+    warning("Cover must be a non-negative number ('Inf' allowed).")
+    return(NA)
+  }
+  if (!is.nonnegative.finite.number(AttachmentPoint)) {
+    warning("AttachmentPoint must be a non-negative number.")
+    return(NA)
+  }
+
   SM <- PiecewisePareto_Layer_SM(Cover, AttachmentPoint, t, alpha, truncation, truncation_type)
   if (is.infinite(SM)) {
     return(Inf)
@@ -984,59 +1061,32 @@ PiecewisePareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha, truncati
 
 
 rPiecewisePareto <- function(n, t, alpha, truncation = NULL, truncation_type = "lp", scale_pieces = NULL) {
-  if (!is.numeric(t) || !is.numeric(alpha)) {
-    warning("alpha and t must be numeric.")
+
+  if(!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
+    warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
     return(NA)
   }
-  if (length(t) != length(alpha)) {
-    warning("t and alpha must have the same length")
+  if (!is.null(scale_pieces) && !is.TRUEorFALSE(scale_pieces)) {
+    warning("scale_pieces must be NULL or TRUE or FALSE.")
     return(NA)
   }
+
   k <- length(t)
+
   if (k == 1) {
     return(rPareto(n, t, alpha, truncation))
   }
-  if (min(t) <= 0) {
-    warning("t must have positive elements!")
+  if (!is.null(truncation) && !is.null(scale_pieces)) {
+    warning("either truncation or scale_pieces must be NULL")
     return(NA)
-  }
-  if (min(alpha) < 0) {
-    warning("alpha must have non-negative elements!")
-    return(NA)
-  }
-  if (min(diff(t)) <= 0) {
-    warning("t must be strictily ascending!")
-    return(NA)
-  }
-  if (!is.null(truncation)) {
-    if (!is.numeric(truncation)) {
-      warning("truncation must be NULL or numeric")
-      return(NA)
-    }
-    if (truncation <= t[k]) {
-      warning("truncation must be greater than max(t)")
-      return(NA)
-    }
-    if (truncation_type != "wd" && truncation_type != "lp") {
-      warning("truncation_type must be wd or lp")
-      return(NA)
-    }
-    if (!is.null(scale_pieces)) {
-      warning("either truncation or scale_pieces must be NULL")
-      return(NA)
-    }
   }
   if (!is.null(scale_pieces)) {
-    if (!is.numeric(scale_pieces)) {
-      warning("scale_pieces must be NULL or numeric")
+    if (!is.nonnegative.finite.vector(scale_pieces)) {
+      warning("scale_pieces must be NULL or a positive number.")
       return(NA)
     }
     if (length(scale_pieces) != length(t)) {
-      warning("t and scale_pieces must have the same length")
-      return(NA)
-    }
-    if (min(scale_pieces) < 0) {
-      warning("all entries of scale_pieces must be non-negative")
+      warning("t and scale_pieces must have the same length.")
       return(NA)
     }
     if (sum(scale_pieces) <= 0) {
@@ -1673,27 +1723,27 @@ Pareto_CDF <- function(x, t, alpha, truncation = NULL) {
 #' @export
 
 pPareto <- function(x, t, alpha, truncation = NULL) {
+  if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
+    warning("x must be a numeric vector.")
+    return(rep(NA, length(x)))
+  }
+  if (!valid.parameters.Pareto(t, alpha, truncation)) {
+    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
+    return(NA)
+  }
   sapply(x, FUN = function(x) pPareto_s(x, t, alpha, truncation))
 }
 
 pPareto_s <- function(x, t, alpha, truncation = NULL) {
-  if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(x)) {
-    warning("x, t and alpha must be numeric.")
+  if (!valid.parameters.Pareto(t, alpha, truncation)) {
+    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
     return(NA)
   }
-  if (length(t) != 1 || length(alpha) != 1 || length(x) != 1) {
-    warning("t and alpha must have length 1")
+  if (!is.number(x)) {
+    warning("x must be a number ('Inf' allowed).")
     return(NA)
   }
-  if (t <= 0) {
-    warning("t must be positive.")
-    return(NA)
-  }
-  if (!is.null(truncation)) {
-    if (truncation <= t) {
-      warning("truncation must be NULL or greater that t.")
-    }
-  }
+
   if (x <= t) {
     return(0)
   } else if (is.null(truncation)) {
@@ -1755,27 +1805,27 @@ Pareto_PDF <- function(x, t, alpha, truncation = NULL) {
 #' @export
 
 dPareto <- function(x, t, alpha, truncation = NULL) {
+  if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
+    warning("x must be a numeric vector.")
+    return(NA)
+  }
+  if (!valid.parameters.Pareto(t, alpha, truncation)) {
+    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
+    return(rep(NA, length(x)))
+  }
   sapply(x, FUN = function(x) dPareto_s(x, t, alpha, truncation))
 }
 
 dPareto_s <- function(x, t, alpha, truncation = NULL) {
-  if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(x)) {
-    warning("x, t and alpha must be numeric.")
+  if (!valid.parameters.Pareto(t, alpha, truncation)) {
+    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
     return(NA)
   }
-  if (length(t) != 1 || length(alpha) != 1 || length(x) != 1) {
-    warning("t and alpha must have length 1")
+  if (!is.number(x)) {
+    warning("x must be a number ('Inf' allowed).")
     return(NA)
   }
-  if (t <= 0) {
-    warning("t must be positive.")
-    return(NA)
-  }
-  if (!is.null(truncation)) {
-    if (truncation <= t) {
-      warning("truncation must be NULL or greater that t.")
-    }
-  }
+
   if (x <= t) {
     return(0)
   } else if (is.null(truncation)) {
@@ -1853,57 +1903,35 @@ PiecewisePareto_CDF <- function(x, t, alpha, truncation = NULL, truncation_type 
 #' @export
 
 pPiecewisePareto <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+  if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
+    warning("x must be a numeric vector.")
+    return(NA)
+  }
+  if (!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
+    warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
+    return(rep(NA, length(x)))
+  }
   sapply(x, FUN = function(x) pPiecewisePareto_s(x, t, alpha, truncation, truncation_type))
 }
 
 pPiecewisePareto_s <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
-  if (!is.numeric(t) || !is.numeric(alpha)) {
-    warning("alpha and t must be numeric.")
+  if (!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
+    warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
     return(NA)
   }
-  if (length(t) != length(alpha)) {
-    warning("t and alpha must have the same length")
-    return(NA)
-  }
+
   n <- length(t)
+
+  if (!is.number(x)) {
+    warning("x must be a number ('Inf' allowed).")
+    return(NA)
+  }
+
   if (n == 1) {
     Result <- pPareto(x, t, alpha, truncation)
     return(Result)
   }
-  if (min(t) <= 0) {
-    warning("t must have positive elements!")
-    return(NA)
-  }
-  if (min(alpha) < 0) {
-    warning("alpha must have non-negative elements!")
-    return(NA)
-  }
-  if (min(diff(t)) <= 0) {
-    warning("t must be strictily ascending!")
-    return(NA)
-  }
-  if (length(x) != 1) {
-    warning("x must have length  1!")
-    return(NA)
-  }
-  if (!is.numeric(x)) {
-    warning("x must be numeric!")
-    return(NA)
-  }
-  if (!is.null(truncation)) {
-    if (!is.numeric(truncation)) {
-      warning("truncation must be NULL or numeric")
-      return(NA)
-    }
-    if (truncation <= t[n]) {
-      warning("truncation must be greater than max(t)")
-      return(NA)
-    }
-    if (truncation_type != "wd" && truncation_type != "lp") {
-      warning("truncation_type must be wd or lp")
-      return(NA)
-    }
-  }
+
 
   if (x <= t[1]) {
     return(0)
@@ -2003,57 +2031,35 @@ PiecewisePareto_PDF <- function(x, t, alpha, truncation = NULL, truncation_type 
 #' @export
 
 dPiecewisePareto <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+  if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
+    warning("x must be a numeric vector.")
+    return(NA)
+  }
+  if (!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
+    warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
+    return(rep(NA, length(x)))
+  }
   sapply(x, FUN = function(x) dPiecewisePareto_s(x, t, alpha, truncation, truncation_type))
 }
 
 dPiecewisePareto_s <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
-  if (!is.numeric(t) || !is.numeric(alpha)) {
-    warning("alpha and t must be numeric.")
+  if (!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
+    warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
     return(NA)
   }
-  if (length(t) != length(alpha)) {
-    warning("t and alpha must have the same length")
-    return(NA)
-  }
+
   n <- length(t)
-  if (n == 1) {
+
+  if (!is.number(x)) {
+    warning("x must be a number ('Inf' allowed).")
+    return(NA)
+  }
+
+    if (n == 1) {
     Result <- dPareto(x, t, alpha, truncation)
     return(Result)
   }
-  if (min(t) <= 0) {
-    warning("t must have positive elements!")
-    return(NA)
-  }
-  if (min(alpha) < 0) {
-    warning("alpha must have non-negative elements!")
-    return(NA)
-  }
-  if (min(diff(t)) <= 0) {
-    warning("t must be strictily ascending!")
-    return(NA)
-  }
-  if (length(x) != 1) {
-    warning("x must have length  1!")
-    return(NA)
-  }
-  if (!is.numeric(x)) {
-    warning("x must be numeric!")
-    return(NA)
-  }
-  if (!is.null(truncation)) {
-    if (!is.numeric(truncation)) {
-      warning("truncation must be NULL or numeric")
-      return(NA)
-    }
-    if (truncation <= t[n]) {
-      warning("truncation must be greater than max(t)")
-      return(NA)
-    }
-    if (truncation_type != "wd" && truncation_type != "lp") {
-      warning("truncation_type must be wd or lp")
-      return(NA)
-    }
-  }
+
 
   if (x <= t[1]) {
     return(0)
@@ -2123,46 +2129,35 @@ dPiecewisePareto_s <- function(x, t, alpha, truncation = NULL, truncation_type =
 #' @export
 
 qPiecewisePareto <- function(p, t, alpha, truncation = NULL, truncation_type = "lp") {
+  if (!is.positive.finite.vector(p) || max(p) > 1) {
+    warning("p must be a vector with elements in [0,1].")
+    return(NA)
+  }
+  if (!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
+    warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
+    return(rep(NA, length(p)))
+  }
   sapply(p, FUN = function(y) qPiecewisePareto_s(y, t, alpha, truncation, truncation_type))
 }
 
 qPiecewisePareto_s <- function(y, t, alpha, truncation = NULL, truncation_type = "lp") {
-  if (!is.numeric(t) || !is.numeric(alpha)) {
-    warning("alpha and t must be numeric.")
+  if (!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
+    warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
     return(NA)
   }
-  if (length(t) != length(alpha)) {
-    warning("t and alpha must have the same length")
-    return(NA)
-  }
+
   n <- length(t)
+
+  if (!is.positive.finite.number(y) || y > 1) {
+    warning("y must be a number in [0,1].")
+    return(NA)
+  }
+
   if (n == 1) {
     Result <- qPareto(y, t, alpha, truncation)
     return(Result)
   }
-  if (min(t) <= 0) {
-    warning("t must have positive elements!")
-    return(NA)
-  }
-  if (min(alpha) < 0) {
-    warning("alpha must have non-negative elements!")
-    return(NA)
-  }
-  if (min(diff(t)) <= 0) {
-    warning("t must be strictily ascending!")
-    return(NA)
-  }
-  if (length(y) != 1) {
-    warning("y must have length  1!")
-    return(NA)
-  }
-  if (!is.numeric(y)) {
-    warning("y must be numeric!")
-    return(NA)
-  }
-  if (y < 0 | y > 1) {
-    warning("y must be in the interval [0,1]!")
-  }
+
   if (y == 1) {
     if (is.null(truncation)) {
       return(Inf)
@@ -2170,22 +2165,7 @@ qPiecewisePareto_s <- function(y, t, alpha, truncation = NULL, truncation_type =
       return(truncation)
     }
   }
-  if (!is.null(truncation)) {
-    if (!is.numeric(truncation)) {
-      warning("truncation must be NULL or numeric")
-      return(NA)
-    }
-    if (truncation <= t[n]) {
-      warning("truncation must be greater than max(t)")
-      return(NA)
-    }
-    if (truncation_type != "wd" && truncation_type != "lp") {
-      warning("truncation_type must be wd or lp")
-      return(NA)
-    }
-  }
 
-  n <- length(t)
 
   CDF_untruncated_at_t <- pPiecewisePareto(t, t, alpha)
   if (!is.null(truncation)) {
@@ -2234,31 +2214,28 @@ qPiecewisePareto_s <- function(y, t, alpha, truncation = NULL, truncation_type =
 #' @export
 
 qPareto <- function(p, t, alpha, truncation = NULL) {
+  if (!is.positive.finite.vector(p) || max(p) > 1) {
+    warning("p must be a vector with elements in [0,1].")
+    return(NA)
+  }
+  if (!valid.parameters.Pareto(t, alpha, truncation)) {
+    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
+    return(rep(NA, length(p)))
+  }
   sapply(p, FUN = function(y) qPareto_s(y, t, alpha, truncation))
 }
 
 qPareto_s <- function(y, t, alpha, truncation = NULL) {
-  if (!is.numeric(t) || !is.numeric(alpha) || !is.numeric(y)) {
-    warning("x, t and alpha must be numeric.")
+  if (!valid.parameters.Pareto(t, alpha, truncation)) {
+    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
     return(NA)
   }
-  if (length(t) != 1 || length(alpha) != 1) {
-    warning("t and alpha must have length 1")
+  if (!is.positive.finite.number(y) || y > 1) {
+    warning("y must be a number in [0,1].")
     return(NA)
   }
-  if (t <= 0) {
-    warning("t must be positive.")
-    return(NA)
-  }
-  if (!is.null(truncation)) {
-    if (truncation <= t) {
-      warning("truncation must be NULL or greater that t.")
-    }
-  }
-  if (y < 0 | y > 1) {
-    warning("y must be in the interval [0,1]!")
-    return(NA)
-  } else if (y == 1) {
+
+  if (y == 1) {
     if (is.null(truncation)) {
       return(Inf)
     } else {
@@ -2310,25 +2287,22 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, 
   if (!missing(alpha_min) || !missing(alpha_max)) {
     warning("arguments alpha_min and alpha_max are deprecated and are ignored", call. = FALSE)
   }
-  if (!is.numeric(losses) || !is.numeric(t)) {
-    warning("losses and t must be numeric.")
+  if (!is.nonnegative.finite.vector(losses) || !is.positive.finite.vector(t)) {
+    warning("losses and t must be positive.")
     return(NA)
   }
-  if (length(t) != 1 & length(t) != length(losses)) {
+  if (length(t) != 1 && length(t) != length(losses)) {
     warning("t must have length 1 or same length as losses.")
     return(NA)
   }
-  if (min(t) <= 0) {
-    warning("t be positive.")
-    return(NA)
-  }
+
   losses <- losses[losses > t]
   n <- length(losses)
-  if (n < 1) {
-    warning("Number of losses > t must be positive.")
-    return(NA)
-  }
+
   if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be NULL or a positive number ('Inf' allowed).")
+    }
     if (truncation <= max(t)) {
       warning("truncation must be larger than t")
     }
@@ -2408,19 +2382,32 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, 
 #' @export
 
 PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, truncation_type = "lp", tol = 1e-7, max_iterations = 1000) {
-  if (!is.numeric(losses) || !is.numeric(t)) {
-    warning("losses and t must be numeric.")
+  if (!is.nonnegative.finite.vector(losses) || !is.positive.finite.vector(t)) {
+    warning("losses and t must be positive.")
     return(NA)
   }
+  if (!(truncation_type %in% c("lp", "wd"))) {
+    warning("truncation_type must be 'lp' or 'wd'.")
+    return(NA)
+  }
+  if (!is.positive.finite.number(tol)) {
+    warning("tol must be a positive number.")
+    return(NA)
+  }
+  if (!is.positive.finite.number(max_iterations)) {
+    warning("max_iterations must be a positive number.")
+    return(NA)
+  } else {
+    max_iterations <- ceiling(max_iterations)
+  }
+
+
   k <- length(t)
   if (k == 1) {
     Result <- Pareto_ML_Estimator_Alpha(losses, t, truncation = truncation, tol = tol, max_iterations = max_iterations)
     return(Result)
   }
-  if (min(t) <= 0) {
-    warning("t must have only positive elements!")
-    return(NA)
-  }
+
   if (min(diff(t)) <= 0) {
     warning("t must be strictily ascending!")
     return(NA)
@@ -2430,8 +2417,12 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
     return(NA)
   }
   if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be a positive number ('Inf' allowed).")
+    }
     if (truncation <= t[k]) {
       warning("truncation must be larger than max(t)")
+      return(NA)
     }
     if (max(losses) >= truncation) {
       warning("Losses must be < truncation.")
@@ -2520,7 +2511,14 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
 
 
 Local_Pareto_Alpha <- function(x, distribution, ...) {
-
+  if (!is.atomic(x) || !is.numeric(x)) {
+    warning("x must be a numeric vector.")
+    return(NA)
+  }
+  if (!(distribution %in% c("lnorm", "norm", "gamma"))) {
+    warning("distribution must be 'lnorm', 'norm' or 'gamma'.")
+    return(rep(NA, length(x)))
+  }
   if (distribution == "lnorm") {
     Result <- x * stats::dlnorm(x, log = FALSE, ...) / (1 - stats::plnorm(x, log.p = FALSE, ...))
   }
@@ -2530,6 +2528,6 @@ Local_Pareto_Alpha <- function(x, distribution, ...) {
   if (distribution == "gamma") {
     Result <- x * stats::dgamma(x, log = FALSE, ...) / (1 - stats::pgamma(x, log.p = FALSE, ...))
   }
-
+  Result[is.na(x) | is.infinite(x) | (x < 0)] <- NA
   return(Result)
 }
