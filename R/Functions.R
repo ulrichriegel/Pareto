@@ -1727,21 +1727,40 @@ pPareto <- function(x, t, alpha, truncation = NULL) {
     warning("x must be a numeric vector.")
     return(rep(NA, length(x)))
   }
-  if (!valid.parameters.Pareto(t, alpha, truncation)) {
-    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
+  if (!valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE)) {
+    warning(valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE, comment = TRUE))
     return(NA)
   }
   sapply(x, FUN = function(x) pPareto_s(x, t, alpha, truncation))
 }
 
 pPareto_s <- function(x, t, alpha, truncation = NULL) {
-  if (!valid.parameters.Pareto(t, alpha, truncation)) {
-    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
+  if (!valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE)) {
+    warning(valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE, comment = TRUE))
     return(NA)
   }
   if (!is.number(x)) {
     warning("x must be a number ('Inf' allowed).")
     return(NA)
+  }
+
+  if (alpha <= 1e-6) {
+    if (is.positive.finite.number(truncation)) {
+      if (x <= t) {
+        return(0)
+      } else if (x < truncation) {
+        return(log(x/t) / log(truncation / t))
+      } else {
+        return(1)
+      }
+    } else {
+      if (is.infinite(x) && is.positive.number(x)) {
+        return(1)
+      } else {
+        return(0)
+      }
+    }
+
   }
 
   if (x <= t) {
@@ -1809,21 +1828,39 @@ dPareto <- function(x, t, alpha, truncation = NULL) {
     warning("x must be a numeric vector.")
     return(NA)
   }
-  if (!valid.parameters.Pareto(t, alpha, truncation)) {
-    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
+  if (!valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE)) {
+    warning(valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE, comment = TRUE))
     return(rep(NA, length(x)))
   }
   sapply(x, FUN = function(x) dPareto_s(x, t, alpha, truncation))
 }
 
 dPareto_s <- function(x, t, alpha, truncation = NULL) {
-  if (!valid.parameters.Pareto(t, alpha, truncation)) {
-    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
+  if (!valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE)) {
+    warning(valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE, comment = TRUE))
     return(NA)
   }
   if (!is.number(x)) {
     warning("x must be a number ('Inf' allowed).")
     return(NA)
+  }
+
+  if (alpha <= 1e-6) {
+    if (is.positive.finite.number(truncation)) {
+      if (x <= t) {
+        return(0)
+      } else if (x < truncation) {
+        return((1/x) / log(truncation / t))
+      } else {
+        return(0)
+      }
+    } else {
+      if (is.infinite(x) && is.positive.number(x)) {
+        return(Inf)
+      } else {
+        return(0)
+      }
+    }
   }
 
   if (x <= t) {
@@ -2214,26 +2251,42 @@ qPiecewisePareto_s <- function(y, t, alpha, truncation = NULL, truncation_type =
 #' @export
 
 qPareto <- function(p, t, alpha, truncation = NULL) {
-  if (!is.positive.finite.vector(p) || max(p) > 1) {
+  if (!is.nonnegative.finite.vector(p) || max(p) > 1) {
     warning("p must be a vector with elements in [0,1].")
     return(NA)
   }
-  if (!valid.parameters.Pareto(t, alpha, truncation)) {
-    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
+  if (!valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE)) {
+    warning(valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE, comment = TRUE))
     return(rep(NA, length(p)))
   }
   sapply(p, FUN = function(y) qPareto_s(y, t, alpha, truncation))
 }
 
 qPareto_s <- function(y, t, alpha, truncation = NULL) {
-  if (!valid.parameters.Pareto(t, alpha, truncation)) {
-    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
+  if (!valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE)) {
+    warning(valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE, comment = TRUE))
     return(NA)
   }
-  if (!is.positive.finite.number(y) || y > 1) {
+  if (!is.nonnegative.finite.number(y) || y > 1) {
     warning("y must be a number in [0,1].")
     return(NA)
   }
+
+  if (alpha <= 1e-6) {
+    if (is.positive.finite.number(truncation)) {
+      if (y == 0) {
+        return(t)
+      } else if (y == 1) {
+        return(truncation)
+      } else {
+        return(t * (truncation / t)^y)
+      }
+    } else {
+      return(Inf)
+    }
+
+  }
+
 
   if (y == 1) {
     if (is.null(truncation)) {

@@ -155,14 +155,27 @@ valid.parameters.PiecewisePareto <- function(t, alpha, truncation, truncation_ty
 
 
 
-valid.parameters.Pareto <- function(t, alpha, truncation, comment = FALSE) {
-  if (!is.positive.finite.number(t) || !is.nonnegative.finite.number(alpha)) {
-    if (!comment) {
-      return(FALSE)
-    } else {
-      return("t and alpha must be positive numbers.")
+valid.parameters.Pareto <- function(t, alpha, truncation, allow.alpha.zero = FALSE, comment = FALSE) {
+  if (allow.alpha.zero) {
+    if (!is.positive.finite.number(t) || !is.nonnegative.finite.number(alpha)) {
+      if (!comment) {
+        return(FALSE)
+      } else {
+        return("t must be positive and alpha must be nonnegative.")
+      }
+    }
+
+  } else {
+    if (!is.positive.finite.number(t) || !is.positive.finite.number(alpha)) {
+      if (!comment) {
+        return(FALSE)
+      } else {
+        return("t and alpha must be positive numbers.")
+      }
     }
   }
+
+
   if (!is.null(truncation) && (!is.positive.number(truncation) || truncation <= t)) {
     if (!comment) {
       return(FALSE)
