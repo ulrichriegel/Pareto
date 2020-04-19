@@ -73,37 +73,43 @@ Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation 
     }
     return(EP)
   } else {
-    EP <- NaN
-    while (is.nan(EP)) {
-      if (t <= AttachmentPoint) {
-        if (alpha == 0) {
-          EP <- Cover
-        } else if (alpha == 1) {
-          EP <- t * (log(Cover + AttachmentPoint) - log(AttachmentPoint))
-        } else {
-          EP <- t / (1 - alpha) * (((Cover + AttachmentPoint) / t)^(1 - alpha) - (AttachmentPoint / t)^(1 - alpha))
-        }
-      } else if (t >= AttachmentPoint + Cover) {
+    # Calculation ignoring truncation
+    if (t <= AttachmentPoint) {
+      if (alpha == 0) {
         EP <- Cover
+      } else if (alpha == 1) {
+        EP <- t * (log(Cover + AttachmentPoint) - log(AttachmentPoint))
       } else {
-        EP <- t - AttachmentPoint
-        if (alpha == 0) {
-          EP <- Cover
-        } else if (alpha == 1) {
-          EP <- EP + t * (log(Cover + AttachmentPoint) - log(t))
-        } else {
-          EP <- EP + t / (1 - alpha) * (((Cover + AttachmentPoint) / t)^(1 - alpha) - 1)
-        }
+        EP <- t / (1 - alpha) * (((Cover + AttachmentPoint) / t)^(1 - alpha) - (AttachmentPoint / t)^(1 - alpha))
       }
-      if (is.nan(EP) || is.infinite(EP)) {
-        alpha <- alpha / 2
-        EP <- NaN
-        warning(paste("alpha reduced to", round(alpha, 2)))
+    } else if (t >= AttachmentPoint + Cover) {
+      EP <- Cover
+    } else {
+      EP <- t - AttachmentPoint
+      if (alpha == 0) {
+        EP <- Cover
+      } else if (alpha == 1) {
+        EP <- EP + t * (log(Cover + AttachmentPoint) - log(t))
+      } else {
+        EP <- EP + t / (1 - alpha) * (((Cover + AttachmentPoint) / t)^(1 - alpha) - 1)
       }
     }
-    if (!is.null(truncation)) {
+
+    if (is.positive.finite.number(truncation)) {
       # then Cover + AttachmentPoint <= truncation
-      if (truncation < Inf) {
+      if (alpha < 1e-6) {
+        IndefitineIntegral <- function(x) {
+          return(x - 1 / log(truncation / t) * (x * log(x / t) - x))
+        }
+        if (t <= AttachmentPoint) {
+           EP <- IndefitineIntegral(Cover + AttachmentPoint) - IndefitineIntegral(AttachmentPoint)
+        } else if (t >= Cover + AttachmentPoint) {
+          EP <- Cover
+        } else {
+          EP <- t - AttachmentPoint + IndefitineIntegral(Cover + AttachmentPoint) - IndefitineIntegral(t)
+        }
+      } else {
+        # Adjustment for truncation
         FQ_at_truncation <- (t / truncation)^alpha
         EP <- (EP - FQ_at_truncation * Cover) / (1 - FQ_at_truncation)
       }
@@ -187,7 +193,7 @@ Pareto_Layer_Second_Moment_simple <- function(Cover, AttachmentPoint, alpha) {
 #'
 #' @export
 
-Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
+Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t = NULL, truncation = NULL) {
   if (!is.nonnegative.finite.number(AttachmentPoint)) {
     warning("AttachmentPoint must be a non-negative number.")
     return(NA)
@@ -241,7 +247,7 @@ Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation =
 
   # Second moment of layer loss if t = AttachmentPoint
   SM <- Pareto_Layer_Second_Moment_simple(Cover, AttachmentPoint, alpha)
-  if (!is.null(truncation)) {
+  if (is.positive.finite.number(truncation) && alpha > 0) {
     # probability of truncation if t = AttachmentPoint
     p <- 1- pPareto(truncation, AttachmentPoint, alpha)
     # consider truncation in second moment
@@ -250,6 +256,18 @@ Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation =
   # consider thresholds t < AttachmentPoint
   p <- 1 - pPareto(AttachmentPoint, t, alpha, truncation = truncation)
   SM <- p * SM
+
+  if (is.positive.finite.number(truncation) && alpha == 0) {
+    IndefiniteIntegral <- function(x) {
+      if (x <= t) {
+        return(x^2 + 0.5 * t^2 / log(truncation / t))
+      } else {
+        return(x^2 - x^2 / log(truncation / t) * log(x / t) + 0.5 * x^2 / log(truncation / t))
+      }
+    }
+    SM <- IndefiniteIntegral(Cover + AttachmentPoint) - IndefiniteIntegral(AttachmentPoint) - 2 * AttachmentPoint * Pareto_Layer_Mean(Cover, AttachmentPoint, alpha, t, truncation = truncation)
+  }
+
 
   # calculate Variance
   Result <- SM - Pareto_Layer_Mean(Cover, AttachmentPoint, alpha, t, truncation = truncation)^2
@@ -339,7 +357,7 @@ Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = 
 #' @param n Numeric. Number of observations.
 #' @param t Numeric vector. Thresholds of the Pareto distributions
 #' @param alpha Numeric vector. Pareto alphas of the Pareto distributions.
-#' @param truncation If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation} (resampled Pareto)
+#' @param truncation NULL or Numeric vector. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation} (resampled Pareto)
 #'
 #' @return A vector of \code{n} samples from the (truncated) Pareto distribution with parameters \code{t} and \code{alpha}
 #'
@@ -351,14 +369,29 @@ Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = 
 #' @export
 
 rPareto <- function(n, t, alpha, truncation = NULL) {
-  if (!valid.parameters.Pareto(t, alpha, truncation)) {
-    warning(valid.parameters.Pareto(t, alpha, truncation, comment = TRUE))
-  }
   if (!is.positive.finite.number(n)) {
     warning("n must be a positive number.")
     return(NA)
   }
   n <- ceiling(n)
+  if (!is.positive.finite.vector(t) || (length(t) != 1 && length(t) != n)) {
+    warning("t must be a positive vector of lenght 1 or n.")
+    return(NA)
+  }
+  if (!is.positive.finite.vector(alpha) || (length(alpha) != 1 && length(alpha) != n)) {
+    warning("alpha must be a positive vector of lenght 1 or n.")
+    return(NA)
+  }
+  if (!is.null(truncation)) {
+    if (!is.positive.vector(truncation) || (length(alpha) != 1 && length(alpha) != n)) {
+      warning("truncation must be NULL or a positive vector of lenght 1 or n (elements may be 'Inf').")
+      return(NA)
+    }
+    if (sum(truncation <= t) > 0) {
+      warning("truncation must be > t.")
+      return(NA)
+    }
+  }
 
   FinvPareto <- function(x,t,alpha) {
     return(t/(1-x)^(1/alpha))
@@ -366,11 +399,9 @@ rPareto <- function(n, t, alpha, truncation = NULL) {
   u <- 0
   o <- 1
   if (!is.null(truncation)) {
-    if (is.numeric(truncation)) {
-      if (truncation > max(t)) {
-        o <- 1 - (t / truncation)^alpha
-      }
-    }
+#    if (truncation > max(t)) {
+      o <- 1 - (t / truncation)^alpha
+#    }
   }
 
   return(FinvPareto(stats::runif(n, u, o),t,alpha))
