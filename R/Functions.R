@@ -378,8 +378,8 @@ rPareto <- function(n, t, alpha, truncation = NULL) {
     warning("t must be a positive vector of lenght 1 or n.")
     return(NA)
   }
-  if (!is.positive.finite.vector(alpha) || (length(alpha) != 1 && length(alpha) != n)) {
-    warning("alpha must be a positive vector of lenght 1 or n.")
+  if (!is.nonnegative.finite.vector(alpha) || (length(alpha) != 1 && length(alpha) != n)) {
+    warning("alpha must be a non-negative vector of lenght 1 or n.")
     return(NA)
   }
   if (!is.null(truncation)) {
@@ -393,19 +393,55 @@ rPareto <- function(n, t, alpha, truncation = NULL) {
     }
   }
 
+
   FinvPareto <- function(x,t,alpha) {
     return(t/(1-x)^(1/alpha))
   }
-  u <- 0
-  o <- 1
-  if (!is.null(truncation)) {
-#    if (truncation > max(t)) {
-      o <- 1 - (t / truncation)^alpha
-#    }
+  FinvTruncParetoAlphaZero <- function(x, t, truncation) {
+    return(t * (truncation / t)^x)
   }
 
-  return(FinvPareto(stats::runif(n, u, o),t,alpha))
+
+  u <- 0
+  o <- 1
+
+  if (min(alpha > 0)) {
+    if (!is.null(truncation)) {
+      o <- 1 - (t / truncation)^alpha
+    }
+
+    return(FinvPareto(stats::runif(n, u, o),t,alpha))
+  } else {
+    if (length(alpha) == 1) {
+      alpha <- rep(alpha, n)
+    }
+    if (length(t) == 1) {
+      t <- rep(t, n)
+    }
+    if (!is.null(truncation)) {
+      o <- ifelse(alpha == 0, 1, 1 - (t / truncation)^alpha)
+      if (length(truncation) == 1) {
+        truncation <- rep(truncation, n)
+      }
+    } else {
+      o <- rep(1, n)
+      truncation <- rep(Inf, n)
+    }
+    u <- rep(0, n)
+    index_alpha_pos <- alpha > 0
+    index_alpha_zero_untruncated <- alpha == 0 & is.infinite(truncation)
+    index_alpha_zero_truncated <- alpha == 0 & !is.infinite(truncation)
+
+    sim_losses <- numeric(n)
+    sim_losses[index_alpha_pos] <- FinvPareto(stats::runif(sum(index_alpha_pos), u[index_alpha_pos], o[index_alpha_pos]), t[index_alpha_pos], alpha[index_alpha_pos])
+    sim_losses[index_alpha_zero_untruncated] <- Inf
+    sim_losses[index_alpha_zero_truncated] <- FinvTruncParetoAlphaZero(stats::runif(sum(index_alpha_zero_truncated)), t[index_alpha_zero_truncated], truncation[index_alpha_zero_truncated])
+
+    return(sim_losses)
+  }
 }
+
+
 
 
 #' Pareto Extrapolation
@@ -448,6 +484,10 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
   }
   if (!is.positive.finite.number(AttachmentPoint_2)) {
     warning("AttachmentPoint_2 must be a positive number.")
+    return(NA)
+  }
+  if (!is.nonnegative.finite.number(alpha)) {
+    warning("alpha must be a non-negative number.")
     return(NA)
   }
   if (is.null(ExpLoss_1)) {
