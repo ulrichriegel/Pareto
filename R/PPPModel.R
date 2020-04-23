@@ -177,7 +177,7 @@ is.valid.PPP_Model <- function(x, comment = FALSE) {
 
 PPP_Model_Exp_Layer_Loss_s <- function(Cover, AttachmentPoint, PPP_Model) {
   if (!is.valid.PPP_Model(PPP_Model)) {
-    return(NA)
+    return(NaN)
   } else {
     return(PPP_Model$FQ * PiecewisePareto_Layer_Mean(Cover, AttachmentPoint, PPP_Model$t, PPP_Model$alpha, truncation = PPP_Model$truncation, truncation_type = PPP_Model$truncation_type))
   }
@@ -209,7 +209,7 @@ PPP_Model_Exp_Layer_Loss <- Vectorize(PPP_Model_Exp_Layer_Loss_s, c("Cover", "At
 
 PPP_Model_Layer_Var_s <- function(Cover, AttachmentPoint, PPP_Model) {
   if (!is.valid.PPP_Model(PPP_Model)) {
-    return(NA)
+    return(NaN)
   } else {
     E_N <- PPP_Model$FQ
     Var_N <- E_N * PPP_Model$dispersion
@@ -242,7 +242,7 @@ PPP_Model_Layer_Var <- Vectorize(PPP_Model_Layer_Var_s, c("Cover", "AttachmentPo
 
 PPP_Model_Layer_Sd_s <- function(Cover, AttachmentPoint, PPP_Model) {
   if (!is.valid.PPP_Model(PPP_Model)) {
-    return(NA)
+    return(NaN)
   } else {
     return(sqrt(PPP_Model_Layer_Var(Cover, AttachmentPoint, PPP_Model)))
   }
@@ -274,10 +274,10 @@ PPP_Model_Layer_Sd <- Vectorize(PPP_Model_Layer_Sd_s, c("Cover", "AttachmentPoin
 PPP_Model_Excess_Frequency_s <- function(x, PPP_Model) {
   if (!is.valid.PPP_Model(PPP_Model)) {
     warning(is.valid.PPP_Model(PPP_Model, comment = TRUE))
-    return(NA)
+    return(NaN)
   } else if (!is.atomic(x) || !is.numeric(x) || length(x) != 1 || is.na(x)) {
     warning("x must be a number.")
-    return(NA)
+    return(NaN)
   } else {
     return(PPP_Model$FQ * (1 - pPiecewisePareto(x, PPP_Model$t, PPP_Model$alpha, truncation = PPP_Model$truncation, truncation_type = PPP_Model$truncation_type)))
   }
@@ -322,11 +322,11 @@ PPP_Model_Excess_Frequency <- Vectorize(PPP_Model_Excess_Frequency_s, c("x"))
 
 PPP_Model_Simulate <- function(n, PPP_Model) {
   if (!is.valid.PPP_Model(PPP_Model)) {
-    return(NA)
+    return(NaN)
   }
   claim_count <- rPanjer(n, PPP_Model$FQ, PPP_Model$dispersion)
   claims <- rPiecewisePareto(sum(claim_count), PPP_Model$t, PPP_Model$alpha, PPP_Model$truncation, PPP_Model$truncation_type)
-  result <- matrix(NA, nrow = n, ncol = max(claim_count))
+  result <- matrix(NaN, nrow = n, ncol = max(claim_count))
   result[col(result) <= claim_count] <- claims
   return(result)
 }

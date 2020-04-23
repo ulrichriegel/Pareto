@@ -5,18 +5,21 @@ test_that("Pareto_Layer_Mean", {
   expect_equal(Pareto_Layer_Mean(8000, 2000, 2), 1600)
   expect_equal(Pareto_Layer_Mean(8000, 2000, 2, t = 1000), 400)
   expect_equal(Pareto_Layer_Mean(8000, 2000, 2, t = 5000, truncation = 10000), 4666.66666666667)
+  expect_equal(Pareto_Layer_Mean(2000,1000,0, truncation = 5000, t = 500), 835.16520831955449)
 })
 
 test_that("Pareto_Layer_SM", {
   expect_equal(Pareto_Layer_SM(8000, 2000, 2), 6475503.2994728)
   expect_equal(Pareto_Layer_SM(8000, 2000, 2, t = 1000), 1618875.8248682)
   expect_equal(Pareto_Layer_SM(8000, 2000, 2, t = 5000, truncation = 10000), 23543145.370663)
+  expect_equal(Pareto_Layer_SM(2000,1000,0, truncation = 5000, t = 1500), 2584318.901925616)
 })
 
 test_that("Pareto_Layer_Var", {
   expect_equal(Pareto_Layer_Var(8000, 2000, 2), 3915503.2994728)
   expect_equal(Pareto_Layer_Var(8000, 2000, 2, t = 1000), 1458875.8248682)
   expect_equal(Pareto_Layer_Var(8000, 2000, 2, t = 5000, truncation = 10000), 1765367.59288524)
+  expect_equal(Pareto_Layer_Var(2000,1000,0, truncation = 5000, t = 500), 667015.32799764269)
 })
 
 
@@ -74,6 +77,7 @@ test_that("Pareto_Extrapolation", {
   expect_equal(Pareto_Extrapolation(1000, 1000, 2000, 2000, alpha = 2), 0.5)
   expect_equal(Pareto_Extrapolation(1000, 1000, 2000, 2000, alpha = 2, ExpLoss_1 = 1000), 500)
   expect_equal(Pareto_Extrapolation(1000, 1000, 2000, 2000, alpha = 2, truncation = 3000, ExpLoss_1 = 1000), 142.85714285714292)
+  expect_equal(Pareto_Extrapolation(Inf, 1000, Inf, 2000, alpha = 0, truncation = 3000, ExpLoss_1 = 100), 20.975411735345432)
 })
 
 test_that("Pareto_Find_Alpha_btw_FQ_Layer", {
