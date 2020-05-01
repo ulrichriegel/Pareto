@@ -132,7 +132,7 @@ valid.parameters.PiecewisePareto <- function(t, alpha, truncation, truncation_ty
       return("Last alpha must be positive.")
     }
   }
-  if (!(truncation_type %in% c("lp", "wd"))) {
+  if (!is.atomic(truncation_type) || length(truncation_type) != 1 || !(truncation_type %in% c("lp", "wd"))) {
     if (!comment) {
       return(FALSE)
     } else {

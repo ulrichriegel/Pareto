@@ -177,6 +177,7 @@ is.valid.PPP_Model <- function(x, comment = FALSE) {
 
 PPP_Model_Exp_Layer_Loss_s <- function(Cover, AttachmentPoint, PPP_Model) {
   if (!is.valid.PPP_Model(PPP_Model)) {
+    warning(is.valid.PPP_Model(PPP_Model, comment = TRUE))
     return(NaN)
   } else {
     return(PPP_Model$FQ * PiecewisePareto_Layer_Mean(Cover, AttachmentPoint, PPP_Model$t, PPP_Model$alpha, truncation = PPP_Model$truncation, truncation_type = PPP_Model$truncation_type))
@@ -209,6 +210,7 @@ PPP_Model_Exp_Layer_Loss <- Vectorize(PPP_Model_Exp_Layer_Loss_s, c("Cover", "At
 
 PPP_Model_Layer_Var_s <- function(Cover, AttachmentPoint, PPP_Model) {
   if (!is.valid.PPP_Model(PPP_Model)) {
+    warning(is.valid.PPP_Model(PPP_Model, comment = TRUE))
     return(NaN)
   } else {
     E_N <- PPP_Model$FQ
@@ -242,6 +244,7 @@ PPP_Model_Layer_Var <- Vectorize(PPP_Model_Layer_Var_s, c("Cover", "AttachmentPo
 
 PPP_Model_Layer_Sd_s <- function(Cover, AttachmentPoint, PPP_Model) {
   if (!is.valid.PPP_Model(PPP_Model)) {
+    warning(is.valid.PPP_Model(PPP_Model, comment = TRUE))
     return(NaN)
   } else {
     return(sqrt(PPP_Model_Layer_Var(Cover, AttachmentPoint, PPP_Model)))
@@ -322,7 +325,14 @@ PPP_Model_Excess_Frequency <- Vectorize(PPP_Model_Excess_Frequency_s, c("x"))
 
 PPP_Model_Simulate <- function(n, PPP_Model) {
   if (!is.valid.PPP_Model(PPP_Model)) {
+    warning(is.valid.PPP_Model(PPP_Model, comment = TRUE))
     return(NaN)
+  }
+  if (!is.positive.finite.number(n)) {
+    warning("n must be a positive number.")
+    return(NaN)
+  } else {
+    n <- ceiling(n)
   }
   claim_count <- rPanjer(n, PPP_Model$FQ, PPP_Model$dispersion)
   claims <- rPiecewisePareto(sum(claim_count), PPP_Model$t, PPP_Model$alpha, PPP_Model$truncation, PPP_Model$truncation_type)
