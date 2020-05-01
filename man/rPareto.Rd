@@ -13,7 +13,7 @@ rPareto(n, t, alpha, truncation = NULL)
 
 \item{alpha}{Numeric vector. Pareto alphas of the Pareto distributions.}
 
-\item{truncation}{If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation} (resampled Pareto)}
+\item{truncation}{NULL or Numeric vector. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation} (resampled Pareto)}
 }
 \value{
 A vector of \code{n} samples from the (truncated) Pareto distribution with parameters \code{t} and \code{alpha}
@@ -24,6 +24,6 @@ Generates random deviates of a Pareto distribution
 \examples{
 rPareto(100, 1000, 2)
 rPareto(100, 1000, 2, truncation = 2000)
-rPareto(5, t = c(1, 10, 100, 1000, 10000), alpha = c(1,2,4,8,16))
+rPareto(100, t = c(1, 10, 100, 1000, 10000), alpha = c(1, 2, 4, 8, 16))
 
 }
