@@ -1,7 +1,7 @@
 ## Test environments
 
 * local Windows 10, R 3.6.2
-* ubuntu 16.04 (on travis-ci), R 3.6.2
+* ubuntu 16.04 (on travis-ci), R 4.0.0
 
 ## R CMD check results:
 

@@ -312,7 +312,7 @@ PPP_Model_Exp_Layer_Loss(covers, attachment_points, fit)
 
 A `PPP_Model` object contains the information required to specify a collective model with a Panjer distributed claim count and a piecewise Pareto distributed severity. 
 
-**Claim count distribution:** The Panjer class contains the binomial distribution, the poisson distribution and the negative binomial distribution. The distribution of the claim count $N$ is specified by the expected frequency $E(N)$ (attribute `FQ` of the object) and the dispersion $D(N):=Var(N)/E(N)$ (attribute `dispersion` of the object). We have the following cases:
+**Claim count distribution:** The Panjer class contains the binomial distribution, the Poisson distribution and the negative binomial distribution. The distribution of the claim count $N$ is specified by the expected frequency $E(N)$ (attribute `FQ` of the object) and the dispersion $D(N):=Var(N)/E(N)$ (attribute `dispersion` of the object). We have the following cases:
 
 * `dispersion < 1`: binomial distribution
 * `dispersion = 1`: Poisson distribution
