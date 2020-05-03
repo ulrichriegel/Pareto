@@ -9,12 +9,12 @@ useful for pricing of reinsurance treaties:
 - Pareto extrapolation
 - Finding the Pareto alpha between the expected losses of two layers
 - Finding the Pareto alpha between an excess frequency and the expected loss of a layer
-- Maximum likelihood estimation of the Pareto alpha
+- Maximum likelihood estimation of the alpha(s) of a (piecewise) Pareto distribution
 - Calculation of local Pareto alphas for normal, lognormal and gamma distributions
 - Fitting a Piecewise Pareto distribution to a tower of layer losses (for an arbitrary number of layers)
 
 Moreover, the package provides some functions for collective models with a claim count distribution from the Panjer class 
-(i.e. Binomial, Poisson and Negative Binomial) and a piecewise Paret distributed severity:
+(i.e. Binomial, Poisson and Negative Binomial) and a piecewise Pareto distributed severity:
 
 - Layer mean, variance and standard deviation
 - Simulation of losses with the collective model
