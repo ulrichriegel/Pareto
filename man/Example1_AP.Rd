@@ -4,7 +4,9 @@
 \name{Example1_AP}
 \alias{Example1_AP}
 \title{Example data: Attachment Points}
-\format{An object of class \code{numeric} of length 5.}
+\format{
+An object of class \code{numeric} of length 5.
+}
 \usage{
 Example1_AP
 }

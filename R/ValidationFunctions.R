@@ -191,4 +191,30 @@ valid.parameters.Pareto <- function(t, alpha, truncation, allow.alpha.zero = FAL
 }
 
 
+valid.parameters.GenPareto <- function(t, alpha_ini, alpha_tail, truncation, comment = FALSE) {
+    if (!is.positive.finite.number(t) || !is.positive.finite.number(alpha_ini) || !is.positive.finite.number(alpha_tail)) {
+      if (!comment) {
+        return(FALSE)
+      } else {
+        return("t, alpha_ini and alpha_tail must be positive numbers.")
+      }
+    }
+
+
+  if (!is.null(truncation) && (!is.positive.number(truncation) || truncation <= t)) {
+    if (!comment) {
+      return(FALSE)
+    } else {
+      return("truncation must be a positive number > t.")
+    }
+  }
+  if (!comment) {
+    return(TRUE)
+  } else {
+    return("OK")
+  }
+}
+
+
+
 

@@ -4,7 +4,9 @@
 \name{Example1_EL}
 \alias{Example1_EL}
 \title{Example data: Expected Losses}
-\format{An object of class \code{numeric} of length 5.}
+\format{
+An object of class \code{numeric} of length 5.
+}
 \usage{
 Example1_EL
 }

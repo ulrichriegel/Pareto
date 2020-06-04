@@ -2760,8 +2760,8 @@ Local_Pareto_Alpha <- function(x, distribution, ...) {
     warning("x must be a numeric vector.")
     return(rep(NaN, length(x)))
   }
-  if (!(distribution %in% c("lnorm", "norm", "gamma"))) {
-    warning("distribution must be 'lnorm', 'norm' or 'gamma'.")
+  if (!(distribution %in% c("lnorm", "norm", "gamma", "weibull", "exp"))) {
+    warning("distribution must be 'lnorm', 'norm', 'gamma', 'weibull' or 'exp'.")
     return(rep(NaN, length(x)))
   }
   if (distribution == "lnorm") {
@@ -2773,6 +2773,207 @@ Local_Pareto_Alpha <- function(x, distribution, ...) {
   if (distribution == "gamma") {
     Result <- x * stats::dgamma(x, log = FALSE, ...) / (1 - stats::pgamma(x, log.p = FALSE, ...))
   }
+  if (distribution == "weibull") {
+    Result <- x * stats::dweibull(x, log = FALSE, ...) / (1 - stats::pweibull(x, log.p = FALSE, ...))
+  }
+  if (distribution == "exp") {
+    Result <- x * stats::dexp(x, log = FALSE, ...) / (1 - stats::pexp(x, log.p = FALSE, ...))
+  }
   Result[is.na(x) | is.infinite(x) | (x < 0)] <- NaN
   return(Result)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#' Distribution Function of the generalized Pareto Distribution
+#'
+#' @description Calculates the cumulative distribution function of a generalized Pareto distribution
+#'
+#' @param x Numeric. The function evaluates the CDF at \code{x}.
+#' @param t Numeric. Threshold of the generalized Pareto distribution.
+#' @param alpha_ini Numeric. Initial Pareto alpha.
+#' @param alpha_tail Numeric. Tail Pareto alpha.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the generalized Pareto distribution is truncated at \code{truncation}.
+#'
+#' @return Distribution function of the generalized Pareto distribution with parameters \code{t}, \code{alpha_ini} and \code{alpha_tail} evaluated at \code{x}
+#'
+#' @examples
+#' x <- 0:10 * 1000
+#' pGenPareto(x, 1000, 1, 3)
+#' pGenPareto(x, 1000, 1, 3, truncation = 5000)
+#'
+#'
+#' @export
+
+pGenPareto <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
+    warning("x must be a numeric vector.")
+    return(rep(NaN, length(x)))
+  }
+  if (!valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation)) {
+    warning(valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation, comment = TRUE))
+    return(rep(NaN, length(x)))
+  }
+  sapply(x, FUN = function(x) pGenPareto_s(x, t, alpha_ini, alpha_tail, truncation))
+}
+
+pGenPareto_s <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (!valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation)) {
+    warning(valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation, comment = TRUE))
+    return(NaN)
+  }
+  if (!is.number(x)) {
+    warning("x must be a number ('Inf' allowed).")
+    return(NaN)
+  }
+
+
+  if (x <= t) {
+    return(0)
+  } else if (is.null(truncation)) {
+    Result <- 1 - (1 + alpha_ini / alpha_tail * (x / t - 1))^(-alpha_tail)
+    return(Result)
+  } else if (x >= truncation) {
+    return(1)
+  } else {
+    Result <- (1 - (1 + alpha_ini / alpha_tail * (x / t - 1))^(-alpha_tail)) / (1 - (1 + alpha_ini / alpha_tail * (truncation / t - 1))^(-alpha_tail))
+    return(Result)
+  }
+}
+
+
+
+
+
+
+
+#' Density of the generalized Pareto Distribution
+#'
+#' @description Calculates the density function of the generalized Pareto distribution
+#'
+#' @param x Numeric. The function evaluates the density at x.
+#' @param t Numeric. Threshold of the Pareto distribution.
+#' @param alpha_ini Numeric. Initial Pareto alpha.
+#' @param alpha_tail Numeric. Tail Pareto alpha.
+#' @param truncation Numeric. If truncation is not NULL and truncation > t, then the generalized Pareto distribution is truncated at truncation.
+#'
+#' @return Density function of the Pareto distribution with parameters \code{t}, \code{alpha_ini} and \code{alpha_tail} evaluated at \code{x}
+#'
+#' @examples
+#' x <- 0:10 * 1000
+#' dGenPareto(x, 1000, 1, 3)
+#' dGenPareto(x, 1000, 1, 3, truncation = 5000)
+#'
+#' @export
+
+dGenPareto <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
+    warning("x must be a numeric vector.")
+    return(rep(NaN, length(x)))
+  }
+  if (!valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation)) {
+    warning(valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation, comment = TRUE))
+    return(rep(NaN, length(x)))
+  }
+  sapply(x, FUN = function(x) dGenPareto_s(x, t, alpha_ini, alpha_tail, truncation))
+}
+
+dGenPareto_s <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (!valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation)) {
+    warning(valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation, comment = TRUE))
+    return(NaN)
+  }
+  if (!is.number(x)) {
+    warning("x must be a number ('Inf' allowed).")
+    return(NaN)
+  }
+
+
+  if (x <= t) {
+    return(0)
+  } else if (is.null(truncation)) {
+    Result <- alpha_tail * (1 + alpha_ini / alpha_tail * (x / t - 1))^(-alpha_tail - 1) * alpha_ini / alpha_tail / t
+    return(Result)
+  } else if (x >= truncation) {
+    return(0)
+  } else {
+    Result <- alpha_tail * (1 + alpha_ini / alpha_tail * (x / t - 1))^(-alpha_tail - 1) * alpha_ini / alpha_tail / t / pGenPareto(truncation, t, alpha_ini, alpha_tail)
+    return(Result)
+  }
+}
+
+
+#' Quantile Function of the generalized Pareto Distribution
+#'
+#' @description Calculates the quantile function of a generalized Pareto distribution
+#'
+#' @param p Numeric. The function evaluates the inverse CDF at \code{p}.
+#' @param t Numeric. Threshold of the piecewise Pareto distribution.
+#' @param alpha_ini Numeric. Initial Pareto alpha.
+#' @param alpha_tail Numeric. Tail Pareto alpha.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the generalized Pareto distribution is truncated at \code{truncation}.
+#'
+#' @return Quantile function of the Pareto distribution with parameters \code{t}, \code{alpha_ini} and \code{alpha_tail}, evaluated at \code{p}
+#'
+#' @examples
+#' p <- 0:10 * 0.1
+#' qGenPareto(p, 1000, 2, 3)
+#' qGenPareto(p, 1000, 2, 3, truncation = 5000)
+#'
+#' @export
+
+qGenPareto <- function(p, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (!is.nonnegative.finite.vector(p) || max(p) > 1) {
+    warning("p must be a vector with elements in [0,1].")
+    return(rep(NaN, length(p)))
+  }
+  if (!valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation)) {
+    warning(valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation, comment = TRUE))
+    return(rep(NaN, length(p)))
+  }
+  sapply(p, FUN = function(y) qGenPareto_s(y, t, alpha_ini, alpha_tail, truncation))
+}
+
+qGenPareto_s <- function(y, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (!valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation)) {
+    warning(valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation, comment = TRUE))
+    return(NaN)
+  }
+  if (!is.nonnegative.finite.number(y) || y > 1) {
+    warning("y must be a number in [0,1].")
+    return(NaN)
+  }
+
+
+  if (y == 1) {
+    if (is.null(truncation)) {
+      return(Inf)
+    } else {
+      return(truncation)
+    }
+  }
+
+  if (!is.null(truncation)) {
+    if (!is.infinite(truncation)) {
+      scale <- pGenPareto(truncation, t, alpha_ini, alpha_tail)
+      y <- y * scale
+    }
+  }
+  result <- t * (1 + alpha_tail / alpha_ini * ((1 - y)^(-1/alpha_tail) - 1))
+}
+
