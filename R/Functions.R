@@ -2977,3 +2977,90 @@ qGenPareto_s <- function(y, t, alpha_ini, alpha_tail, truncation = NULL) {
   result <- t * (1 + alpha_tail / alpha_ini * ((1 - y)^(-1/alpha_tail) - 1))
 }
 
+
+
+
+
+
+
+#' Simulation of the generalized Pareto Distribution
+#'
+#' @description Generates random deviates of a generalized Pareto distribution
+#'
+#' @param n Numeric. Number of observations.
+#' @param t Numeric vector. Thresholds of the generalized Pareto distributions
+#' @param alpha_ini Numeric vector. Initial Pareto alphas of the generalized Pareto distributions.
+#' @param alpha_tail Numeric vector. Tail Pareto alphas of the generalized Pareto distributions.
+#' @param truncation NULL or Numeric vector. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the generalized Pareto distributions are truncated at \code{truncation} (resampled generalized Pareto)
+#'
+#' @return A vector of \code{n} samples from the (truncated) generalized Pareto distribution with parameters \code{t}, \code{alpha_ini} and \code{alpha_tail}
+#'
+#' @examples
+#' rGenPareto(100, 1000, 2, 3)
+#' rGenPareto(100, 1000, 2, 3, truncation = 2000)
+#' rGenPareto(100, t = c(1, 10, 100, 1000), alpha_ini = 1, alpha_tail = c(2, 5))
+#'
+#' @export
+
+rGenPareto <- function(n, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (!is.positive.finite.number(n)) {
+    warning("n must be a positive number.")
+    return(NaN)
+  }
+  n <- ceiling(n)
+  if (!is.positive.finite.vector(t)) {
+    warning("t must be a positive vector.")
+    return(NaN)
+  }
+  if (n %% length(t) != 0) {
+    warning("n is not a multiple of length(t).")
+    t <- rep(t, ceiling(n / length(t)))[1:n]
+  }
+  if (!is.positive.finite.vector(alpha_ini)) {
+    warning("alpha_ini must be a positive vector.")
+    return(NaN)
+  }
+  if (n %% length(alpha_ini) != 0) {
+    warning("n is not a multiple of length(alpha_ini).")
+    alpha_ini <- rep(alpha_ini, ceiling(n / length(alpha_ini)))[1:n]
+  }
+  if (!is.positive.finite.vector(alpha_tail)) {
+    warning("alpha_tail must be a positive vector.")
+    return(NaN)
+  }
+  if (n %% length(alpha_tail) != 0) {
+    warning("n is not a multiple of length(alpha_tail).")
+    alpha_tail <- rep(alpha_tail, ceiling(n / length(alpha_tail)))[1:n]
+  }
+
+  if (!is.null(truncation)) {
+    if (!is.positive.vector(truncation)) {
+      warning("truncation must be NULL or a positive vector (elements may be 'Inf').")
+      return(NaN)
+    }
+    if (n %% length(truncation) != 0) {
+      warning("n is not a multiple of length(truncation).")
+      truncation <- rep(truncation, ceiling(n / length(truncation)))[1:n]
+    }
+    if (sum(truncation <= t) > 0) {
+      warning("truncation must be > t.")
+      return(NaN)
+    }
+  }
+
+
+  FinvGenPareto <- function(x, t, alpha_ini, alpha_tail) {
+    return(t * (1 + alpha_tail / alpha_ini * ((1 - x)^(-1 / alpha_tail) - 1)))
+  }
+
+
+  u <- 0
+  o <- 1
+
+  if (!is.null(truncation)) {
+    o <- 1 - (1 + alpha_ini / alpha_tail * (truncation / t - 1))^(-alpha_tail)
+  }
+
+    return(FinvGenPareto(stats::runif(n, u, o), t , alpha_ini, alpha_tail))
+}
+
