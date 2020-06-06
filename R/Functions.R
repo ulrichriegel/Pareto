@@ -3064,3 +3064,120 @@ rGenPareto <- function(n, t, alpha_ini, alpha_tail, truncation = NULL) {
     return(FinvGenPareto(stats::runif(n, u, o), t , alpha_ini, alpha_tail))
 }
 
+
+
+#' Layer Mean of the generalized Pareto Distribution
+
+#' @description  Calculates the expected loss of a generalized Pareto distribution in a reinsurance layer
+#'
+#' @param Cover Numeric. Cover of the reinsurance layer. Use \code{Inf} for unlimited layers.
+#' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
+#' @param alpha_ini Numeric. Initial Pareto alpha (at \code{t}).
+#' @param alpha_tail Numeric. Tail Pareto alpha.
+#' @param t Numeric. Threshold of the Pareto distribution. If \code{t} is \code{NULL} (default) then \code{t <- Attachment Point} is used.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
+#'
+#' @return The expected loss of the (truncated) Pareto distribution with parameters \code{t} and \code{alpha} in the layer
+#'         \code{Cover} xs \code{AttachmentPoint}
+#'
+#' @examples
+#' GenPareto_Layer_Mean(4000, 1000, 1, 3)
+#' GenPareto_Layer_Mean(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000)
+#' GenPareto_Layer_Mean(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 5000)
+#' GenPareto_Layer_Mean(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
+#' GenPareto_Layer_Mean(9000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
+#'
+#' @export
+
+
+
+GenPareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t=NULL, truncation = NULL) {
+  if (!is.nonnegative.finite.number(AttachmentPoint)) {
+    warning("AttachmentPoint must be a non-negative number.")
+    return(NaN)
+  }
+  if(!is.nonnegative.number(Cover)) {
+    warning("Cover must be a non-negative number ('Inf' allowed).")
+    return(NaN)
+  }
+  if (!is.positive.finite.number(alpha_ini)) {
+    warning("alpha_ini must be a positive number.")
+    return(NaN)
+  }
+  if (!is.positive.finite.number(alpha_tail)) {
+    warning("alpha_tail must be a positive number.")
+    return(NaN)
+  }
+  if (is.null(t)) {
+    if (AttachmentPoint == 0) {
+      warning("If Attachment Point in zero, then a t>0 has to be entered.")
+      return(NaN)
+    }
+    t <- AttachmentPoint
+  }
+  if (!is.positive.finite.number(t)) {
+    warning("t must be a positive number.")
+    return(NaN)
+  }
+  if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be NULL or a positive number ('Inf' allowed).")
+      return(NaN)
+    }
+    if (truncation <= t) {
+      warning("truncation must be larger than t.")
+      return(NaN)
+    }
+    if (truncation <= AttachmentPoint) {
+      return(0)
+    }
+    if (AttachmentPoint + Cover > truncation) {
+      Cover <- truncation - AttachmentPoint
+    }
+  }
+
+  if (is.infinite(Cover)) {
+    if (alpha_tail <= 1) {
+      return(Inf)
+    } else if (t <= AttachmentPoint) {
+      EP <- - t * alpha_tail / (alpha_ini * (1 - alpha_tail)) * (1 + alpha_ini / alpha_tail * (AttachmentPoint / t - 1))^(1 - alpha_tail)
+    } else {
+      EP <- t - AttachmentPoint
+      EP <- EP - t * alpha_tail / (alpha_ini * (1 - alpha_tail))
+    }
+    return(EP)
+  } else {
+    # Calculation ignoring truncation
+    if (t <= AttachmentPoint) {
+      if (alpha_tail == 1) {
+        # Pareto: EP <- t * (log(Cover + AttachmentPoint) - log(AttachmentPoint))
+        EP <- t * alpha_tail / alpha_ini * (log(1 + alpha_ini / alpha_tail * ((Cover + AttachmentPoint) / t - 1)) - log(1 + alpha_ini / alpha_tail * (AttachmentPoint / t - 1)))
+      } else {
+        # Pareto: EP <- t / (1 - alpha) * (((Cover + AttachmentPoint) / t)^(1 - alpha) - (AttachmentPoint / t)^(1 - alpha))
+        EP <- t * alpha_tail / (alpha_ini * (1 - alpha_tail)) * ((1 + alpha_ini / alpha_tail * ((Cover + AttachmentPoint) / t - 1))^(1 - alpha_tail) - (1 + alpha_ini / alpha_tail * (AttachmentPoint / t - 1))^(1 - alpha_tail))
+      }
+    } else if (t >= AttachmentPoint + Cover) {
+      EP <- Cover
+    } else {
+      EP <- t - AttachmentPoint
+      if (alpha_tail == 1) {
+        # Pareto: EP <- EP + t * (log(Cover + AttachmentPoint) - log(t))
+        EP <- EP +  t * alpha_tail / alpha_ini * log(1 + alpha_ini / alpha_tail * ((Cover + AttachmentPoint) / t - 1))
+      } else {
+        # Pareto: EP <- EP + t / (1 - alpha) * (((Cover + AttachmentPoint) / t)^(1 - alpha) - 1)
+        EP <- EP + t * alpha_tail / (alpha_ini * (1 - alpha_tail)) * ((1 + alpha_ini / alpha_tail * ((Cover + AttachmentPoint) / t - 1))^(1 - alpha_tail) - 1)
+      }
+    }
+
+    if (is.positive.finite.number(truncation)) {
+      # then Cover + AttachmentPoint <= truncation
+      # Adjustment for truncation
+      # Pareto: FQ_at_truncation <- (t / truncation)^alpha
+      FQ_at_truncation <- 1 - pGenPareto(truncation, t, alpha_ini, alpha_tail)
+      EP <- (EP - FQ_at_truncation * Cover) / (1 - FQ_at_truncation)
+    }
+    return(EP)
+  }
+
+}
+
