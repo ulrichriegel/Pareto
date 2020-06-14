@@ -3299,6 +3299,14 @@ GenPareto_Layer_SM <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t=
   result <- result - 2 * AttachmentPoint * (G(Cover + AttachmentPoint) - G(AttachmentPoint) - (Cover + AttachmentPoint) * (1 - pGenPareto(Cover + AttachmentPoint, t, alpha_ini, alpha_tail)) + AttachmentPoint * (1 - pGenPareto(AttachmentPoint, t, alpha_ini, alpha_tail)))
   result <- result + (2 * (H(Cover + AttachmentPoint) - H(AttachmentPoint)) - (Cover + AttachmentPoint)^2 * (1 - pGenPareto(Cover + AttachmentPoint, t, alpha_ini, alpha_tail)) + AttachmentPoint^2 * (1 - pGenPareto(AttachmentPoint, t, alpha_ini, alpha_tail)))
   result <- result + Cover^2 * (1 - pGenPareto(Cover + AttachmentPoint, t, alpha_ini, alpha_tail))
+
+  # adjustment for truncation
+
+  if (!is.null(truncation)) {
+    p <- 1 - pGenPareto(truncation, t, alpha_ini, alpha_tail)
+    result <- (result - p * Cover^2) / (1 - p)
+  }
+
   return(result)
 }
 
