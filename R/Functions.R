@@ -3181,3 +3181,126 @@ GenPareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, 
 
 }
 
+
+#' Second Layer Moment of the Generalized Pareto Distribution
+#'
+#' @description Calculates the second moment of a generalized Pareto distribution in a reinsurance layer
+#'
+#' @param Cover Numeric. Cover of the reinsurance layer. Use \code{Inf} for unlimited layers.
+#' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
+#' @param alpha_ini Numeric. Initial Pareto alpha (at \code{t}).
+#' @param alpha_tail Numeric. Tail Pareto alpha.
+#' @param t Numeric. Threshold of the Pareto distribution. If \code{t} is \code{NULL} (default) then \code{t <- Attachment Point} is used
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
+#'
+#' @return The second moment of the (truncated) generalized Pareto distribution with parameters \code{t}, \code{alpha_ini} and \code{alpha_tail} in the layer
+#'         \code{Cover} xs \code{AttachmentPoint}
+#'
+#' @examples
+#' GenPareto_Layer_SM(4000, 1000, 1, 2)
+#' GenPareto_Layer_SM(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000)
+#' GenPareto_Layer_SM(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 5000)
+#' GenPareto_Layer_SM(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
+#' GenPareto_Layer_SM(9000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
+#'
+#' @export
+
+
+GenPareto_Layer_SM <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t=NULL, truncation = NULL) {
+  if (!is.nonnegative.finite.number(AttachmentPoint)) {
+    warning("AttachmentPoint must be a non-negative number.")
+    return(NaN)
+  }
+  if(!is.nonnegative.number(Cover)) {
+    warning("Cover must be a non-negative number ('Inf' allowed).")
+    return(NaN)
+  }
+  if (!is.positive.finite.number(alpha_ini)) {
+    warning("alpha_ini must be a positive number.")
+    return(NaN)
+  }
+  if (!is.positive.finite.number(alpha_tail)) {
+    warning("alpha_tail must be a positive number.")
+    return(NaN)
+  }
+  if (is.null(t)) {
+    if (AttachmentPoint == 0) {
+      warning("If Attachment Point is zero, then a t>0 has to be entered.")
+      return(NaN)
+    }
+    t <- AttachmentPoint
+  }
+  if (!is.positive.finite.number(t)) {
+    warning("t must be a positive number.")
+    return(NaN)
+  }
+  if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be NULL or a positive number ('Inf' allowed).")
+      return(NaN)
+    }
+    if (truncation <= t) {
+      warning("truncation must be larger than t.")
+      return(NaN)
+    }
+    if (truncation <= AttachmentPoint) {
+      return(0)
+    }
+    if (AttachmentPoint + Cover > truncation) {
+      Cover <- truncation - AttachmentPoint
+    }
+  }
+
+  # indef_integral_0 <- function(x) {
+  #   return(pGenPareto(x, t, alpha_ini, alpha_tail))
+  # }
+  G <- function(x) {
+    if (alpha_tail != 1) {
+      if (x > t) {
+        result <- t * alpha_tail / (alpha_ini * ( 1- alpha_tail)) * (1 + alpha_ini / alpha_tail * (x / t - 1))^(1 - alpha_tail)
+      } else {
+        result <- x - t + t * alpha_tail / (alpha_ini * ( 1 - alpha_tail))
+      }
+    } else {
+      if (x > t) {
+        result <- t * alpha_tail / alpha_ini * log(1 + alpha_ini / alpha_tail * (x / t - 1))
+      } else {
+        result <- x - t
+      }
+    }
+    return(result)
+  }
+  H <- function(x) {
+    if (alpha_tail == 1) {
+      if (x > t) {
+        result <- t * alpha_tail * x / alpha_ini * log(1 + alpha_ini / alpha_tail * (x / t - 1)) - t^2 * alpha_tail^2 / alpha_ini^2 * ((1 + alpha_ini / alpha_tail * (x / t - 1)) * log(1 + alpha_ini / alpha_tail * (x / t - 1)) - (1 + alpha_ini / alpha_tail * (x / t - 1)))
+      } else {
+        result <- x^2 / 2 - t^2 / 2 + t^2 * alpha_tail^2 / alpha_ini^2
+      }
+    } else if (alpha_tail == 2) {
+      if (x > t) {
+        result <- t * alpha_tail * x / (alpha_ini * (1 - alpha_tail)) * (1 + alpha_ini / alpha_tail * (x / t - 1))^(1 - alpha_tail) - t^2 * alpha_tail^2 / (alpha_ini^2 * (1 - alpha_tail)) * log(1 + alpha_ini / alpha_tail * (x / t - 1))
+      } else {
+        result <- x^2 / 2 - t^2 / 2 + t^2 * alpha_tail / (alpha_ini * (1 - alpha_tail))
+      }
+    } else {
+      if (x > t) {
+        result <- t * alpha_tail * x / (alpha_ini * ( 1 - alpha_tail)) * (1 + alpha_ini / alpha_tail * (x / t - 1))^(1 - alpha_tail) - t^2 * alpha_tail^2 / (alpha_ini^2 * (1 - alpha_tail) * (2 - alpha_tail)) * (1 + alpha_ini / alpha_tail * (x / t - 1))^(2 - alpha_tail)
+      } else {
+        result <- x^2 / 2 - t^2 / 2 + t^2 * alpha_tail / (alpha_ini * ( 1 - alpha_tail)) - t^2 * alpha_tail^2 / (alpha_ini^2 * (1 - alpha_tail) * (2 - alpha_tail))
+      }
+    }
+    return(result)
+  }
+
+  # calculation w/o truncation
+
+  result <- AttachmentPoint^2 * (pGenPareto(Cover + AttachmentPoint, t, alpha_ini, alpha_tail) - pGenPareto(AttachmentPoint, t, alpha_ini, alpha_tail))
+  result <- result - 2 * AttachmentPoint * (G(Cover + AttachmentPoint) - G(AttachmentPoint) - (Cover + AttachmentPoint) * (1 - pGenPareto(Cover + AttachmentPoint, t, alpha_ini, alpha_tail)) + AttachmentPoint * (1 - pGenPareto(AttachmentPoint, t, alpha_ini, alpha_tail)))
+  result <- result + (2 * (H(Cover + AttachmentPoint) - H(AttachmentPoint)) - (Cover + AttachmentPoint)^2 * (1 - pGenPareto(Cover + AttachmentPoint, t, alpha_ini, alpha_tail)) + AttachmentPoint^2 * (1 - pGenPareto(AttachmentPoint, t, alpha_ini, alpha_tail)))
+  result <- result + Cover^2 * (1 - pGenPareto(Cover + AttachmentPoint, t, alpha_ini, alpha_tail))
+  return(result)
+}
+
+
+
