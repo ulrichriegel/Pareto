@@ -3251,9 +3251,12 @@ GenPareto_Layer_SM <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t=
     }
   }
 
-  # indef_integral_0 <- function(x) {
-  #   return(pGenPareto(x, t, alpha_ini, alpha_tail))
-  # }
+  if (is.infinite(Cover)) {
+    if (alpha_tail <= 2) {
+      return(Inf)
+    }
+  }
+
   G <- function(x) {
     if (alpha_tail != 1) {
       if (x > t) {
@@ -3309,6 +3312,88 @@ GenPareto_Layer_SM <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t=
 
   return(result)
 }
+
+
+#' Layer Variance of the Generalized Pareto Distribution
+#'
+#' @description Calculates the variance of a generalized Pareto distribution in a reinsurance layer
+#'
+#' @param Cover Numeric. Cover of the reinsurance layer. Use \code{Inf} for unlimited layers.
+#' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
+#' @param alpha_ini Numeric. Initial Pareto alpha (at \code{t}).
+#' @param alpha_tail Numeric. Tail Pareto alpha.
+#' @param t Numeric. Threshold of the Pareto distribution. If \code{t} is \code{NULL} (default) then \code{t <- Attachment Point} is used
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
+#'
+#' @return Variance of the (truncated) generalized Pareto distribution with parameters \code{t}, \code{alpha_ini} and \code{alpha_tail} in the layer
+#'         \code{Cover} xs \code{AttachmentPoint}
+#'
+#' @examples
+#' GenPareto_Layer_Var(4000, 1000, 1, 2)
+#' GenPareto_Layer_Var(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000)
+#' GenPareto_Layer_Var(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 5000)
+#' GenPareto_Layer_Var(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
+#' GenPareto_Layer_Var(9000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
+#'
+#' @export
+
+
+GenPareto_Layer_Var <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t=NULL, truncation = NULL) {
+  if (!is.nonnegative.finite.number(AttachmentPoint)) {
+    warning("AttachmentPoint must be a non-negative number.")
+    return(NaN)
+  }
+  if(!is.nonnegative.number(Cover)) {
+    warning("Cover must be a non-negative number ('Inf' allowed).")
+    return(NaN)
+  }
+  if (!is.positive.finite.number(alpha_ini)) {
+    warning("alpha_ini must be a positive number.")
+    return(NaN)
+  }
+  if (!is.positive.finite.number(alpha_tail)) {
+    warning("alpha_tail must be a positive number.")
+    return(NaN)
+  }
+  if (is.null(t)) {
+    if (AttachmentPoint == 0) {
+      warning("If Attachment Point is zero, then a t>0 has to be entered.")
+      return(NaN)
+    }
+    t <- AttachmentPoint
+  }
+  if (!is.positive.finite.number(t)) {
+    warning("t must be a positive number.")
+    return(NaN)
+  }
+  if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be NULL or a positive number ('Inf' allowed).")
+      return(NaN)
+    }
+    if (truncation <= t) {
+      warning("truncation must be larger than t.")
+      return(NaN)
+    }
+    if (truncation <= AttachmentPoint) {
+      return(0)
+    }
+    if (AttachmentPoint + Cover > truncation) {
+      Cover <- truncation - AttachmentPoint
+    }
+  }
+
+  if (is.infinite(Cover)) {
+    if (alpha_tail <= 2) {
+      return(Inf)
+    }
+  }
+
+  result <- GenPareto_Layer_SM(Cover, AttachmentPoint, alpha_ini, alpha_tail, t, truncation) - GenPareto_Layer_Mean(Cover, AttachmentPoint, alpha_ini, alpha_tail, t, truncation)^2
+
+  return(result)
+}
+
 
 
 
