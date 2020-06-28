@@ -3287,7 +3287,9 @@ GenPareto_Layer_SM <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t=
         result <- x^2 / 2 - t^2 / 2 + t^2 * alpha_tail / (alpha_ini * (1 - alpha_tail))
       }
     } else {
-      if (x > t) {
+      if (is.infinite(x)) {
+        result <- 0
+      } else if (x > t) {
         result <- t * alpha_tail * x / (alpha_ini * ( 1 - alpha_tail)) * (1 + alpha_ini / alpha_tail * (x / t - 1))^(1 - alpha_tail) - t^2 * alpha_tail^2 / (alpha_ini^2 * (1 - alpha_tail) * (2 - alpha_tail)) * (1 + alpha_ini / alpha_tail * (x / t - 1))^(2 - alpha_tail)
       } else {
         result <- x^2 / 2 - t^2 / 2 + t^2 * alpha_tail / (alpha_ini * ( 1 - alpha_tail)) - t^2 * alpha_tail^2 / (alpha_ini^2 * (1 - alpha_tail) * (2 - alpha_tail))
@@ -3295,13 +3297,32 @@ GenPareto_Layer_SM <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t=
     }
     return(result)
   }
+  phi_1 <- function(x) {
+    if (is.infinite(x)) {
+      result <- 0
+    } else {
+      result <- x * (1 - pGenPareto(x, t, alpha_ini, alpha_tail))
+    }
+    return(result)
+  }
+  phi_2 <- function(x) {
+    if (is.infinite(x)) {
+      result <- 0
+    } else {
+      result <- x^2 * (1 - pGenPareto(x, t, alpha_ini, alpha_tail))
+    }
+    return(result)
+  }
 
   # calculation w/o truncation
 
   result <- AttachmentPoint^2 * (pGenPareto(Cover + AttachmentPoint, t, alpha_ini, alpha_tail) - pGenPareto(AttachmentPoint, t, alpha_ini, alpha_tail))
-  result <- result - 2 * AttachmentPoint * (G(Cover + AttachmentPoint) - G(AttachmentPoint) - (Cover + AttachmentPoint) * (1 - pGenPareto(Cover + AttachmentPoint, t, alpha_ini, alpha_tail)) + AttachmentPoint * (1 - pGenPareto(AttachmentPoint, t, alpha_ini, alpha_tail)))
-  result <- result + (2 * (H(Cover + AttachmentPoint) - H(AttachmentPoint)) - (Cover + AttachmentPoint)^2 * (1 - pGenPareto(Cover + AttachmentPoint, t, alpha_ini, alpha_tail)) + AttachmentPoint^2 * (1 - pGenPareto(AttachmentPoint, t, alpha_ini, alpha_tail)))
-  result <- result + Cover^2 * (1 - pGenPareto(Cover + AttachmentPoint, t, alpha_ini, alpha_tail))
+  result <- result - 2 * AttachmentPoint * (G(Cover + AttachmentPoint) - G(AttachmentPoint) - phi_1(Cover + AttachmentPoint) + phi_1(AttachmentPoint))
+  result <- result + 2 * (H(Cover + AttachmentPoint) - H(AttachmentPoint)) - phi_2(Cover + AttachmentPoint) + phi_2(AttachmentPoint)
+  if (!is.infinite(Cover)) {
+    result <- result + Cover^2 * (1 - pGenPareto(Cover + AttachmentPoint, t, alpha_ini, alpha_tail))
+  }
+
 
   # adjustment for truncation
 
