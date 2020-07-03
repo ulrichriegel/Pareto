@@ -2527,15 +2527,19 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, 
     return(NaN)
   }
 
-  losses <- losses[losses > t]
+  index <- losses > t
+  losses <- losses[index]
+  t <- t[index]
   n <- length(losses)
 
   if (!is.null(truncation)) {
     if (!is.positive.number(truncation)) {
       warning("truncation must be NULL or a positive number ('Inf' allowed).")
+      return(NaN)
     }
     if (truncation <= max(t)) {
       warning("truncation must be larger than t")
+      return(NaN)
     }
     if (max(losses) >= truncation) {
       warning("Losses must be < truncation.")
@@ -3416,5 +3420,89 @@ GenPareto_Layer_Var <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t
 }
 
 
+
+#' Maximum Likelihood Estimation of the Pareto Alphas of a Generalized Pareto Distribution
+#'
+#' @description Calculates the maximum likelihood estimators of the parameters alpha_ini and alpha_tail of a generalized Pareto distribution
+#'
+#' @param losses Numeric vector. Losses that are used for the ML estimation.
+#' @param t Numeric or numeric vector. Threshold of the generalized Pareto distribution. Alternatively, \code{t} can be a vector of same length as \code{losses}. In this case \code{t[i]} is the reporting threshold of \code{losses[i]}.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the generalized Pareto distribution is truncated at \code{truncation}.
+#' @param tol Numeric. Desired accuracy  (only relevant in the truncated case).
+#' @param max_iterations Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).
+#' @param alpha_min Numeric. Lower bound for the estimated alphas.
+#' @param alpha_max Numeric. Upper bound for the estimated alphas.
+#'
+#' @return Maximum likelihood estimator for the parameters \code{alpha_ini} and \code{alpha_tail} of a generalized Pareto distribution with threshold \code{t} given the observations \code{losses}
+#'
+#' @examples
+#' losses <- rGenPareto(1000, 1000, 2,3)
+#' GenPareto_ML_Estimator_Alpha(losses, 1000)
+#' losses <- rGenPareto(1000, 1000, 2, 1, truncation = 10000)
+#' GenPareto_ML_Estimator_Alpha(losses, 1000)
+#' GenPareto_ML_Estimator_Alpha(losses, 1000, truncation = 10000)
+#'
+#' t <- rPareto(10000, 100, 2)
+#' alpha_ini <- 1
+#' alpha_tail <- 3
+#' losses <- rGenPareto(10000, t, alpha_ini, alpha_tail)
+#' GenPareto_ML_Estimator_Alpha(losses, t)
+#' losses <- rGenPareto(10000, t, alpha_ini, alpha_tail, truncation = 2 * max(t))
+#' GenPareto_ML_Estimator_Alpha(losses, t, truncation = 2 * max(t))
+#' @export
+
+GenPareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, max_iterations = 1000, alpha_min = 0.01, alpha_max = 100) {
+  if (!is.nonnegative.finite.vector(losses)) {
+    warning("losses must be non-negative.")
+    return(rep(NaN, 2))
+  }
+  if (!is.positive.finite.vector(t)) {
+    warning("t must be positive.")
+    return(rep(NaN, 2))
+  }
+  if (length(t) != 1 && length(t) != length(losses)) {
+    warning("t must have length 1 or same length as losses.")
+    return(rep(NaN, 2))
+  }
+  if (length(t) == 1) {
+    t <- rep(t, length(losses))
+  }
+
+  index <- losses > t
+  losses <- losses[index]
+  t <- t[index]
+  n <- length(losses)
+
+  if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be NULL or a positive number ('Inf' allowed).")
+      return(rep(NaN, 2))
+    }
+    if (truncation <= max(t)) {
+      warning("truncation must be larger than t")
+      return(rep(NaN, 2))
+    }
+    if (max(losses) >= truncation) {
+      warning("Losses must be < truncation.")
+      return(rep(NaN, 2))
+    }
+  }
+  if (is.null(truncation) || is.infinite(truncation)) {
+    negLogLikelihood <- function(alpha) {
+      - sum(log(alpha[1]) + (-alpha[2] - 1) * log(1 + alpha[1] / alpha[2] * (losses / t - 1)))
+    }
+  } else {
+    negLogLikelihood <- function(alpha) {
+      - sum(log(alpha[1]) + (-alpha[2] - 1) * log(1 + alpha[1] / alpha[2] * (losses / t - 1)) - log(1 - (1 + alpha[1] / alpha[2] * (truncation / t - 1))^(-alpha[2])))
+    }
+  }
+  alpha <- NULL
+  try(alpha <- optim(c(1,1), negLogLikelihood, lower = rep(alpha_min, 2), upper = rep(alpha_max, 2), method = "L-BFGS-B")$par, silent = T)
+  if (is.null(alpha)) {
+    warning("No solution found.")
+    alpha <- rep(NaN, 2)
+  }
+  return(alpha)
+}
 
 
