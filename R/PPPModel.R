@@ -283,11 +283,16 @@ PPP_Model_Layer_Sd_s <- function(Cover, AttachmentPoint, PPP_Model) {
 #' PPPM <- PiecewisePareto_Match_Layer_Losses(Example1_AP, Example1_EL)
 #' PPPM
 #' Example1_Cov <- c(diff(Example1_AP), Inf)
-#' PPP_Model_Layer_Sd(Example1_Cov, Example1_AP, PPPM)
+#' Layer_Sd(PPPM, Example1_Cov, Example1_AP)
 #'
 #' @export
 
-PPP_Model_Layer_Sd <- Vectorize(PPP_Model_Layer_Sd_s, c("Cover", "AttachmentPoint"))
+PPP_Model_Layer_Sd <- function(Cover, AttachmentPoint, PPP_Model) {
+  .Deprecated("Layer_Sd")
+  PPP_Model_Layer_Sd_v(Cover, AttachmentPoint, PPP_Model)
+}
+
+PPP_Model_Layer_Sd_v <- Vectorize(PPP_Model_Layer_Sd_s, c("Cover", "AttachmentPoint"))
 
 
 

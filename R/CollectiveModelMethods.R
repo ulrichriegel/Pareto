@@ -97,3 +97,56 @@ Layer_Var <- function(CollectiveModel, Cover = Inf, AttachmentPoint = 0) UseMeth
 
 Layer_Var.PPP_Model <- function(CollectiveModel, Cover = Inf, AttachmentPoint = 0) PPP_Model_Layer_Var_v(Cover, AttachmentPoint, CollectiveModel)
 
+
+
+
+
+
+
+
+
+
+
+
+#' Standard Deviation of a Reinsurance Layer
+#'
+#' @description  Calculates the standard deviation of the loss in a reinsurance layer for a collective model
+#'
+#' @param CollectiveModel A collective model object. Currently only \code{PPP_Models} are handled.
+#' @param Cover Numeric. Cover of the reinsurance layer. Use \code{Inf} for unlimited layers.
+#' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
+#'
+#' @return The standard deviation of the loss in the layer \code{Cover} xs \code{AttachmentPoint} for the given \code{CollectiveModel}
+#'
+#' @examples
+#' PPPM <- PiecewisePareto_Match_Layer_Losses(Example1_AP, Example1_EL)
+#' PPPM
+#' Example1_Cov <- c(diff(Example1_AP), Inf)
+#' Layer_Sd(PPPM, Example1_Cov, Example1_AP)
+#'
+#' @export
+
+Layer_Sd <- function(CollectiveModel, Cover = Inf, AttachmentPoint = 0) UseMethod("Layer_Sd")
+
+
+
+#' Standard Deviation of a Reinsurance Layer
+#'
+#' @description  Calculates the standard deviation of the loss in a reinsurance layer for a PPP_model
+#'
+#' @param CollectiveModel PPP_Model object.
+#' @param Cover Numeric. Cover of the reinsurance layer. Use \code{Inf} for unlimited layers.
+#' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
+#'
+#' @return The standard deviation of the loss in the layer \code{Cover} xs \code{AttachmentPoint} for the given \code{CollectiveModel}
+#'
+#' @examples
+#' PPPM <- PiecewisePareto_Match_Layer_Losses(Example1_AP, Example1_EL)
+#' PPPM
+#' Example1_Cov <- c(diff(Example1_AP), Inf)
+#' Layer_Sd(PPPM, Example1_Cov, Example1_AP)
+#'
+#' @export
+
+Layer_Sd.PPP_Model <- function(CollectiveModel, Cover = Inf, AttachmentPoint = 0) PPP_Model_Layer_Sd_v(Cover, AttachmentPoint, CollectiveModel)
+
