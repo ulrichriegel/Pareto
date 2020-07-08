@@ -352,12 +352,12 @@ PPP_Model_Excess_Frequency_v <- Vectorize(PPP_Model_Excess_Frequency_s, c("x"))
 #' PPPM <- PiecewisePareto_Match_Layer_Losses(c(1000, 2000, 3000), c(2000, 1000, 500),
 #'                                            truncation = 10000, truncation_type = "wd")
 #' PPPM
-#' Simulated_Losses <- PPP_Model_Simulate(100, PPPM)
-#' Simulated_Losses
+#' Simulate_Losses(PPPM, 100)
 #'
 #' @export
 
 PPP_Model_Simulate <- function(n, PPP_Model) {
+  .Deprecated("Simulate_Losses")
   if (!is.valid.PPP_Model(PPP_Model)) {
     warning(is.valid.PPP_Model(PPP_Model, comment = TRUE))
     return(NaN)
@@ -372,56 +372,6 @@ PPP_Model_Simulate <- function(n, PPP_Model) {
   claims <- rPiecewisePareto(sum(claim_count), PPP_Model$t, PPP_Model$alpha, PPP_Model$truncation, PPP_Model$truncation_type)
   result <- matrix(NaN, nrow = n, ncol = max(claim_count))
   result[col(result) <= claim_count] <- claims
-  return(result)
-}
-
-dPanjer <- function(x, mean, dispersion) {
-  if (dispersion == 1) {
-    # Poisson distribution
-    result <- stats::dpois(x, mean)
-  } else if (dispersion < 1) {
-    # Binomial distribution
-    q <- dispersion
-    p <- 1 - q
-    # Not every dispersion < 1 can be realized with a binomial distribution. Round up number of trys n and recalculate p and q:
-    n <-  ceiling(mean / p)
-    p <- mean / n
-    q <- 1 - p
-    if (abs(dispersion - q) > 0.01) {
-      warning(paste0("Dispersion has been adjusted from ", round(dispersion, 2)," to ", round(q, 2), " to obtain a matching binomial distribution."))
-    }
-    result <- stats::dbinom(x, n, p)
-  } else {
-    # Negative binomial distribution
-    p <- 1 / dispersion
-    alpha <- mean / (dispersion - 1)
-    result <- stats::dnbinom(x, alpha, p)
-  }
-  return(result)
-}
-
-rPanjer <- function(n, mean, dispersion) {
-  if (dispersion == 1) {
-    # Poisson distribution
-    result <- stats::rpois(n, mean)
-  } else if (dispersion < 1) {
-    # Binomial distribution
-    q <- dispersion
-    p <- 1 - q
-    # Not every dispersion < 1 can be realized with a binomial distribution. Round up number of trys m and recalculate p and q:
-    m <-  ceiling(mean / p)
-    p <- mean / m
-    q <- 1 - p
-    if (abs(dispersion - q) > 0.01) {
-      warning(paste0("Dispersion has been adjusted from ", round(dispersion, 2)," to ", round(q, 2), " to obtain a matching binomial distribution."))
-    }
-    result <- stats::rbinom(n, m, p)
-  } else {
-    # Negative binomial distribution
-    p <- 1 / dispersion
-    alpha <- mean / (dispersion - 1)
-    result <- stats::rnbinom(n, alpha, p)
-  }
   return(result)
 }
 

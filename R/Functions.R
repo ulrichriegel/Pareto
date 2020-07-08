@@ -3098,7 +3098,7 @@ rGenPareto <- function(n, t, alpha_ini, alpha_tail, truncation = NULL) {
 
 
 
-GenPareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t=NULL, truncation = NULL) {
+GenPareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t = NULL, truncation = NULL) {
   if (!is.nonnegative.finite.number(AttachmentPoint)) {
     warning("AttachmentPoint must be a non-negative number.")
     return(NaN)
@@ -3213,7 +3213,7 @@ GenPareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, 
 #' @export
 
 
-GenPareto_Layer_SM <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t=NULL, truncation = NULL) {
+GenPareto_Layer_SM <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t = NULL, truncation = NULL) {
   if (!is.nonnegative.finite.number(AttachmentPoint)) {
     warning("AttachmentPoint must be a non-negative number.")
     return(NaN)
@@ -3507,5 +3507,63 @@ GenPareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-
   }
   return(alpha)
 }
+
+
+
+
+
+
+
+dPanjer <- function(x, mean, dispersion) {
+  if (dispersion == 1) {
+    # Poisson distribution
+    result <- stats::dpois(x, mean)
+  } else if (dispersion < 1) {
+    # Binomial distribution
+    q <- dispersion
+    p <- 1 - q
+    # Not every dispersion < 1 can be realized with a binomial distribution. Round up number of trys n and recalculate p and q:
+    n <-  ceiling(mean / p)
+    p <- mean / n
+    q <- 1 - p
+    if (abs(dispersion - q) > 0.01) {
+      warning(paste0("Dispersion has been adjusted from ", round(dispersion, 2)," to ", round(q, 2), " to obtain a matching binomial distribution."))
+    }
+    result <- stats::dbinom(x, n, p)
+  } else {
+    # Negative binomial distribution
+    p <- 1 / dispersion
+    alpha <- mean / (dispersion - 1)
+    result <- stats::dnbinom(x, alpha, p)
+  }
+  return(result)
+}
+
+rPanjer <- function(n, mean, dispersion) {
+  if (dispersion == 1) {
+    # Poisson distribution
+    result <- stats::rpois(n, mean)
+  } else if (dispersion < 1) {
+    # Binomial distribution
+    q <- dispersion
+    p <- 1 - q
+    # Not every dispersion < 1 can be realized with a binomial distribution. Round up number of trys m and recalculate p and q:
+    m <-  ceiling(mean / p)
+    p <- mean / m
+    q <- 1 - p
+    if (abs(dispersion - q) > 0.01) {
+      warning(paste0("Dispersion has been adjusted from ", round(dispersion, 2)," to ", round(q, 2), " to obtain a matching binomial distribution."))
+    }
+    result <- stats::rbinom(n, m, p)
+  } else {
+    # Negative binomial distribution
+    p <- 1 / dispersion
+    alpha <- mean / (dispersion - 1)
+    result <- stats::rnbinom(n, alpha, p)
+  }
+  return(result)
+}
+
+
 
 
