@@ -232,7 +232,7 @@ PPP_Model_Layer_Var_s <- function(Cover, AttachmentPoint, PPP_Model) {
 
 #' Variance of a Reinsurance Layer
 #'
-#' @description  Calculates the variance of the loss in a reinsurance layer for a PPP_Model
+#' @description  Calculates the variance of the loss in a reinsurance layer for a PPP_Model. This function is deprecated. Use \code{Layer_Var} instead.
 #'
 #' @param Cover Numeric. Cover of the reinsurance layer. Use \code{Inf} for unlimited layers.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
@@ -244,11 +244,19 @@ PPP_Model_Layer_Var_s <- function(Cover, AttachmentPoint, PPP_Model) {
 #' PPPM <- PiecewisePareto_Match_Layer_Losses(Example1_AP, Example1_EL)
 #' PPPM
 #' Example1_Cov <- c(diff(Example1_AP), Inf)
-#' PPP_Model_Layer_Var(Example1_Cov, Example1_AP, PPPM)
+#' Layer_Var(PPPM, Example1_Cov, Example1_AP)
 #'
 #' @export
 
-PPP_Model_Layer_Var <- Vectorize(PPP_Model_Layer_Var_s, c("Cover", "AttachmentPoint"))
+PPP_Model_Layer_Var <- function(Cover, AttachmentPoint, PPP_Model) {
+  .Deprecated("Layer_Var")
+  PPP_Model_Layer_Var_v(Cover, AttachmentPoint, PPP_Model)
+}
+
+PPP_Model_Layer_Var_v <- Vectorize(PPP_Model_Layer_Var_s, c("Cover", "AttachmentPoint"))
+
+
+
 
 
 PPP_Model_Layer_Sd_s <- function(Cover, AttachmentPoint, PPP_Model) {
@@ -256,7 +264,7 @@ PPP_Model_Layer_Sd_s <- function(Cover, AttachmentPoint, PPP_Model) {
     warning(is.valid.PPP_Model(PPP_Model, comment = TRUE))
     return(NaN)
   } else {
-    return(sqrt(PPP_Model_Layer_Var(Cover, AttachmentPoint, PPP_Model)))
+    return(sqrt(PPP_Model_Layer_Var_v(Cover, AttachmentPoint, PPP_Model)))
   }
 }
 
