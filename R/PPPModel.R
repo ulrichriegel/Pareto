@@ -107,7 +107,7 @@ is.PPP_Model <- function(x) {
 
 #' Check if an object is a valid PPP_Model
 #'
-#' @description Checks if an object is a PPP_Model object and whether it is valid for the use in functions like \code{PPP_Model_Exp_Layer_Loss}
+#' @description Checks if an object is a PPP_Model object and whether it is valid for the use in functions like \code{Layer_Mean}
 #'
 #' @param x Object to be checked.
 #' @param comment If FALSE then the function returns a boolean indicating whether \code{x} is a valid PPP_Model. If TRUE then the function returns a comment instead.
@@ -186,7 +186,7 @@ PPP_Model_Exp_Layer_Loss_s <- function(Cover, AttachmentPoint, PPP_Model) {
 
 #' Expected Loss of a Reinsurance Layer
 #'
-#' @description  Calculates the expected loss of a reinsurance layer for a PPP_Model
+#' @description  Calculates the expected loss of a reinsurance layer for a PPP_Model. This function is deprecated. Use \code{Layer_Mean} instead.
 #'
 #' @param Cover Numeric. Cover of the reinsurance layer. Use \code{Inf} for unlimited layers.
 #' @param AttachmentPoint Numeric. Attachment point of the reinsurance layer.
@@ -201,11 +201,20 @@ PPP_Model_Exp_Layer_Loss_s <- function(Cover, AttachmentPoint, PPP_Model) {
 #' Example1_AP
 #' Example1_Cov
 #' Example1_EL
-#' PPP_Model_Exp_Layer_Loss(Example1_Cov, Example1_AP, PPPM)
+#' Layer_Mean(PPPM, Example1_Cov, Example1_AP)
 #'
 #' @export
 
-PPP_Model_Exp_Layer_Loss <- Vectorize(PPP_Model_Exp_Layer_Loss_s, c("Cover", "AttachmentPoint"))
+PPP_Model_Exp_Layer_Loss <- function(Cover, AttachmentPoint, PPP_Model) {
+  .Deprecated("Layer_Mean")
+  PPP_Model_Exp_Layer_Loss_v(Cover, AttachmentPoint, PPP_Model)
+}
+
+
+
+
+PPP_Model_Exp_Layer_Loss_v <- Vectorize(PPP_Model_Exp_Layer_Loss_s, c("Cover", "AttachmentPoint"))
+
 
 
 PPP_Model_Layer_Var_s <- function(Cover, AttachmentPoint, PPP_Model) {

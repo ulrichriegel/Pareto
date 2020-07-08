@@ -2526,6 +2526,9 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, 
     warning("t must have length 1 or same length as losses.")
     return(NaN)
   }
+  if (length(t) == 1) {
+    t <- rep(t, length(losses))
+  }
 
   index <- losses > t
   losses <- losses[index]
@@ -3497,7 +3500,7 @@ GenPareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-
     }
   }
   alpha <- NULL
-  try(alpha <- optim(c(1,1), negLogLikelihood, lower = rep(alpha_min, 2), upper = rep(alpha_max, 2), method = "L-BFGS-B")$par, silent = T)
+  try(alpha <- stats::optim(c(1,1), negLogLikelihood, lower = rep(alpha_min, 2), upper = rep(alpha_max, 2), method = "L-BFGS-B")$par, silent = T)
   if (is.null(alpha)) {
     warning("No solution found.")
     alpha <- rep(NaN, 2)
