@@ -150,3 +150,56 @@ Layer_Sd <- function(CollectiveModel, Cover = Inf, AttachmentPoint = 0) UseMetho
 
 Layer_Sd.PPP_Model <- function(CollectiveModel, Cover = Inf, AttachmentPoint = 0) PPP_Model_Layer_Sd_v(Cover, AttachmentPoint, CollectiveModel)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#' Expected Frequency in Excess of a Threshold
+#'
+#' @description  Calculates the expected frequency in excess of a threshold for a collective model
+#'
+#' @param CollectiveModel A collective model object. Currently only \code{PPP_Models} are handled.
+#' @param x Numeric. Threshold.
+#'
+#' @return The expected frequency in excess of \code{x} for the given \code{CollectiveModel}
+#'
+#' @examples
+#' PPPM <- PiecewisePareto_Match_Layer_Losses(Example1_AP, Example1_EL)
+#' PPPM
+#' Excess_Frequency(PPPM, c(-Inf, 0, 1000, 2000, 3000, Inf))
+#'
+#' @export
+
+Excess_Frequency <- function(CollectiveModel, x = 0) UseMethod("Excess_Frequency")
+
+
+
+#' Expected Frequency in Excess of a Threshold
+#'
+#' @description  Calculates the expected frequency in excess of a threshold for a PPP_model
+#'
+#' @param CollectiveModel PPP_Model object.
+#' @param x Numeric. Threshold.
+#'
+#' @return The expected frequency in excess of \code{x} for the given \code{CollectiveModel}
+#'
+#' @examples
+#' PPPM <- PiecewisePareto_Match_Layer_Losses(Example1_AP, Example1_EL)
+#' PPPM
+#' Excess_Frequency(PPPM, c(-Inf, 0, 1000, 2000, 3000, Inf))
+#'
+#' @export
+
+Excess_Frequency.PPP_Model <- function(CollectiveModel, x = 0) PPP_Model_Excess_Frequency_v(x, CollectiveModel)
+
+

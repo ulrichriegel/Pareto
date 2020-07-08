@@ -296,6 +296,9 @@ PPP_Model_Layer_Sd_v <- Vectorize(PPP_Model_Layer_Sd_s, c("Cover", "AttachmentPo
 
 
 
+
+
+
 PPP_Model_Excess_Frequency_s <- function(x, PPP_Model) {
   if (!is.valid.PPP_Model(PPP_Model)) {
     warning(is.valid.PPP_Model(PPP_Model, comment = TRUE))
@@ -320,11 +323,20 @@ PPP_Model_Excess_Frequency_s <- function(x, PPP_Model) {
 #' @examples
 #' PPPM <- PiecewisePareto_Match_Layer_Losses(Example1_AP, Example1_EL)
 #' PPPM
-#' PPP_Model_Excess_Frequency(c(-Inf, 0, 1000, 2000, 3000, Inf), PPPM)
+#' Excess_Frequency(PPPM, c(-Inf, 0, 1000, 2000, 3000, Inf))
 #'
 #' @export
 
-PPP_Model_Excess_Frequency <- Vectorize(PPP_Model_Excess_Frequency_s, c("x"))
+PPP_Model_Excess_Frequency <- function(x, PPP_Model) {
+  .Deprecated("Excess_Frequency")
+  PPP_Model_Excess_Frequency_v(x, PPP_Model)
+}
+
+
+PPP_Model_Excess_Frequency_v <- Vectorize(PPP_Model_Excess_Frequency_s, c("x"))
+
+
+
 
 
 #' Simulate Losses with a PPP_Model
