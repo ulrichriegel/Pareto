@@ -1,7 +1,7 @@
 # Pareto
 
-Pareto is an R package providing methods and tools for the Pareto and the piecewise Pareto distribution which are 
-useful for pricing of reinsurance treaties:
+Pareto is an R package providing methods and tools for the Pareto, the piecewise Pareto and the generalized Pareto
+distribution which are useful for pricing of reinsurance treaties:
 
 - Distribution functions, densities and quantile functions
 - Layer mean and variance

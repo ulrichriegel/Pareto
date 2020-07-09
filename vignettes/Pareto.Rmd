@@ -19,7 +19,7 @@ The (European) Pareto distribution is probably the most popular distribution for
 
 In cases where the Pareto distribution is not flexible enough, pricing actuaries sometimes use piecewise Pareto distributions. For instance, a Pareto alpha of 1.5 is used to model claim sizes between USD 1M and USD 5M and an alpha of 2.5 is used above USD 5M. A particularly useful and non-trivial application of the piecewise Pareto distribution is that it can be used to match a tower of expected layer losses with a layer independent collective loss model. Details are described in Riegel (2018), who also provides a matching algorithm that works for an arbitrary number of reinsurance layers.
 
-The package provides a tool kit for the Pareto and the Piecewise Pareto distribution, which is useful for pricing of reinsurance treaties. In particular,  the package provides the matching algorithm for layer losses. 
+The package provides a tool kit for the Pareto, the piecewise Pareto and the generalized Pareto distribution, which is useful for pricing of reinsurance treaties. In particular,  the package provides the matching algorithm for layer losses. 
 
 ## Pareto distribution
 
@@ -75,7 +75,6 @@ Let $X\sim \text{Pareto}(t,\alpha)$ and $a, c\ge 0$. Then the variance of  the l
 
 *Example:* $t=500$, $\alpha = 2$, Layer 4000 xs 1000
 ```{r}
-library(Pareto)
 Pareto_Layer_Var(4000, 1000, 2, t = 500)
 ```
 
@@ -305,7 +304,7 @@ c(PiecewisePareto_Layer_Mean(500, 1000, fit$t, fit$alpha) * fit$FQ,
 There are, however, functions which can directly use PPP_Models:
 ```{R}
 covers <- c(diff(attachment_points), Inf)
-PPP_Model_Exp_Layer_Loss(covers, attachment_points, fit)
+Layer_Mean(fit, covers, attachment_points)
 ```
 
 ## PPP_Models (Panjer & Piecewise Pareto Models)
@@ -334,9 +333,9 @@ function:
 ```{R}
 PPPM <- PPP_Model(FQ = 2, t = c(1000, 2000), alpha = c(1, 2), 
                   truncation = 10000, truncation_type = "wd", dispersion = 1.5)
-PPP_Model_Exp_Layer_Loss(4000, 1000, PPPM)
-PPP_Model_Layer_Sd(4000, 1000, PPPM)
-PPP_Model_Layer_Var(4000, 1000, PPPM)
+Layer_Mean(PPPM, 4000, 1000)
+Layer_Sd(PPPM, 4000, 1000)
+Layer_Var(PPPM, 4000, 1000)
 ```
 
 ### Expected Excess Frequency
@@ -346,7 +345,7 @@ A `PPP_Model` can directly be used to calculate the expected frequency in excess
 PPPM <- PPP_Model(FQ = 2, t = c(1000, 2000), alpha = c(1, 2), 
                   truncation = 10000, truncation_type = "wd", dispersion = 1.5)
 thresholds <- c(0, 1000, 2000, 5000, 10000, Inf)
-PPP_Model_Excess_Frequency(thresholds, PPPM)
+Excess_Frequency(PPPM, thresholds)
 ```
 
 ### Simulation of Losses
@@ -355,12 +354,90 @@ A `PPP_Model` can directly be used to simulate losses with the corresponding col
 ```{R}
 PPPM <- PPP_Model(FQ = 2, t = c(1000, 2000), alpha = c(1, 2), 
                   truncation = 10000, truncation_type = "wd", dispersion = 1.5)
-PPP_Model_Simulate(10, PPPM)
+Simulate_Losses(PPPM, 10)
 ```
 
-The function `PPP_Model_Simulate` returns a matrix where each row contains the losses from one simulation.
+The function `Simulate_Losses` returns a matrix where each row contains the losses from one simulation.
 
 Note that for a given expected frequency `FQ` not every dispersion `dispersion < 1` is possible for the binomial distribution. In this case a binomial distribution with the smallest dispersion larger than or equal to `dispersion` is used for the simulation.
+
+
+## Generalized Pareto Distribution
+
+
+**Definition:**
+Let $t>0$ and $\alpha_\text{ini}, \alpha_\text{tail}>0$. The *generalized Pareto distribution* $\text{GenPareto}(t,\alpha_\text{ini}, \alpha_\text{tail})$ is defined by the distribution function $$
+F_{t,\alpha_\text{ini}, \alpha_\text{tail}}(x):=\begin{cases}
+0 & \text{ for $x\le t$} \\
+\displaystyle 1-\left(1+\frac{\alpha_\text{ini}}{\alpha_\text{tail}} \left(\frac{x}{t}-1\right)\right)^{-\alpha_\text{tail}} & \text{ for $x>t$.}
+\end{cases}
+$$
+We do not the standard parameterization from extreme value theory but the parameterization from Riegel (2008) which is useful in a reinsurance context.
+
+### Distribution function and density
+
+The functions `pGenPareto` and `dGenPareto` provide the distribution function and the density function of the Pareto distribution:
+```{r}
+x <- c(1:10) * 1000
+pGenPareto(x, t = 1000, alpha_ini = 1, alpha_tail = 2)
+plot(pGenPareto(1:5000, 1000, 1, 2), xlab = "x", ylab = "CDF(x)")
+dGenPareto(x, t = 1000, alpha_ini = 1, alpha_tail = 2)
+plot(dGenPareto(1:5000, 1000, 1, 2), xlab = "x", ylab = "PDF(x)")
+```
+
+The package also provides the quantile function:
+```{r}
+qGenPareto(0:10 / 10, 1000, 1, 2)
+```
+
+
+### Simulation:
+```{r}
+rGenPareto(20, 1000, 1, 2)
+```
+
+
+### Layer mean:
+
+```{r}
+GenPareto_Layer_Mean(4000, 1000, t = 500, alpha_ini = 1, alpha_tail = 2)
+```
+
+### Layer variance:
+
+```{r}
+GenPareto_Layer_Var(4000, 1000, t = 500, alpha_ini = 1, alpha_tail = 2)
+```
+
+## PGP_Models (Panjer & Generalized Pareto Models)
+
+A `PGP_Model` object contains the information required to specify a collective model with a Panjer distributed claim count and a generalized Pareto distributed severity. 
+
+**Claim count distribution:** Like in a `PPP_Model` the claim count distribution from the Panjer class is specified by the expected frequency $E(N)$ (attribute `FQ` of the object) and the dispersion $D(N):=Var(N)/E(N)$ (attribute `dispersion` of the object).
+
+**Severity distribution:** The generalized Pareto distribution is specified by the parameters `t`, `alpha_ini`, `alpha_tail` and `truncation`. 
+
+A `PPP_Model` object can be created using the constructor function:
+```{R}
+PGPM <- PGP_Model(FQ = 2, t = 1000, alpha_ini = 1, alpha_tail = 2, 
+                  truncation = 10000, dispersion = 1.5)
+PGPM
+```
+
+### Methods for PGP_Models
+
+For PGP_Models the same methods are available as for PPP_Models:
+
+```{R}
+PGPM <- PGP_Model(FQ = 2, t = 1000, alpha_ini = 1, alpha_tail = 2, 
+                  truncation = 10000, dispersion = 1.5)
+Layer_Mean(PGPM, 4000, 1000)
+Layer_Sd(PGPM, 4000, 1000)
+Layer_Var(PGPM, 4000, 1000)
+thresholds <- c(0, 1000, 2000, 5000, 10000, Inf)
+Excess_Frequency(PGPM, thresholds)
+Simulate_Losses(PGPM, 10)
+```
 
 ## References
 
@@ -369,6 +446,8 @@ Fackler, M. (2013) Reinventing Pareto: Fits for both small and large losses. AST
 Johnson, N.L., and Kotz, S. (1970) Continuous Univariate Distributions-I. Houghton Mifflin Co
 
 Philbrick, S.W. (1985) A Practical Guide to the Single Parameter Pareto Distribution. PCAS LXXII: 44--84
+
+Riegel, U. (2008) Generalizations of common ILF models. Bl\"{a}tter der DGVFM 29: 45--71
 
 Riegel, U. (2018) Matching tower information with piecewise Pareto. European Actuarial Journal 8(2): 437--460
 
