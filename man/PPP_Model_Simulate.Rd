@@ -21,7 +21,6 @@ Simulates losses of a PPP_Model
 PPPM <- PiecewisePareto_Match_Layer_Losses(c(1000, 2000, 3000), c(2000, 1000, 500),
                                            truncation = 10000, truncation_type = "wd")
 PPPM
-Simulated_Losses <- PPP_Model_Simulate(100, PPPM)
-Simulated_Losses
+Simulate_Losses(PPPM, 100)
 
 }

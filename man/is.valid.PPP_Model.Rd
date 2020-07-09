@@ -12,7 +12,7 @@ is.valid.PPP_Model(x, comment = FALSE)
 \item{comment}{If FALSE then the function returns a boolean indicating whether \code{x} is a valid PPP_Model. If TRUE then the function returns a comment instead.}
 }
 \description{
-Checks if an object is a PPP_Model object and whether it is valid for the use in functions like \code{PPP_Model_Exp_Layer_Loss}
+Checks if an object is a PPP_Model object and whether it is valid for the use in functions like \code{Layer_Mean}
 }
 \examples{
 PPPM <- PPP_Model(2, c(1000,2000), c(1,2), dispersion = 2)

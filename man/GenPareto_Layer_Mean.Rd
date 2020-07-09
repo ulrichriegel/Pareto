@@ -7,9 +7,9 @@
 GenPareto_Layer_Mean(
   Cover,
   AttachmentPoint,
+  t,
   alpha_ini,
   alpha_tail,
-  t = NULL,
   truncation = NULL
 )
 }
@@ -18,11 +18,11 @@ GenPareto_Layer_Mean(
 
 \item{AttachmentPoint}{Numeric. Attachment point of the reinsurance layer.}
 
+\item{t}{Numeric. Threshold of the Pareto distribution. If \code{t} is \code{NULL} (default) then \code{t <- Attachment Point} is used.}
+
 \item{alpha_ini}{Numeric. Initial Pareto alpha (at \code{t}).}
 
 \item{alpha_tail}{Numeric. Tail Pareto alpha.}
-
-\item{t}{Numeric. Threshold of the Pareto distribution. If \code{t} is \code{NULL} (default) then \code{t <- Attachment Point} is used.}
 
 \item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.}
 }
@@ -34,10 +34,10 @@ The expected loss of the (truncated) Pareto distribution with parameters \code{t
 Calculates the expected loss of a generalized Pareto distribution in a reinsurance layer
 }
 \examples{
-GenPareto_Layer_Mean(4000, 1000, 1, 3)
-GenPareto_Layer_Mean(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000)
-GenPareto_Layer_Mean(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 5000)
-GenPareto_Layer_Mean(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
-GenPareto_Layer_Mean(9000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
+GenPareto_Layer_Mean(4000, 1000, 1000, 1, 3)
+GenPareto_Layer_Mean(4000, 1000, t = 1000, alpha_ini = 1, alpha_tail = 3)
+GenPareto_Layer_Mean(4000, 1000, t = 5000, alpha_ini = 1, alpha_tail = 3)
+GenPareto_Layer_Mean(4000, 1000, t = 1000, alpha_ini = 1, alpha_tail = 3, truncation = 5000)
+GenPareto_Layer_Mean(9000, 1000, t = 1000, alpha_ini = 1, alpha_tail = 3, truncation = 5000)
 
 }

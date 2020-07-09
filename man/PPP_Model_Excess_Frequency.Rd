@@ -20,6 +20,6 @@ Calculates the expected frequency in excess of a threshold for a PPP_Model
 \examples{
 PPPM <- PiecewisePareto_Match_Layer_Losses(Example1_AP, Example1_EL)
 PPPM
-PPP_Model_Excess_Frequency(c(-Inf, 0, 1000, 2000, 3000, Inf), PPPM)
+Excess_Frequency(PPPM, c(-Inf, 0, 1000, 2000, 3000, Inf))
 
 }
