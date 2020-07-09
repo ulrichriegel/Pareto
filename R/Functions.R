@@ -3088,17 +3088,17 @@ rGenPareto <- function(n, t, alpha_ini, alpha_tail, truncation = NULL) {
 #'         \code{Cover} xs \code{AttachmentPoint}
 #'
 #' @examples
-#' GenPareto_Layer_Mean(4000, 1000, 1, 3)
-#' GenPareto_Layer_Mean(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000)
-#' GenPareto_Layer_Mean(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 5000)
-#' GenPareto_Layer_Mean(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
-#' GenPareto_Layer_Mean(9000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
+#' GenPareto_Layer_Mean(4000, 1000, 1000, 1, 3)
+#' GenPareto_Layer_Mean(4000, 1000, t = 1000, alpha_ini = 1, alpha_tail = 3)
+#' GenPareto_Layer_Mean(4000, 1000, t = 5000, alpha_ini = 1, alpha_tail = 3)
+#' GenPareto_Layer_Mean(4000, 1000, t = 1000, alpha_ini = 1, alpha_tail = 3, truncation = 5000)
+#' GenPareto_Layer_Mean(9000, 1000, t = 1000, alpha_ini = 1, alpha_tail = 3, truncation = 5000)
 #'
 #' @export
 
 
 
-GenPareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t = NULL, truncation = NULL) {
+GenPareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation = NULL) {
   if (!is.nonnegative.finite.number(AttachmentPoint)) {
     warning("AttachmentPoint must be a non-negative number.")
     return(NaN)
@@ -3114,13 +3114,6 @@ GenPareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, 
   if (!is.positive.finite.number(alpha_tail)) {
     warning("alpha_tail must be a positive number.")
     return(NaN)
-  }
-  if (is.null(t)) {
-    if (AttachmentPoint == 0) {
-      warning("If Attachment Point in zero, then a t>0 has to be entered.")
-      return(NaN)
-    }
-    t <- AttachmentPoint
   }
   if (!is.positive.finite.number(t)) {
     warning("t must be a positive number.")
@@ -3204,16 +3197,16 @@ GenPareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, 
 #'         \code{Cover} xs \code{AttachmentPoint}
 #'
 #' @examples
-#' GenPareto_Layer_SM(4000, 1000, 1, 2)
-#' GenPareto_Layer_SM(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000)
-#' GenPareto_Layer_SM(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 5000)
-#' GenPareto_Layer_SM(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
-#' GenPareto_Layer_SM(9000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
+#' GenPareto_Layer_SM(4000, 1000, 1000, 1, 2)
+#' GenPareto_Layer_SM(4000, 1000, t = 1000, alpha_ini = 1, alpha_tail = 3)
+#' GenPareto_Layer_SM(4000, 1000, t = 5000, alpha_ini = 1, alpha_tail = 3)
+#' GenPareto_Layer_SM(4000, 1000, t = 1000, alpha_ini = 1, alpha_tail = 3, truncation = 5000)
+#' GenPareto_Layer_SM(9000, 1000, t = 1000, alpha_ini = 1, alpha_tail = 3, truncation = 5000)
 #'
 #' @export
 
 
-GenPareto_Layer_SM <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t = NULL, truncation = NULL) {
+GenPareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation = NULL) {
   if (!is.nonnegative.finite.number(AttachmentPoint)) {
     warning("AttachmentPoint must be a non-negative number.")
     return(NaN)
@@ -3229,13 +3222,6 @@ GenPareto_Layer_SM <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t 
   if (!is.positive.finite.number(alpha_tail)) {
     warning("alpha_tail must be a positive number.")
     return(NaN)
-  }
-  if (is.null(t)) {
-    if (AttachmentPoint == 0) {
-      warning("If Attachment Point is zero, then a t>0 has to be entered.")
-      return(NaN)
-    }
-    t <- AttachmentPoint
   }
   if (!is.positive.finite.number(t)) {
     warning("t must be a positive number.")
@@ -3357,16 +3343,16 @@ GenPareto_Layer_SM <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t 
 #'         \code{Cover} xs \code{AttachmentPoint}
 #'
 #' @examples
-#' GenPareto_Layer_Var(4000, 1000, 1, 2)
-#' GenPareto_Layer_Var(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000)
-#' GenPareto_Layer_Var(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 5000)
-#' GenPareto_Layer_Var(4000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
-#' GenPareto_Layer_Var(9000, 1000, alpha_ini = 1, alpha_tail = 3, t = 1000, truncation = 5000)
+#' GenPareto_Layer_Var(4000, 1000, 1000, 1, 2)
+#' GenPareto_Layer_Var(4000, 1000, t = 1000, alpha_ini = 1, alpha_tail = 3)
+#' GenPareto_Layer_Var(4000, 1000, t = 5000, alpha_ini = 1, alpha_tail = 3)
+#' GenPareto_Layer_Var(4000, 1000, t = 1000, alpha_ini = 1, alpha_tail = 3, truncation = 5000)
+#' GenPareto_Layer_Var(9000, 1000, t = 1000, alpha_ini = 1, alpha_tail = 3, truncation = 5000)
 #'
 #' @export
 
 
-GenPareto_Layer_Var <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t=NULL, truncation = NULL) {
+GenPareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation = NULL) {
   if (!is.nonnegative.finite.number(AttachmentPoint)) {
     warning("AttachmentPoint must be a non-negative number.")
     return(NaN)
@@ -3417,7 +3403,7 @@ GenPareto_Layer_Var <- function(Cover, AttachmentPoint, alpha_ini, alpha_tail, t
     }
   }
 
-  result <- GenPareto_Layer_SM(Cover, AttachmentPoint, alpha_ini, alpha_tail, t, truncation) - GenPareto_Layer_Mean(Cover, AttachmentPoint, alpha_ini, alpha_tail, t, truncation)^2
+  result <- GenPareto_Layer_SM(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation) - GenPareto_Layer_Mean(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation)^2
 
   return(result)
 }

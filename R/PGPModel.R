@@ -189,7 +189,7 @@ PGP_Model_Exp_Layer_Loss_s <- function(Cover, AttachmentPoint, PGP_Model) {
     warning(is.valid.PGP_Model(PGP_Model, comment = TRUE))
     return(NaN)
   } else {
-    return(PGP_Model$FQ * GenPareto_Layer_Mean(Cover, AttachmentPoint, alpha_ini = PGP_Model$alpha_ini, alpha_tail = PGP_Model$alpha_tail, t = PGP_Model$t, truncation = PGP_Model$truncation))
+    return(PGP_Model$FQ * GenPareto_Layer_Mean(Cover, AttachmentPoint, t = PGP_Model$t, alpha_ini = PGP_Model$alpha_ini, alpha_tail = PGP_Model$alpha_tail, truncation = PGP_Model$truncation))
   }
 }
 
@@ -207,8 +207,8 @@ PGP_Model_Layer_Var_s <- function(Cover, AttachmentPoint, PGP_Model) {
   } else {
     E_N <- PGP_Model$FQ
     Var_N <- E_N * PGP_Model$dispersion
-    E_X <- GenPareto_Layer_Mean(Cover, AttachmentPoint, alpha_ini = PGP_Model$alpha_ini, alpha_tail = PGP_Model$alpha_tail, t = PGP_Model$t, truncation = PGP_Model$truncation)
-    Var_X <- GenPareto_Layer_Var(Cover, AttachmentPoint, alpha_ini = PGP_Model$alpha_ini, alpha_tail = PGP_Model$alpha_tail, t = PGP_Model$t, truncation = PGP_Model$truncation)
+    E_X <- GenPareto_Layer_Mean(Cover, AttachmentPoint, t = PGP_Model$t, alpha_ini = PGP_Model$alpha_ini, alpha_tail = PGP_Model$alpha_tail, truncation = PGP_Model$truncation)
+    Var_X <- GenPareto_Layer_Var(Cover, AttachmentPoint, t = PGP_Model$t, alpha_ini = PGP_Model$alpha_ini, alpha_tail = PGP_Model$alpha_tail, truncation = PGP_Model$truncation)
     return(E_N * Var_X + Var_N * E_X^2)
   }
 }
