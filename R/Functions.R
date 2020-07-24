@@ -3552,4 +3552,155 @@ rPanjer <- function(n, mean, dispersion) {
 
 
 
+#' Fit a Tailor-Made Collective Model that Satisfies a Wishlist of Conditions
+#'
+#' @description Fits a PPP_Model that fulfils a wishlist of conditions (expected layer losses and excess frequencies)
+#'
+#' @param Covers Numeric vector. Vector containing the covers of the layers from the wishlist.
+#' @param Attachment_Points Numeric vector. Vector containing the attachment points of the layers from the wishlist.
+#' @param Expected_Layer_Losses Numeric vector. Vector containing the expected losses of the layers from the wishlist.
+#' @param Thresholds Numeric vector. Contains the thresholds from the whishlist for which excess frequencies are given.
+#' @param Frequencies Numeric vector. Expected frequencies excess the \code{Thresholds} from the wishlist.
+#' @param t_1 Numerical. Lowest threshold of the piecewise Pareto distribution.
+#' @param default_alpha Numerical. Default alpha for situations where an alpha has to be selected.
+#' @param severity_distribution Character. Currently only "PiecewisePareto" is supported.
+
+#' @return A PPP_Model object that contains the information about a collective model with a Panjer distributed claim count and a Piecewise Pareto distributed severity. The object contains the following elements: \itemize{
+#' \item \code{FQ} Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution
+#' \item \code{t} Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution
+#' \item \code{alpha} Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution
+#' \item \code{truncation} Numerical. If \code{truncation} is not \code{NULL} and \code{truncation > max(t)}, then the distribution is truncated at \code{truncation}.
+#' \item \code{truncation_type} Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
+#' \item \code{dispersion} Numerical. Dispersion of the Panjer distribution (i.e. variance to mean ratio).
+#' \item \code{Status} Numerical indicator: 0 = success, 1 = some information has been ignored, 2 = no solution found
+#' \item \code{Comment} Character. Information on whether the fit was successful
+#' }
+#'
+#' @examples
+#' Fit_References(c(1000,1000), c(1000,2000), c(100,50), 500, 0.5)
+#'
+#' @export
+
+
+Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Layer_Losses = NULL, Thresholds = NULL, Frequencies = NULL, t_1 = min(c(Attachment_Points, Thresholds)), default_alpha = 2, severity_distribution = "PiecewisePareto") {
+
+
+
+  Results <- PPP_Model()
+
+  if (!is.positive.finite.vector(Attachment_Points) && !is.null(Attachment_Points)) {
+    warning("Attachment_Points must be positive or NULL.")
+    Results$Comment <- "Attachment_Points must be positive or NULL."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (!is.positive.vector(Covers) && !is.null(Attachment_Points)) {
+    warning("Covers must be positive or NULL.")
+    Results$Comment <- "Covers must be positive or NULL."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (!is.positive.finite.vector(Expected_Layer_Losses) && !is.null(Expected_Layer_Losses)) {
+    warning("Expected_Layer_Losses must be positive or NULL.")
+    Results$Comment <- "Expected_Layer_Losses must be positive or NULL."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (!is.positive.finite.vector(Thresholds) && !is.null(Thresholds)) {
+    warning("Thresholds must be positive or NULL.")
+    Results$Comment <- "Thresholds must be positive or NULL."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (!is.positive.finite.vector(Frequencies) && !is.null(Frequencies)) {
+    warning("Frequencies must be positive or NULL.")
+    Results$Comment <- "Frequencies must be positive or NULL."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (length(Attachment_Points) != length(Covers) || length(Covers) != length(Expected_Layer_Losses)) {
+    warning("Attachment_Points, Covers and Expected_Layer_Losses must have the same length.")
+    Results$Comment <- "Attachment_Points, Covers and Expected_Layer_Losses must have the same length."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (length(Thresholds) != length(Frequencies)) {
+    warning("Thresholds and Frequencies must have the same length.")
+    Results$Comment <- "Thresholds and Frequencies must have the same length."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (length(Attachment_Points) == 0 && length(Thresholds) == 0) {
+    warning("Either number of layers or number of Thresholds must be positive.")
+    Results$Comment <- "Either number of layers or number of Thresholds must be positive."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (!is.positive.finite.number(t_1)) {
+    warning("t_1 must be a positive number.")
+    Results$Comment <- "t_1 must be a positive number."
+    Results$Status <- 2
+    return(Results)
+
+  }
+  if (!is.positive.finite.number(default_alpha)) {
+    warning("default_alpha must be a positive number.")
+    Results$Comment <- "default_alpha must be a positive number."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (!(severity_distribution %in% c("PiecewisePareto"))) {
+    warning("severity_distribution not valid.")
+    Results$Comment <- "severity_distribution not valid."
+    Results$Status <- 2
+    return(Results)
+  }
+
+
+  df_layers <- data.frame(limit = Covers, attachment_point = Attachment_Points, exp_loss = Expected_Layer_Losses)
+  df_thresholds <- data.frame(threshold = Thresholds, frequency = Frequencies)
+
+  if (severity_distribution == "PiecewisePareto") {
+    # check if references are overlapping
+    entry <- c(Attachment_Points, Thresholds)
+    exit <- c(Covers + Attachment_Points, Thresholds)
+    entry <- entry[order(exit)]
+    exit <- exit[order(exit)]
+    if (sum(exit[-length(exit)] > entry[-1]) > 0 || length(Thresholds) > length(unique(Thresholds))) {
+      overlapping <- TRUE
+    } else  {
+      overlapping <- FALSE
+    }
+
+
+    if (overlapping && !requireNamespace("lpSolve", quietly = TRUE)) {
+      warning("Reference information is overlapping. Package \"lpSolve\" needed for this function to work overlapping references. Please install it.")
+      Results <- PPP_Model()
+      Results$Comment <- "Reference information is overlapping. Package \"lpSolve\" needed for this function to work overlapping references. Please install it."
+      Results$Status <- 2
+    } else {
+      layer_losses <- calculate_layer_losses(df_layers, df_thresholds, overlapping = overlapping)
+      if (layer_losses$status == 3) {
+        warning("Frequencies / RoLs are not strictly decreasing. No solution found.")
+        Results <- PPP_Model()
+        Results$Comment <- "Frequencies / RoLs are not strictly decreasing. No solution found."
+        Results$Status <- 2
+        return(Results)
+      }
+      if (layer_losses$status == 2) {
+        warning("References are not consistent. Some data has been ignored.")
+        Results <- PPP_Model()
+        Results$Comment <- "References are not consistent. Some data has been ignored."
+        Results$Status <- 2
+      }
+
+      Results <- PiecewisePareto_Match_Layer_Losses((layer_losses$tower)$att, (layer_losses$tower)$exp_loss_new, Frequencies = (layer_losses$tower)$frequency_new)
+    }
+
+  }
+
+  return(Results)
+
+}
+
 
