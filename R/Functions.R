@@ -3564,6 +3564,8 @@ rPanjer <- function(n, mean, dispersion) {
 #' @param t_1 Numerical. Lowest threshold of the piecewise Pareto distribution.
 #' @param default_alpha Numerical. Default alpha for situations where an alpha has to be selected.
 #' @param severity_distribution Character. Currently only "PiecewisePareto" is supported.
+#' @param ignore_inconsistent_references Logical. If TRUE then inconsistent references are ignored in case of the
+#'        piecewise Pareto distribution and the other references are used to fit the model
 
 #' @return A PPP_Model object that contains the information about a collective model with a Panjer distributed claim count and a Piecewise Pareto distributed severity. The object contains the following elements: \itemize{
 #' \item \code{FQ} Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution
@@ -3582,7 +3584,7 @@ rPanjer <- function(n, mean, dispersion) {
 #' @export
 
 
-Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Layer_Losses = NULL, Thresholds = NULL, Frequencies = NULL, t_1 = min(c(Attachment_Points, Thresholds)), default_alpha = 2, severity_distribution = "PiecewisePareto") {
+Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Layer_Losses = NULL, Thresholds = NULL, Frequencies = NULL, t_1 = min(c(Attachment_Points, Thresholds)), default_alpha = 2, severity_distribution = "PiecewisePareto", ignore_inconsistent_references = FALSE) {
 
 
 
@@ -3655,6 +3657,12 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     Results$Status <- 2
     return(Results)
   }
+  if (!is.TRUEorFALSE(ignore_inconsistent_references)) {
+    warning("ignore_inconsistent_references must be TRUE or FALSE.")
+    Results$Comment <- "ignore_inconsistent_references must be TRUE or FALSE."
+    Results$Status <- 2
+    return(Results)
+  }
 
 
   df_layers <- data.frame(limit = Covers, attachment_point = Attachment_Points, exp_loss = Expected_Layer_Losses)
@@ -3679,11 +3687,18 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
       Results$Comment <- "Reference information is overlapping. Package \"lpSolve\" needed for this function to work overlapping references. Please install it."
       Results$Status <- 2
     } else {
-      layer_losses <- calculate_layer_losses(df_layers, df_thresholds, overlapping = overlapping)
+      layer_losses <- calculate_layer_losses(df_layers, df_thresholds, overlapping = overlapping, ignore_inconsistent_references = ignore_inconsistent_references)
       if (layer_losses$status == 3) {
-        warning("Frequencies / RoLs are not strictly decreasing. No solution found.")
+        warning("Frequencies / RoLs are not strictly decreasing. No solution found. Install the package \"lpSolve\" to use the option ignore_inconsistent_references = TRUE.")
         Results <- PPP_Model()
-        Results$Comment <- "Frequencies / RoLs are not strictly decreasing. No solution found."
+        Results$Comment <- "Frequencies / RoLs are not strictly decreasing. No solution found. Install the package \"lpSolve\" to use the option ignore_inconsistent_references = TRUE."
+        Results$Status <- 2
+        return(Results)
+      }
+      if (layer_losses$status == 4) {
+        warning("References are inconsistent. Use the option ignore_inconsistent_references = TRUE to ignore the inconsistent references.")
+        Results <- PPP_Model()
+        Results$Comment <- "References are inconsistent. Use the option ignore_inconsistent_references = TRUE to ignore the inconsistent references."
         Results$Status <- 2
         return(Results)
       }

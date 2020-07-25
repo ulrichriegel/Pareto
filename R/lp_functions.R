@@ -1,5 +1,5 @@
 
-calculate_layer_losses <- function(df_layers, df_thresholds, overlapping) {
+calculate_layer_losses <- function(df_layers, df_thresholds, overlapping, ignore_inconsistent_references) {
 
   if (overlapping) {
     lp_result <- solve_lp(df_layers, df_thresholds)
@@ -11,7 +11,7 @@ calculate_layer_losses <- function(df_layers, df_thresholds, overlapping) {
     } else {
       tower <- data.frame(limit = numeric(0), att = numeric(0), frequency = numeric(0), exp_loss = numeric(0), exp_loss_info_avaliable = logical(0))
     }
-    if (nrow(df_thresholds) > 1) {
+    if (nrow(df_thresholds) > 0) {
       df_thresholds <- df_thresholds[order(df_thresholds$threshold), ]
       for (i in 1:nrow(df_thresholds)) {
         index <- df_thresholds$threshold[i] == tower$att
@@ -56,10 +56,15 @@ calculate_layer_losses <- function(df_layers, df_thresholds, overlapping) {
     fq_rol <- c(t(matrix(c(tower$frequency, tower$exp_loss / tower$limit), ncol = 2)))
     fq_rol <- fq_rol[!is.na(fq_rol)]
     if (max(diff(fq_rol)) >= 0) {
-      status_all_info <- 3
-      tower$exp_loss_new <- NA
-      tower$frequency_new <- NA
-      return(list(tower = tower, status = status_all_info))
+      if (!requireNamespace("lpSolve", quietly = TRUE)) {
+        status_all_info <- 3
+        tower$exp_loss_new <- NA
+        tower$frequency_new <- NA
+        return(list(tower = tower, status = status_all_info))
+      } else {
+        lp_result <- list(tower = tower, status = 2)
+        status_all_info <- 2
+      }
     } else {
       lp_result <- list(tower = tower, status = 0)
       status_all_info <- 0
@@ -68,6 +73,12 @@ calculate_layer_losses <- function(df_layers, df_thresholds, overlapping) {
   }
 
   if (status_all_info != 0) {
+    if (!ignore_inconsistent_references) {
+      status_all_info <- 4
+      tower$exp_loss_new <- NA
+      tower$frequency_new <- NA
+      return(list(tower = tower, status = status_all_info))
+    }
     use_layer <- rep(F, nrow(df_layers))
     use_threshold <- rep(F, nrow(df_thresholds))
     use_layer[1] <- T
