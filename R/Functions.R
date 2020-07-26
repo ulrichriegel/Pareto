@@ -1382,6 +1382,9 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       Results$Status <- 2
       return(Results)
     }
+    if (length(Frequencies[!is.na(Frequencies)]) == 0) {
+      Frequencies <- NULL
+    }
   }
   if (!is.null(TotalLoss_Frequencies)) {
     if (!is.positive.finite.vector(TotalLoss_Frequencies)) {
@@ -3645,9 +3648,9 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     return(Results)
 
   }
-  if (!is.positive.finite.number(default_alpha)) {
-    warning("default_alpha must be a positive number.")
-    Results$Comment <- "default_alpha must be a positive number."
+  if (!is.positive.finite.number(default_alpha) || default_alpha <= 1) {
+    warning("default_alpha must be a positive number > 1.")
+    Results$Comment <- "default_alpha must be a positive number > 1."
     Results$Status <- 2
     return(Results)
   }
@@ -3687,7 +3690,7 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
       Results$Comment <- "Reference information is overlapping. Package \"lpSolve\" needed for this function to work overlapping references. Please install it."
       Results$Status <- 2
     } else {
-      layer_losses <- calculate_layer_losses(df_layers, df_thresholds, overlapping = overlapping, ignore_inconsistent_references = ignore_inconsistent_references)
+      layer_losses <- calculate_layer_losses(df_layers, df_thresholds, overlapping = overlapping, default_alpha = default_alpha, ignore_inconsistent_references = ignore_inconsistent_references)
       if (layer_losses$status == 3) {
         warning("Frequencies / RoLs are not strictly decreasing. No solution found. Install the package \"lpSolve\" to use the option ignore_inconsistent_references = TRUE.")
         Results <- PPP_Model()

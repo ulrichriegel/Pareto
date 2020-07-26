@@ -14,7 +14,7 @@ is.positive_or_NA.finite.vector <- function(x) {
   if(!is.atomic(x)) {
     return(FALSE)
   }
-  if (!is.positive.finite.vector(x[!is.na(x)])) {
+  if (length(x[!is.na(x)]) > 0 && !is.positive.finite.vector(x[!is.na(x)])) {
     return(FALSE)
   }
   return(TRUE)
