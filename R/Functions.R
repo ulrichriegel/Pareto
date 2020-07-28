@@ -1697,20 +1697,48 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     }
   }
 
+  # if (!is.null(Frequencies)) {
+  #   if (max(RoLs/Frequencies, na.rm = T) >= 1 - RoL_tolerance / 2) {
+  #     Frequencies <- NULL
+  #     TotalLoss_Frequencies <- NULL
+  #     warning("Layer entry frequencies not strictly greater than RoLs.")
+  #     Results$Comment <- paste0(Results$Comment, "Layer entry frequencies not strictly greater than RoLs. Frequencies not used!  ")
+  #     Results$Status <- 1
+  #   }
+  #   if (min(RoLs[1:(k-1)]/Frequencies[2:k], na.rm = T) <= 1 + RoL_tolerance / 2) {
+  #     Frequencies <- NULL
+  #     TotalLoss_Frequencies <- NULL
+  #     warning("Layer exit frequencies not strictly less than RoLs.")
+  #     Results$Comment <- paste0(Results$Comment, "Layer exit frequencies not strictly less than RoLs. Frequencies not used! ")
+  #     Results$Status <- 1
+  #   }
+  # }
   if (!is.null(Frequencies)) {
-    if (max(RoLs/Frequencies, na.rm = T) >= 1 - RoL_tolerance / 2) {
-      Frequencies <- NULL
-      TotalLoss_Frequencies <- NULL
-      warning("Layer entry frequencies not strictly greater than RoLs.")
-      Results$Comment <- paste0(Results$Comment, "Layer entry frequencies not strictly greater than RoLs. Frequencies not used!  ")
-      Results$Status <- 1
-    }
-    if (min(RoLs[1:(k-1)]/Frequencies[2:k], na.rm = T) <= 1 + RoL_tolerance / 2) {
-      Frequencies <- NULL
-      TotalLoss_Frequencies <- NULL
-      warning("Layer exit frequencies not strictly less than RoLs.")
-      Results$Comment <- paste0(Results$Comment, "Layer exit frequencies not strictly less than RoLs. Frequencies not used! ")
-      Results$Status <- 1
+    for (i in 1:(k-1)) {
+      if (!is.na(Frequencies[i]) && Frequencies[i] < RoLs[i] *(1 + RoL_tolerance / 2)) {
+        if (Frequencies[i] < RoLs[i]) {
+          warning("Layer entry frequency smaller than RoL. Frequency ajusted.")
+          Results$Comment <- paste0(Results$Comment, "Layer entry frequency smaller than RoL. Frequency ajusted. ")
+          Results$Status <- 1
+        }
+        Frequencies[i] <- RoLs[i] * (1 + RoL_tolerance / 2)
+      }
+      if (!is.na(Frequencies[i+1]) && Frequencies[i+1] > RoLs[i] * (1 - RoL_tolerance / 2)) {
+        if (Frequencies[i+1] > RoLs[i]) {
+          warning("Layer entry frequency larger than RoL of previous layer. Frequency ajusted.")
+          Results$Comment <- paste0(Results$Comment, "Layer entry frequency larger than RoL of previous layer. Frequency ajusted. ")
+          Results$Status <- 1
+        }
+        Frequencies[i+1] <- RoLs[i] * (1 - RoL_tolerance / 2)
+      }
+      if (!is.null(TotalLoss_Frequencies)) {
+        if (!is.na(Frequencies[i+1]) && TotalLoss_Frequencies[i] > Frequencies[i+1]) {
+          TotalLoss_Frequencies[i] <- Frequencies[i+1]
+        } else if (TotalLoss_Frequencies[i] < RoLs[i+1] * (1 + RoL_tolerance / 2)) {
+          TotalLoss_Frequencies[i] <- RoLs[i+1] * (1 + RoL_tolerance / 2)
+        }
+        if (TotalLoss_Frequencies[i] > RoLs[i] * (1 - RoL_tolerance / 2)) TotalLoss_Frequencies[i] <- RoLs[i] * (1 - RoL_tolerance / 2)
+      }
     }
   }
   if (is.null(Frequencies)) {
