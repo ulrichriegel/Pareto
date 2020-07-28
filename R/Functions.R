@@ -1655,6 +1655,13 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
 
   RoLs <- ELL / Limits
   Merged_Layer <- rep(FALSE, k)
+
+  if (max(RoLs[2:k] / RoLs[1:(k-1)]) > 1 + RoL_tolerance) {
+    warning("RoLs not strictly decreasing. Layers have been merged.")
+    Results$Comment <- paste0(Results$Comment, "RoLs not strictly decreasing. Layers have been merged. ")
+    Results$Status <- 1
+  }
+
   if (max(RoLs[2:k] / RoLs[1:(k-1)]) >= 1 - RoL_tolerance) {
     repeat {
       if (k<3) { # should not happen ...
@@ -1681,9 +1688,6 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       RoLs <- ELL / Limits
       if (max(RoLs[2:k] / RoLs[1:(k-1)]) < 1 - RoL_tolerance) {break}
     }
-    warning("RoLs not strictly decreasing. Layers have been merged.")
-    Results$Comment <- paste0(Results$Comment, "RoLs not strictly decreasing. Layers have been merged. ")
-    Results$Status <- 1
   }
 
   if (!is.null(truncation)) {
@@ -1697,26 +1701,10 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     }
   }
 
-  # if (!is.null(Frequencies)) {
-  #   if (max(RoLs/Frequencies, na.rm = T) >= 1 - RoL_tolerance / 2) {
-  #     Frequencies <- NULL
-  #     TotalLoss_Frequencies <- NULL
-  #     warning("Layer entry frequencies not strictly greater than RoLs.")
-  #     Results$Comment <- paste0(Results$Comment, "Layer entry frequencies not strictly greater than RoLs. Frequencies not used!  ")
-  #     Results$Status <- 1
-  #   }
-  #   if (min(RoLs[1:(k-1)]/Frequencies[2:k], na.rm = T) <= 1 + RoL_tolerance / 2) {
-  #     Frequencies <- NULL
-  #     TotalLoss_Frequencies <- NULL
-  #     warning("Layer exit frequencies not strictly less than RoLs.")
-  #     Results$Comment <- paste0(Results$Comment, "Layer exit frequencies not strictly less than RoLs. Frequencies not used! ")
-  #     Results$Status <- 1
-  #   }
-  # }
   if (!is.null(Frequencies)) {
     for (i in 1:(k-1)) {
-      if (!is.na(Frequencies[i]) && Frequencies[i] < RoLs[i] *(1 + RoL_tolerance / 2)) {
-        if (Frequencies[i] < RoLs[i]) {
+      if (!is.na(Frequencies[i]) && Frequencies[i] < RoLs[i] * (1 + RoL_tolerance / 2)) {
+        if (Frequencies[i] < RoLs[i] * (1 - RoL_tolerance / 2)) {
           warning("Layer entry frequency smaller than RoL. Frequency ajusted.")
           Results$Comment <- paste0(Results$Comment, "Layer entry frequency smaller than RoL. Frequency ajusted. ")
           Results$Status <- 1
@@ -1724,7 +1712,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
         Frequencies[i] <- RoLs[i] * (1 + RoL_tolerance / 2)
       }
       if (!is.na(Frequencies[i+1]) && Frequencies[i+1] > RoLs[i] * (1 - RoL_tolerance / 2)) {
-        if (Frequencies[i+1] > RoLs[i]) {
+        if (Frequencies[i+1] > RoLs[i] * (1 + RoL_tolerance / 2)) {
           warning("Layer entry frequency larger than RoL of previous layer. Frequency ajusted.")
           Results$Comment <- paste0(Results$Comment, "Layer entry frequency larger than RoL of previous layer. Frequency ajusted. ")
           Results$Status <- 1
@@ -1805,8 +1793,8 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   }
 
   if (!is.null(FQ_at_lowest_AttPt)) {
-    if (FQ_at_lowest_AttPt > RoLs[1] * (1 + RoL_tolerance / 2)) {
-      Frequencies[1] <- FQ_at_lowest_AttPt
+    if (FQ_at_lowest_AttPt >= RoLs[1] ) {
+      Frequencies[1] <- max(FQ_at_lowest_AttPt, RoLs[1] * (1 + RoL_tolerance / 2))
     } else {
       warning("FQ_at_lowest_AttPt too small. Not used!")
       Results$Comment <- paste0(Results$Comment, "FQ_at_lowest_AttPt too small. Not used! ")
@@ -1814,8 +1802,8 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     }
   }
   if (!is.null(FQ_at_highest_AttPt)) {
-    if (FQ_at_highest_AttPt < RoLs[k-1] * (1 - RoL_tolerance / 2)) {
-      Frequencies[k] <- FQ_at_highest_AttPt
+    if (FQ_at_highest_AttPt <= RoLs[k-1]) {
+      Frequencies[k] <- min(FQ_at_highest_AttPt, RoLs[k-1] * (1 - RoL_tolerance / 2))
     } else {
       warning("FQ_at_highest_AttPt too large.")
       Results$Comment <- paste0(Results$Comment, "FQ_at_highest_AttPt too large. Not used! ")
