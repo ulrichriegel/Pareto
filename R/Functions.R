@@ -1345,9 +1345,9 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     return(Results)
   }
   k <-length(Attachment_Points)
-  if (!is.positive.finite.vector(Expected_Layer_Losses)) {
-    warning("Expected_Layer_Losses must be a vector with positive entries.")
-    Results$Comment <- "Expected_Layer_Losses must be a vector with positive entries."
+  if (!is.nonnegative.finite.vector(Expected_Layer_Losses)) {
+    warning("Expected_Layer_Losses must be a vector with nonnegative entries.")
+    Results$Comment <- "Expected_Layer_Losses must be a vector with nonnegative entries."
     Results$Status <- 2
     return(Results)
   }
@@ -1489,6 +1489,49 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     Results$truncation <- truncation
     Results$truncation_type <- truncation_type
   }
+
+
+  last_exp_loss_zero <- FALSE
+  # if last_exp_loss_zero == TRUE then last Pareto alpha will be set to alpha_max at the end of the function
+  if (min(Expected_Layer_Losses) == 0) {
+    index <- min(which(Expected_Layer_Losses == 0))
+    if (index < k) {
+      if (max(Expected_Layer_Losses[(index+1):k]) > 0) {
+        warning(paste0("Expected_Layer_Losses[", index, "] == 0 although Expected_Layer_Losses[", index + min(which(Expected_Layer_Losses[(index+1):k] > 0)), "] > 0."))
+        Results$Comment <- paste0("Expected_Layer_Losses[", index, "] == 0 although Expected_Layer_Losses[", min(which(Expected_Layer_Losses[(index+1):k] > 0)), "] > 0.")
+        Results$Status <- 2
+        return(Results)
+      }
+    }
+    if (index == 1) {
+      Results$t <- Attachment_Points[1]
+      Results$alpha <- 2
+      Results$FQ <- 0
+      Results$Status <- 0
+      return(Results)
+    }
+
+
+    last_exp_loss_zero <- TRUE
+    k <- index
+    Expected_Layer_Losses <- Expected_Layer_Losses[1:k]
+    Attachment_Points <- Attachment_Points[1:k]
+    temp <- Pareto_Extrapolation(Attachment_Points[k] - Attachment_Points[k-1], Attachment_Points[k-1], Inf, Attachment_Points[k], 2, truncation = truncation) * Expected_Layer_Losses[k-1]
+    if (Unlimited_Layers) {
+      Expected_Layer_Losses <- Expected_Layer_Losses + temp
+    } else {
+      Expected_Layer_Losses[k] <- Expected_Layer_Losses[k] + temp
+    }
+    FQ_at_highest_AttPt <- Expected_Layer_Losses[k] / Pareto_Layer_Mean(Inf, Attachment_Points[index], 2, truncation = truncation)
+    if (!is.null(Frequencies)) {
+      Frequencies <- Frequencies[1:k]
+      if (is.na(Frequencies[k])) Frequencies[k] <- FQ_at_highest_AttPt
+    }
+    if (!is.null(TotalLoss_Frequencies)) TotalLoss_Frequencies <- TotalLoss_Frequencies[1:(k-1)]
+  }
+
+
+
 
   if (k == 1) {
     Results$t <- Attachment_Points
@@ -1844,6 +1887,9 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     Results$FQ <- Frequencies[1] - Frequencies[k]
   } else {
     Results$FQ <- Frequencies[1]
+  }
+  if (last_exp_loss_zero) {
+    Results$alpha[length(Results$alpha)] <- alpha_max
   }
   if (Results$Comment == "") {Results$Comment <- "OK"}
 

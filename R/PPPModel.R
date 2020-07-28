@@ -143,11 +143,11 @@ is.valid.PPP_Model <- function(x, comment = FALSE) {
   }
 
 
-  if (!is.positive.finite.number(x$FQ)) {
+  if (!is.nonnegative.finite.number(x$FQ)) {
     if (!comment) {
       return(FALSE)
     } else {
-      return("FQ must be a positive number.")
+      return("FQ must be a nonnegative number.")
     }
   }
   if (!valid.parameters.PiecewisePareto(x$t, x$alpha, x$truncation, x$truncation_type)) {
