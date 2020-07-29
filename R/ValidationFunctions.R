@@ -21,6 +21,17 @@ is.positive_or_NA.finite.vector <- function(x) {
 }
 
 
+is.nonnegative_or_NA.finite.vector <- function(x) {
+  if(!is.atomic(x)) {
+    return(FALSE)
+  }
+  if (length(x[!is.na(x)]) > 0 && !is.nonnegative.finite.vector(x[!is.na(x)])) {
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
+
 is.nonnegative.vector <- function(x) {
   if(!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
     return(FALSE)

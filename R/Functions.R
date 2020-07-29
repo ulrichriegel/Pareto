@@ -1370,9 +1370,9 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     return(Results)
   }
   if (!is.null(Frequencies)) {
-    if (!is.positive_or_NA.finite.vector(Frequencies)) {
-      warning("Frequencies must be NULL or a vector with positive entries (NAs allowed).")
-      Results$Comment <- "Frequencies must be NULL or a vector with positive entries (NAs allowed)."
+    if (!is.nonnegative_or_NA.finite.vector(Frequencies)) {
+      warning("Frequencies must be NULL or a vector with nonnegative entries (NAs allowed).")
+      Results$Comment <- "Frequencies must be NULL or a vector with nonnegative entries (NAs allowed)."
       Results$Status <- 2
       return(Results)
     }
@@ -1381,9 +1381,6 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       Results$Comment <- "Attachment_Points and Frequencies must have the same length."
       Results$Status <- 2
       return(Results)
-    }
-    if (length(Frequencies[!is.na(Frequencies)]) == 0) {
-      Frequencies <- NULL
     }
   }
   if (!is.null(TotalLoss_Frequencies)) {
@@ -1516,13 +1513,26 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     k <- index
     Expected_Layer_Losses <- Expected_Layer_Losses[1:k]
     Attachment_Points <- Attachment_Points[1:k]
-    temp <- Pareto_Extrapolation(Attachment_Points[k] - Attachment_Points[k-1], Attachment_Points[k-1], Inf, Attachment_Points[k], 2, truncation = truncation) * Expected_Layer_Losses[k-1]
-    if (Unlimited_Layers) {
-      Expected_Layer_Losses <- Expected_Layer_Losses + temp
+    if (is.null(Frequencies) || is.na(Frequencies[k])) {
+      temp <- Pareto_Extrapolation(Attachment_Points[k] - Attachment_Points[k-1], Attachment_Points[k-1], Inf, Attachment_Points[k], 2, truncation = truncation) * Expected_Layer_Losses[k-1]
+      if (Unlimited_Layers) {
+        Expected_Layer_Losses <- Expected_Layer_Losses + temp
+      } else {
+        Expected_Layer_Losses[k] <- Expected_Layer_Losses[k] + temp
+      }
+      FQ_at_highest_AttPt <- Expected_Layer_Losses[k] / Pareto_Layer_Mean(Inf, Attachment_Points[k], 2, truncation = truncation)
     } else {
-      Expected_Layer_Losses[k] <- Expected_Layer_Losses[k] + temp
+      temp_rol <- Expected_Layer_Losses[k-1] / (Attachment_Points[k] - Attachment_Points[k-1])
+      if (Frequencies[k] >= temp_rol * (1 - RoL_tolerance / 2)) Frequencies[k] <- temp_rol * (1 - RoL_tolerance / 2)
+      if (Frequencies[k] <= 0) Frequencies[k] <- RoL_tolerance / 2
+      temp <- Pareto_Layer_Mean(Inf, Attachment_Points[k], 2) * Frequencies[k]
+      if (Unlimited_Layers) {
+        Expected_Layer_Losses <- Expected_Layer_Losses + temp
+      } else {
+        Expected_Layer_Losses[k] <- Expected_Layer_Losses[k] + temp
+      }
+      FQ_at_highest_AttPt <- Frequencies[k]
     }
-    FQ_at_highest_AttPt <- Expected_Layer_Losses[k] / Pareto_Layer_Mean(Inf, Attachment_Points[index], 2, truncation = truncation)
     if (!is.null(Frequencies)) {
       Frequencies <- Frequencies[1:k]
       if (is.na(Frequencies[k])) Frequencies[k] <- FQ_at_highest_AttPt
