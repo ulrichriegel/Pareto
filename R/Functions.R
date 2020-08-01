@@ -1389,7 +1389,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
     }
   }
   if (!is.null(FQ_at_highest_AttPt)) {
-    if (!is.positive.finite.number(FQ_at_highest_AttPt)) {
+    if (!is.nonnegative.finite.number(FQ_at_highest_AttPt)) {
       warning("FQ_at_highest_AttPt must be NULL or a positive number.")
       Results$Comment <- paste0(Results$Comment, "FQ_at_highest_AttPt must be NULL or a positive number. FQ_at_highest_AttPt is ignored! ")
       Results$Status <- 1
@@ -1889,6 +1889,11 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
   }
   if (last_exp_loss_zero) {
     Results$alpha[length(Results$alpha)] <- alpha_max
+    l <- length(Results$alpha)
+    if (l > 1 && abs(alpha_max - Results$alpha[l-1]) < merge_tolerance) {
+      Results$alpha <- Results$alpha[1:(l-1)]
+      Results$t <- Results$t[1:(l-1)]
+    }
   }
   if (Results$Comment == "") {Results$Comment <- "OK"}
 
@@ -3650,7 +3655,7 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     Results$Status <- 2
     return(Results)
   }
-  if (!is.positive.finite.vector(Expected_Layer_Losses) && !is.null(Expected_Layer_Losses)) {
+  if (!is.nonnegative.finite.vector(Expected_Layer_Losses) && !is.null(Expected_Layer_Losses)) {
     warning("Expected_Layer_Losses must be positive or NULL.")
     Results$Comment <- "Expected_Layer_Losses must be positive or NULL."
     Results$Status <- 2
@@ -3662,7 +3667,7 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     Results$Status <- 2
     return(Results)
   }
-  if (!is.positive.finite.vector(Frequencies) && !is.null(Frequencies)) {
+  if (!is.nonnegative.finite.vector(Frequencies) && !is.null(Frequencies)) {
     warning("Frequencies must be positive or NULL.")
     Results$Comment <- "Frequencies must be positive or NULL."
     Results$Status <- 2

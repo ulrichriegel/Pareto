@@ -122,6 +122,11 @@ calculate_layer_losses <- function(df_layers, df_thresholds, overlapping, defaul
     tower <- lp_result$tower
   }
 
+  # if (min(tower$exp_loss) == 0) {
+  #   index <- min(which(tower$exp_loss == 0 & tower$exp_loss_info_avaliable))
+  #   tower <- tower[1:index, ]
+  # }
+
   att <- tower$att
   limit <- tower$limit
   frequency <- tower$frequency
@@ -129,6 +134,7 @@ calculate_layer_losses <- function(df_layers, df_thresholds, overlapping, defaul
   el_info <- tower$exp_loss_info_avaliable
 
   n <- nrow(tower)
+
 
   if (n == 1) {
     if (is.na(frequency[1])) {
@@ -144,27 +150,45 @@ calculate_layer_losses <- function(df_layers, df_thresholds, overlapping, defaul
         index1 <- max(index_info[index_info <= i])
         index2 <- min(index_info[index_info > i])
         if (el_info[index1] && !is.na(frequency[index2])) {
-          alpha <- Pareto_Find_Alpha_btw_FQ_Layer(att[index2], frequency[index2], limit[index1], att[index1], exp_loss[index1])
-          fq1 <- frequency[index2] * (att[index2] / att[index1])^alpha
-          exp_loss[i] <- fq1 * Pareto_Layer_Mean(limit[i], att[i], alpha, t=att[index1])
+          if (frequency[index2] > 0) {
+            alpha <- Pareto_Find_Alpha_btw_FQ_Layer(att[index2], frequency[index2], limit[index1], att[index1], exp_loss[index1])
+            fq1 <- frequency[index2] * (att[index2] / att[index1])^alpha
+            exp_loss[i] <- fq1 * Pareto_Layer_Mean(limit[i], att[i], alpha, t=att[index1])
+          } else {
+            exp_loss[i] <- Pareto_Extrapolation(limit[index1], att[index1], limit[i], att[i], default_alpha, truncation = att[index2]) * exp_loss[index1]
+          }
         } else if (!is.na(frequency[index1]) && !is.na(frequency[index2])) {
-          alpha <- Pareto_Find_Alpha_btw_FQs(att[index1], frequency[index1], att[index2], frequency[index2])
-          exp_loss[i] <- frequency[index1] * Pareto_Layer_Mean(limit[i], att[i], alpha, t=att[index1])
+          if (frequency[index2] > 0) {
+            alpha <- Pareto_Find_Alpha_btw_FQs(att[index1], frequency[index1], att[index2], frequency[index2])
+            exp_loss[i] <- frequency[index1] * Pareto_Layer_Mean(limit[i], att[i], alpha, t=att[index1])
+          } else {
+            exp_loss[i] <- frequency[index1] * Pareto_Layer_Mean(limit[i], att[i], default_alpha, t = att[index1], truncation = att[index2])
+          }
         } else if (el_info[index1] && el_info[index2]) {
-          alpha <- Pareto_Find_Alpha_btw_Layers(limit[index1], att[index1], exp_loss[index1], limit[index2], att[index2], exp_loss[index2])
-          exp_loss[i] <- Pareto_Extrapolation(limit[index1], att[index1], limit[i], att[i], alpha) * exp_loss[index1]
+          if (exp_loss[index2] > 0) {
+            alpha <- Pareto_Find_Alpha_btw_Layers(limit[index1], att[index1], exp_loss[index1], limit[index2], att[index2], exp_loss[index2])
+            exp_loss[i] <- Pareto_Extrapolation(limit[index1], att[index1], limit[i], att[i], alpha) * exp_loss[index1]
+          } else {
+            exp_loss[i] <- Pareto_Extrapolation(limit[index1], att[index1], limit[i], att[i], default_alpha, truncation = att[index2]) * exp_loss[index1]
+          }
         } else {
-          alpha <- Pareto_Find_Alpha_btw_FQ_Layer(att[index1], frequency[index1], limit[index2], att[index2], exp_loss[index2])
-          exp_loss[i] <- frequency[index1] * Pareto_Layer_Mean(limit[i], att[i], alpha, t=att[index1])
+          if (exp_loss[index2] > 0) {
+            alpha <- Pareto_Find_Alpha_btw_FQ_Layer(att[index1], frequency[index1], limit[index2], att[index2], exp_loss[index2])
+            exp_loss[i] <- frequency[index1] * Pareto_Layer_Mean(limit[i], att[i], alpha, t=att[index1])
+          } else {
+            exp_loss[i] <- frequency[index1] * Pareto_Layer_Mean(limit[i], att[i], default_alpha, t = att[index1], truncation = att[index2])
+          }
         }
       }
     }
     # unlimited layer
     if (!el_info[n]) {
-      if (!is.na(frequency[n])) {
+      if (exp_loss[n-1] == 0) {
+        exp_loss[n] <- 0
+      } else if (!is.na(frequency[n])) {
         exp_loss[n] <- frequency[n] * Pareto_Layer_Mean(Inf, att[n], default_alpha)
       } else {
-        if (!is.na(frequency[i-1])) {
+        if (!is.na(frequency[n-1])) {
           alpha <- Pareto_Find_Alpha_btw_FQ_Layer(att[n-1], frequency[n-1], limit[n-1], att[n-1], exp_loss[n-1])
           frequency[n] <- frequency[n-1] * (att[n-1] / att[n])^alpha
           if (alpha > 1) {
@@ -187,39 +211,39 @@ calculate_layer_losses <- function(df_layers, df_thresholds, overlapping, defaul
       }
     }
 
-    # Calulate missing Frequencies
-    for (i in 1:n) {
-      if (is.na(frequency[i])) {
-        if (i == 1) {
-          if (!is.na(frequency[2])) {
-            alpha <- Pareto_Find_Alpha_btw_FQ_Layer(att[2], frequency[2], limit[1], att[1], exp_loss[1])
-            frequency[1] <- frequency[2] * (att[2] / att[1])^alpha
-          } else {
-            alpha <- Pareto_Find_Alpha_btw_Layers(limit[1], att[1], exp_loss[1], limit[2], att[2], exp_loss[2])
-            frequency[1] <- exp_loss[1] / Pareto_Layer_Mean(limit[1], att[1], alpha)
-          }
-        } else if (i < n) {
-          alpha = Pareto_Find_Alpha_btw_Layers(limit[i-1], att[i-1], exp_loss[i-1], limit[i], att[i], exp_loss[i])
-          frequency[i] <- exp_loss[i] / Pareto_Layer_Mean(limit[i], att[i], alpha)
-        } else {
-          alpha <- Pareto_Find_Alpha_btw_FQ_Layer(att[n-1], frequency[n-1], limit[n-1], att[n-1], exp_loss[n-1])
-          frequency[n] <- frequency[n-1] * (att[n-1] / att[n])^alpha
-        }
-      }
-    }
+    # # Calulate missing Frequencies
+    # for (i in 1:n) {
+    #   if (is.na(frequency[i])) {
+    #     if (i == 1) {
+    #       if (!is.na(frequency[2])) {
+    #         alpha <- Pareto_Find_Alpha_btw_FQ_Layer(att[2], frequency[2], limit[1], att[1], exp_loss[1])
+    #         frequency[1] <- frequency[2] * (att[2] / att[1])^alpha
+    #       } else {
+    #         alpha <- Pareto_Find_Alpha_btw_Layers(limit[1], att[1], exp_loss[1], limit[2], att[2], exp_loss[2])
+    #         frequency[1] <- exp_loss[1] / Pareto_Layer_Mean(limit[1], att[1], alpha)
+    #       }
+    #     } else if (i < n) {
+    #       alpha = Pareto_Find_Alpha_btw_Layers(limit[i-1], att[i-1], exp_loss[i-1], limit[i], att[i], exp_loss[i])
+    #       frequency[i] <- exp_loss[i] / Pareto_Layer_Mean(limit[i], att[i], alpha)
+    #     } else {
+    #       alpha <- Pareto_Find_Alpha_btw_FQ_Layer(att[n-1], frequency[n-1], limit[n-1], att[n-1], exp_loss[n-1])
+    #       frequency[n] <- frequency[n-1] * (att[n-1] / att[n])^alpha
+    #     }
+    #   }
+    # }
   }
 
 
-  if (n > 1) {
-    set_fq_na <- rep(FALSE, n)
-    for (i in 1:(n-1)) {
-      if (!is.na(frequency[i]) && !is.na(frequency[i+1]) && frequency[i+1] > frequency[i] * (1 - 1e-5)) {
-        set_fq_na[i] <- TRUE
-        set_fq_na[i+1] <- TRUE
-      }
-    }
-    frequency[set_fq_na] <- NaN
-  }
+  # if (n > 1) {
+  #   set_fq_na <- rep(FALSE, n)
+  #   for (i in 1:(n-1)) {
+  #     if (!is.na(frequency[i]) && !is.na(frequency[i+1]) && frequency[i+1] > frequency[i] * (1 - 1e-5)) {
+  #       set_fq_na[i] <- TRUE
+  #       set_fq_na[i+1] <- TRUE
+  #     }
+  #   }
+  #   frequency[set_fq_na] <- NaN
+  # }
 
   tower$exp_loss_new <- exp_loss
   tower$frequency_new <- frequency
