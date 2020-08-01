@@ -72,6 +72,65 @@ test_that("PiecewisePareto_Match_Layer_Losses only two layers", {
 
 })
 
+
+test_that("PiecewisePareto_Match_Layer_Losses where exp. loss vector contains zeroes", {
+  AP <- c(1000, 2000, 3000, 4000, 5000)
+  EL <- c(1000, 900, 800, 600, 0)
+  Cover <- c(diff(AP), Inf)
+  FQs <- c(1.1, 0.95, NA, NA, 0.5)
+  Fit <- PiecewisePareto_Match_Layer_Losses(AP, EL, Frequencies = FQs, alpha_max = 1000)
+  expect_equal(is.valid.PPP_Model(Fit), TRUE)
+  expect_equal(round(Layer_Mean(Fit, Cover, AP)[-5], 5), round(EL[-5], 5))
+  expect_equal(Excess_Frequency(Fit, AP[5]) < 3, TRUE)
+  expect_equal(round(Excess_Frequency(Fit, c(1000, 2000, 5000)), 5), round(c(1.1, 0.95, 0.5), 5))
+
+  Fit <- PiecewisePareto_Match_Layer_Losses(AP, EL, Frequencies = FQs, alpha_max = 1000, FQ_at_lowest_AttPt = 1.5, FQ_at_highest_AttPt = 0.01)
+  expect_equal(is.valid.PPP_Model(Fit), TRUE)
+  expect_equal(round(Layer_Mean(Fit, Cover, AP)[-5], 5), round(EL[-5], 5))
+  expect_equal(round(Excess_Frequency(Fit, c(1000, 2000, 5000)), 5), round(c(1.5, 0.95, 0.01), 5))
+
+  Fit <- PiecewisePareto_Match_Layer_Losses(AP, EL, Frequencies = FQs, alpha_max = 1000, FQ_at_lowest_AttPt = 1.5, FQ_at_highest_AttPt = 0.01, truncation = 7000, truncation_type = "wd")
+  expect_equal(is.valid.PPP_Model(Fit), TRUE)
+  expect_equal(round(Layer_Mean(Fit, Cover, AP)[-5], 5), round(EL[-5], 5))
+  expect_equal(round(Excess_Frequency(Fit, c(1000, 2000, 5000)), 5), round(c(1.5, 0.95, 0.01), 5))
+
+  EL <- c(1000, 900, 800, 0, 0)
+  Fit <- PiecewisePareto_Match_Layer_Losses(AP, EL, Frequencies = FQs, alpha_max = 1000)
+  expect_equal(is.valid.PPP_Model(Fit), TRUE)
+  expect_equal(round(Layer_Mean(Fit, Cover, AP)[-(4:5)], 5), round(EL[-(4:5)], 5))
+  expect_equal(Excess_Frequency(Fit, AP[4:5]) < 3, rep(TRUE, 2))
+  expect_equal(round(Excess_Frequency(Fit, c(1000, 2000)), 5), round(c(1.1, 0.95), 5))
+
+
+})
+
+
+test_that("PiecewisePareto_Match_Layer_Losses with TotalLoss_Frequencies", {
+  AP <- c(1000, 2000, 3000, 4000, 5000)
+  EL <- c(1000, 900, 800, 600, 0)
+  Cover <- c(diff(AP), Inf)
+  FQs <- c(1.1, 0.95, NA, NA, 0.1)
+  TLFQs <- c(0.97, NA, NA, 0.2)
+  Fit <- PiecewisePareto_Match_Layer_Losses(AP, EL, Frequencies = FQs, TotalLoss_Frequencies = TLFQs, alpha_max = 1000)
+  expect_equal(is.valid.PPP_Model(Fit), TRUE)
+  expect_equal(round(Layer_Mean(Fit, Cover, AP)[-5], 5), round(EL[-5], 5))
+  expect_equal(round(Excess_Frequency(Fit, c(1000, 2000, 5000)), 5), round(c(1.1, 0.95, 0.2), 5))
+  expect_equal(sum(round(Fit$alpha, 5) == 1000), 2)
+
+  EL <- c(1000, 900, 800, 600, 300)
+  Cover <- c(diff(AP), Inf)
+  FQs <- c(1.1, 0.95, 0.81, 0.7, 0.1)
+  TLFQs <- c(0.97, 0.85, 0.75, 0.2)
+  Fit <- PiecewisePareto_Match_Layer_Losses(AP, EL, Frequencies = FQs, TotalLoss_Frequencies = TLFQs, alpha_max = 1000)
+  expect_equal(is.valid.PPP_Model(Fit), TRUE)
+  expect_equal(round(Layer_Mean(Fit, Cover, AP), 5), round(EL, 5))
+  expect_equal(round(Excess_Frequency(Fit, AP), 5), round(FQs, 5))
+  expect_equal(sum(round(Fit$alpha, 5) == 1000), 4)
+
+})
+
+
+
 test_that("Panjer distribution", {
   Fit <- PPP_Model(FQ = 10, t = 1000, alpha = 2, dispersion = 1)
   expect_equal(Layer_Mean(Fit, 1, 0), 10)

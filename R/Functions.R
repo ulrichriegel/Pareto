@@ -1517,6 +1517,7 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
 
   if (min(Expected_Layer_Losses) == 0) {
     index <- min(which(Expected_Layer_Losses == 0))
+    truncation <- NULL
     if (index < k) {
       if (max(Expected_Layer_Losses[(index+1):k]) > 0) {
         warning(paste0("Expected_Layer_Losses[", index, "] == 0 although Expected_Layer_Losses[", index + min(which(Expected_Layer_Losses[(index+1):k] > 0)), "] > 0."))
