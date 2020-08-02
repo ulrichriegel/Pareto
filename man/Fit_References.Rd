@@ -12,6 +12,7 @@ Fit_References(
   Frequencies = NULL,
   t_1 = min(c(Attachment_Points, Thresholds)),
   default_alpha = 2,
+  alpha_max = 100,
   severity_distribution = "PiecewisePareto",
   ignore_inconsistent_references = FALSE
 )
@@ -30,6 +31,8 @@ Fit_References(
 \item{t_1}{Numerical. Lowest threshold of the piecewise Pareto distribution.}
 
 \item{default_alpha}{Numerical. Default alpha for situations where an alpha has to be selected.}
+
+\item{alpha_max}{Numerical. Maximum alpha to be used for the matching.}
 
 \item{severity_distribution}{Character. Currently only "PiecewisePareto" is supported.}
 
@@ -52,6 +55,13 @@ A PPP_Model object that contains the information about a collective model with a
 Fits a PPP_Model that fulfils a wishlist of conditions (expected layer losses and excess frequencies)
 }
 \examples{
-Fit_References(c(1000,1000), c(1000,2000), c(100,50), 500, 0.5)
+covers <- c(1000, 1000, 1000)
+att_points <- c(1000, 2000, 5000)
+exp_losses <- c(100, 50, 10)
+thresholds <- c(4000, 10000)
+fqs <- c(0.04, 0.005)
+fit <- Fit_References(covers, att_points, exp_losses, thresholds, fqs)
+Layer_Mean(fit, covers, att_points)
+Excess_Frequency(fit, thresholds)
 
 }

@@ -3616,6 +3616,7 @@ rPanjer <- function(n, mean, dispersion) {
 #' @param Frequencies Numeric vector. Expected frequencies excess the \code{Thresholds} from the wishlist.
 #' @param t_1 Numerical. Lowest threshold of the piecewise Pareto distribution.
 #' @param default_alpha Numerical. Default alpha for situations where an alpha has to be selected.
+#' @param alpha_max Numerical. Maximum alpha to be used for the matching.
 #' @param severity_distribution Character. Currently only "PiecewisePareto" is supported.
 #' @param ignore_inconsistent_references Logical. If TRUE then inconsistent references are ignored in case of the
 #'        piecewise Pareto distribution and the other references are used to fit the model
@@ -3632,12 +3633,19 @@ rPanjer <- function(n, mean, dispersion) {
 #' }
 #'
 #' @examples
-#' Fit_References(c(1000,1000), c(1000,2000), c(100,50), 500, 0.5)
+#' covers <- c(1000, 1000, 1000)
+#' att_points <- c(1000, 2000, 5000)
+#' exp_losses <- c(100, 50, 10)
+#' thresholds <- c(4000, 10000)
+#' fqs <- c(0.04, 0.005)
+#' fit <- Fit_References(covers, att_points, exp_losses, thresholds, fqs)
+#' Layer_Mean(fit, covers, att_points)
+#' Excess_Frequency(fit, thresholds)
 #'
 #' @export
 
 
-Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Layer_Losses = NULL, Thresholds = NULL, Frequencies = NULL, t_1 = min(c(Attachment_Points, Thresholds)), default_alpha = 2, severity_distribution = "PiecewisePareto", ignore_inconsistent_references = FALSE) {
+Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Layer_Losses = NULL, Thresholds = NULL, Frequencies = NULL, t_1 = min(c(Attachment_Points, Thresholds)), default_alpha = 2, alpha_max = 100, severity_distribution = "PiecewisePareto", ignore_inconsistent_references = FALSE) {
 
 
 
@@ -3762,7 +3770,7 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
         Results$Status <- 2
       }
 
-      Results <- PiecewisePareto_Match_Layer_Losses((layer_losses$tower)$att, (layer_losses$tower)$exp_loss_new, Frequencies = (layer_losses$tower)$frequency_new)
+      Results <- PiecewisePareto_Match_Layer_Losses((layer_losses$tower)$att, (layer_losses$tower)$exp_loss_new, Frequencies = (layer_losses$tower)$frequency_new, alpha_max = alpha_max)
     }
 
   }
