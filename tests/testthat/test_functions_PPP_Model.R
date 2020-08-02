@@ -130,6 +130,42 @@ test_that("PiecewisePareto_Match_Layer_Losses with TotalLoss_Frequencies", {
 })
 
 
+test_that("Fit_References with option PiecewisePareto", {
+  covers <- c(1000, 1000, 1000)
+  att_points <- c(1000, 2000, 5000)
+  exp_losses <- c(100, 50, 10)
+  thresholds <- c(4000, 10000)
+  fqs <- c(0.04, 0.005)
+  Fit <- Fit_References(covers, att_points, exp_losses, thresholds, fqs)
+  expect_equal(Layer_Mean(fit, covers, att_points), exp_losses)
+  expect_equal(Excess_Frequency(fit, thresholds), fqs)
+
+  if (requireNamespace("lpSolve", quietly = TRUE)) {
+    covers <- c(10000, 10000, 10000)
+    att_points <- c(1000, 2000, 3000)
+    exp_losses <- c(150, 70, 30)
+    thresholds <- c(1000, 6000, 10000)
+    fqs <- c(0.15, 0.003, 0.002)
+    Fit <- Fit_References(covers, att_points, exp_losses, thresholds, fqs)
+    expect_equal(Layer_Mean(Fit, covers, att_points), exp_losses)
+    expect_equal(Excess_Frequency(Fit, thresholds), fqs)
+  }
+
+  if (requireNamespace("lpSolve", quietly = TRUE)) {
+    covers <- c(10000, 10000, 10000)
+    att_points <- c(1000, 2000, 3000)
+    exp_losses <- c(150, 70, 30)
+    thresholds <- c(1000, 6000, 10000, 11000)
+    fqs <- c(0.15, 0.003, 0.002, 0.03)
+    Fit <- Fit_References(covers, att_points, exp_losses, thresholds, fqs, ignore_inconsistent_references = TRUE)
+    expect_equal(Layer_Mean(Fit, covers, att_points), exp_losses)
+    expect_equal(Excess_Frequency(Fit, thresholds[-4]), fqs[-4])
+  }
+
+})
+
+
+
 
 test_that("Panjer distribution", {
   Fit <- PPP_Model(FQ = 10, t = 1000, alpha = 2, dispersion = 1)

@@ -1,3 +1,10 @@
+# Pareto 2.2.0
+
+* Added function Fit_References for the piecewise Pareto distribution. This function fits a PPP model to the expected losses of 
+  given reference layers and excess frequencies
+* It is now possible to have layers with an expected loss of zero in PiecewisePareto_Match_Layer_Losses
+* Improved handling of Frequencies and TotalLoss_Frequencies in PiecewisePareto_Match_Layer_Losses
+
 # Pareto 2.1.0
 
 * Added functions for the generalized Pareto distribution

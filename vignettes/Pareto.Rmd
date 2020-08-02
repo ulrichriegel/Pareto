@@ -307,6 +307,22 @@ covers <- c(diff(attachment_points), Inf)
 Layer_Mean(fit, covers, attachment_points)
 ```
 
+## Matching reference information
+
+The function `PiecewisePareto_Match_Layer_Losses` can be used to match the expected losses of a complete tower of layers. If we want to match the expected losses of some reference layers which do not form a complete tower then it is more convenient to use the function `Fit_References`. Also excess frequencies can be provided as reference information. The function can be seen as a user interface for `PiecewisePareto_Match_Layer_Losses`:
+```{R}
+  covers <- c(1000, 1000, 1000)
+  att_points <- c(1000, 2000, 5000)
+  exp_losses <- c(100, 50, 10)
+  thresholds <- c(4000, 10000)
+  fqs <- c(0.04, 0.005)
+  fit <- Fit_References(covers, att_points, exp_losses, thresholds, fqs)
+  Layer_Mean(fit, covers, att_points)
+  Excess_Frequency(fit, thresholds)
+```
+If the package `lpSolve` is installed then the funcion `Fit_References` can handle ovelapping layers.
+
+
 ## PPP_Models (Panjer & Piecewise Pareto Models)
 
 A `PPP_Model` object contains the information required to specify a collective model with a Panjer distributed claim count and a piecewise Pareto distributed severity. 
