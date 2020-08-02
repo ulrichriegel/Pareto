@@ -1555,13 +1555,13 @@ PiecewisePareto_Match_Layer_Losses <- function(Attachment_Points, Expected_Layer
       temp_rol <- Expected_Layer_Losses[k-1] / (Attachment_Points[k] - Attachment_Points[k-1])
       if (Frequencies[k] >= temp_rol * (1 - RoL_tolerance / 2)) Frequencies[k] <- temp_rol * (1 - RoL_tolerance / 2)
       if (Frequencies[k] <= RoL_tolerance / 2) Frequencies[k] <- min(RoL_tolerance / 2, temp_rol / 2)
-      temp_fq <- Frequencies[k]
-      if (!is.na(TotalLoss_Frequencies[k-1])) {
-        if (TotalLoss_Frequencies[k-1] >= temp_rol * (1 - RoL_tolerance / 2)) TotalLoss_Frequencies[k-1] <- temp_rol * (1 - RoL_tolerance / 2)
-        if (TotalLoss_Frequencies[k-1] <= RoL_tolerance / 2) TotalLoss_Frequencies[k-1] <- min(RoL_tolerance / 2, temp_rol / 2)
-        temp_fq <- TotalLoss_Frequencies[k-1]
-      }
-      Frequencies[k] <- temp_fq
+      # temp_fq <- Frequencies[k]
+      # if (!is.na(TotalLoss_Frequencies[k-1])) {
+      #   if (TotalLoss_Frequencies[k-1] >= temp_rol * (1 - RoL_tolerance / 2)) TotalLoss_Frequencies[k-1] <- temp_rol * (1 - RoL_tolerance / 2)
+      #   if (TotalLoss_Frequencies[k-1] <= RoL_tolerance / 2) TotalLoss_Frequencies[k-1] <- min(RoL_tolerance / 2, temp_rol / 2)
+      #   temp_fq <- TotalLoss_Frequencies[k-1]
+      # }
+      # Frequencies[k] <- temp_fq
       temp <- Pareto_Layer_Mean(Inf, Attachment_Points[k], 2) * Frequencies[k]
       if (Unlimited_Layers) {
         Expected_Layer_Losses <- Expected_Layer_Losses + temp

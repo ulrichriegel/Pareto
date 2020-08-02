@@ -114,7 +114,7 @@ test_that("PiecewisePareto_Match_Layer_Losses with TotalLoss_Frequencies", {
   Fit <- PiecewisePareto_Match_Layer_Losses(AP, EL, Frequencies = FQs, TotalLoss_Frequencies = TLFQs, alpha_max = 1000)
   expect_equal(is.valid.PPP_Model(Fit), TRUE)
   expect_equal(round(Layer_Mean(Fit, Cover, AP)[-5], 5), round(EL[-5], 5))
-  expect_equal(round(Excess_Frequency(Fit, c(1000, 2000, 5000)), 5), round(c(1.1, 0.95, 0.2), 5))
+  expect_equal(round(Excess_Frequency(Fit, c(1000, 2000, 5000)), 5), round(c(1.1, 0.95, 0.1), 5))
   expect_equal(sum(round(Fit$alpha, 5) == 1000), 2)
 
   EL <- c(1000, 900, 800, 600, 300)
@@ -137,8 +137,8 @@ test_that("Fit_References with option PiecewisePareto", {
   thresholds <- c(4000, 10000)
   fqs <- c(0.04, 0.005)
   Fit <- Fit_References(covers, att_points, exp_losses, thresholds, fqs)
-  expect_equal(Layer_Mean(fit, covers, att_points), exp_losses)
-  expect_equal(Excess_Frequency(fit, thresholds), fqs)
+  expect_equal(Layer_Mean(Fit, covers, att_points), exp_losses)
+  expect_equal(Excess_Frequency(Fit, thresholds), fqs)
 
   if (requireNamespace("lpSolve", quietly = TRUE)) {
     covers <- c(10000, 10000, 10000)
