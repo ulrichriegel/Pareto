@@ -11,7 +11,8 @@ distribution which are useful for pricing of reinsurance treaties:
 - Finding the Pareto alpha between an excess frequency and the expected loss of a layer
 - Maximum likelihood estimation of the alpha(s) of a (piecewise) Pareto distribution
 - Calculation of local Pareto alphas for normal, lognormal and gamma distributions
-- Fitting a Piecewise Pareto distribution to a tower of layer losses (for an arbitrary number of layers)
+- Fitting a Piecewise Pareto distribution to the expected losses of an arbitrary number of reference layers
+  and the excess frequencies at given thresholds
 
 Moreover, the package provides some functions for collective models with a claim count distribution from the Panjer class 
 (i.e. Binomial, Poisson and Negative Binomial) and a piecewise Pareto distributed severity:
