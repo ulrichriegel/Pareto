@@ -1,3 +1,7 @@
+# Pareto 2.2.1
+
+* Added the option to use weights in Pareto_ML_Estimator_Alpha, PiecewisePareto_ML_Estimator_Alpha and GenPareto_ML_Estimator_Alpha.
+
 # Pareto 2.2.0
 
 * Added function Fit_References for the piecewise Pareto distribution. This function fits a PPP model to the expected losses of 
@@ -20,7 +24,8 @@
 # Pareto 2.0.0
 
 * PiecewisePareto_Match_Layer_Losses now returns a PPP_Model object. PPP stands for Panjer & Piecewise Pareto. The Panjer class contains the
-  Poisson, the Negative Binomial and the Binomial distribution. A PPP_Model object contains the information required to specify a collective       model with a Panjer distributed claim count and a Piecewise Pareto distributed severity.
+  Poisson, the Negative Binomial and the Binomial distribution. A PPP_Model object contains the information required to specify a collective
+  model with a Panjer distributed claim count and a Piecewise Pareto distributed severity.
 * The package provides additional functions for PPP_Model objects:
     * PPP_Model_Exp_Layer_Loss: Calculates the expected loss of a reinsurance layer for a PPP_Model
     * PPP_Model_Layer_Var: Calculates the variance of the loss in a reinsurance layer for a PPP_Model

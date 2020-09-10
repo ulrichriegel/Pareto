@@ -2541,6 +2541,7 @@ qPareto_s <- function(y, t, alpha, truncation = NULL) {
 #' @param losses Numeric vector. Losses that are used for the ML estimation.
 #' @param t Numeric or numeric vector. Threshold of the Pareto distribution. Alternatively, \code{t} can be a vector of same length as \code{losses}. In this case \code{t[i]} is the reporting threshold of \code{losses[i]}.
 #' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
+#' @param weights Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.
 #' @param tol Numeric. Desired accuracy  (only relevant in the truncated case).
 #' @param max_iterations Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).
 #' @param alpha_min Numeric. Deprecated.
@@ -2563,7 +2564,7 @@ qPareto_s <- function(y, t, alpha, truncation = NULL) {
 #' Pareto_ML_Estimator_Alpha(losses, t, truncation = 2 * max(t))
 #' @export
 
-Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, max_iterations = 1000, alpha_min = 0, alpha_max = Inf) {
+Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, weights = NULL, tol = 1e-7, max_iterations = 1000, alpha_min = 0, alpha_max = Inf) {
   if (!missing(alpha_min) || !missing(alpha_max)) {
     warning("arguments alpha_min and alpha_max are deprecated and are ignored", call. = FALSE)
   }
@@ -2582,9 +2583,19 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, 
   if (length(t) == 1) {
     t <- rep(t, length(losses))
   }
+  if (is.null(weights)) weights <- rep(1, length(losses))
+  if (!is.positive.finite.vector(weights)) {
+    warning("weights must NULL or positive.")
+    return(NaN)
+  }
+  if (length(weights) != length(losses)) {
+    warning("weights must have the same length as losses.")
+    return(NaN)
+  }
 
   index <- losses > t
   losses <- losses[index]
+  weights <- weights[index]
   t <- t[index]
   n <- length(losses)
 
@@ -2603,16 +2614,12 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, 
     }
   }
   if (is.null(truncation) || is.infinite(truncation)) {
-    alpha_hat <- n / sum(log(losses / t))
+    alpha_hat <- sum(weights) / sum(weights * log(losses / t))
   } else {
     alpha_hat_iteration <- numeric(max_iterations)
     alpha_hat_iteration[1] <- n / sum(log(losses / t))
     iteration <- function(alpha_hat) {
-      if (length(t) == 1) {
-        result <- n * (sum(log(losses / t)) - n * log(t / truncation) * (t / truncation)^alpha_hat / (1 - (t / truncation)^alpha_hat))^{-1}
-      } else {
-        result <- n * (sum(log(losses / t)) - sum(log(t / truncation) * (t / truncation)^alpha_hat / (1 - (t / truncation)^alpha_hat)))^{-1}
-      }
+      result <- sum(weights) * (sum(weights * log(losses / t)) - sum(weights * log(t / truncation) * (t / truncation)^alpha_hat / (1 - (t / truncation)^alpha_hat)))^{-1}
       return(result)
     }
 

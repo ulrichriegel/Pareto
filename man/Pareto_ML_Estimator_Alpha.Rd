@@ -8,6 +8,7 @@ Pareto_ML_Estimator_Alpha(
   losses,
   t,
   truncation = NULL,
+  weights = NULL,
   tol = 1e-07,
   max_iterations = 1000,
   alpha_min = 0,
@@ -20,6 +21,8 @@ Pareto_ML_Estimator_Alpha(
 \item{t}{Numeric or numeric vector. Threshold of the Pareto distribution. Alternatively, \code{t} can be a vector of same length as \code{losses}. In this case \code{t[i]} is the reporting threshold of \code{losses[i]}.}
 
 \item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.}
+
+\item{weights}{Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.}
 
 \item{tol}{Numeric. Desired accuracy  (only relevant in the truncated case).}
 
