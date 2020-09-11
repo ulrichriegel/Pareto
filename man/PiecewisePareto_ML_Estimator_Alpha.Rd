@@ -9,6 +9,7 @@ PiecewisePareto_ML_Estimator_Alpha(
   t,
   truncation = NULL,
   truncation_type = "lp",
+  weights = NULL,
   tol = 1e-07,
   max_iterations = 1000
 )
@@ -21,6 +22,8 @@ PiecewisePareto_ML_Estimator_Alpha(
 \item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > max(t)}, then the distribution is truncated at \code{truncation}.}
 
 \item{truncation_type}{Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.}
+
+\item{weights}{Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.}
 
 \item{tol}{Numeric. Desired accuracy (only relevant in the truncated case).}
 
@@ -46,4 +49,10 @@ PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300))
 PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300),
                                    truncation = 500, truncation_type = "wd")
 
+losses <- c(140, 240, 490, 200, 110, 710, 120, 190, 210, 310)
+w <- rep(1, length(losses))
+w[1] <- 2
+losses2 <- c(losses, losses[1])
+PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300), weights = w)
+PiecewisePareto_ML_Estimator_Alpha(losses2, c(100,200,300))
 }

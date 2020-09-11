@@ -85,6 +85,13 @@ test_that("GenPareto_ML_Estimator_alpha", {
               2019.3663238659, 1007.2758879241, 1377.79293040511, 1605.21438984656, 2579.4568112321, 4500.45681)
   expect_equal(GenPareto_ML_Estimator_Alpha(losses, 1000), c(2.1210190911501012, 2.5019159656778251))
   expect_equal(GenPareto_ML_Estimator_Alpha(losses, 1000, truncation = 10000), c(2.3410152490683958, 1.6923583375172637))
+
+  w <- rep(1, length(losses))
+  index <- c(1, 4, 6)
+  w[index] <- 2
+  losses2 <- c(losses, losses[index])
+  expect_equal(GenPareto_ML_Estimator_Alpha(losses, 1000, weights = w), GenPareto_ML_Estimator_Alpha(losses2, 1000))
+  expect_equal(GenPareto_ML_Estimator_Alpha(losses, 1000, weights = w, truncation = 10000), GenPareto_ML_Estimator_Alpha(losses2, 1000, truncation = 10000))
 })
 
 

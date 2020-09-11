@@ -109,6 +109,22 @@ test_that("Pareto_ML_Estimator_alpha", {
               2019.3663238659, 1007.2758879241, 1377.79293040511, 1605.21438984656)
   expect_equal(round(Pareto_ML_Estimator_Alpha(losses, 1000), 4), 3.4060)
   expect_equal(round(Pareto_ML_Estimator_Alpha(losses, 1000, truncation = 3000), 4), 2.9601)
+  losses2 <- c(losses, losses[1:2])
+  w <- rep(1, length(losses))
+  w[1:2] <- 2
+  expect_equal(Pareto_ML_Estimator_Alpha(losses, 1000, weights = w), Pareto_ML_Estimator_Alpha(losses2, 1000))
+  expect_equal(Pareto_ML_Estimator_Alpha(losses, 1000, weights = w, truncation = 3000), Pareto_ML_Estimator_Alpha(losses2, 1000, truncation = 3000))
+
+  t <- rPareto(100, 100, 2)
+  alpha <- 2
+  losses <- rPareto(100, t, alpha)
+  w <- rep(1, 100)
+  w[1:2] <- 10
+  losses2 <- c(losses, rep(losses[1:2], 9))
+  t2 <- c(t, rep(t[1:2], 9))
+  expect_equal(Pareto_ML_Estimator_Alpha(losses, t, weights = w), Pareto_ML_Estimator_Alpha(losses2, t2))
+  truncation <- 2 * max(losses)
+  expect_equal(Pareto_ML_Estimator_Alpha(losses, t, weights = w, truncation = truncation), Pareto_ML_Estimator_Alpha(losses2, t2, truncation = truncation))
 })
 
 

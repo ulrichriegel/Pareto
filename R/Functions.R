@@ -2562,6 +2562,13 @@ qPareto_s <- function(y, t, alpha, truncation = NULL) {
 #' Pareto_ML_Estimator_Alpha(losses, t)
 #' losses <- rPareto(10000, t, alpha, truncation = 2 * max(t))
 #' Pareto_ML_Estimator_Alpha(losses, t, truncation = 2 * max(t))
+#'
+#' losses <- rPareto(10, 1000, 2)
+#' w <- rep(1, 10)
+#' w[1] <- 3
+#' losses2 <- c(losses, losses[1], losses[1])
+#' Pareto_ML_Estimator_Alpha(losses, 1000, weights = w)
+#' Pareto_ML_Estimator_Alpha(losses2, 1000)
 #' @export
 
 Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, weights = NULL, tol = 1e-7, max_iterations = 1000, alpha_min = 0, alpha_max = Inf) {
@@ -2665,6 +2672,7 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, weights = NU
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > max(t)}, then the distribution is truncated at \code{truncation}.
 #' @param truncation_type Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
+#' @param weights Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.
 #' @param tol Numeric. Desired accuracy (only relevant in the truncated case).
 #' @param max_iterations Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).
 #'
@@ -2684,9 +2692,15 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, weights = NU
 #' PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300),
 #'                                    truncation = 500, truncation_type = "wd")
 #'
+#' losses <- c(140, 240, 490, 200, 110, 710, 120, 190, 210, 310)
+#' w <- rep(1, length(losses))
+#' w[1] <- 2
+#' losses2 <- c(losses, losses[1])
+#' PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300), weights = w)
+#' PiecewisePareto_ML_Estimator_Alpha(losses2, c(100,200,300))
 #' @export
 
-PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, truncation_type = "lp", tol = 1e-7, max_iterations = 1000) {
+PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, truncation_type = "lp", weights = NULL, tol = 1e-7, max_iterations = 1000) {
   if (!is.nonnegative.finite.vector(losses)) {
     warning("losses must be non-negative.")
     return(NaN)
@@ -2715,7 +2729,7 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
 
 
 
-  if (min(diff(t)) <= 0) {
+  if (k > 1 && min(diff(t)) <= 0) {
     warning("t must be strictily ascending!")
     return(NaN)
   }
@@ -2739,8 +2753,19 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
     truncation <- Inf
   }
 
+  if (is.null(weights)) weights <- rep(1, length(losses))
+  if (!is.positive.finite.vector(weights)) {
+    warning("weights must NULL or positive.")
+    return(NaN)
+  }
+  if (length(weights) != length(losses)) {
+    warning("weights must have the same length as losses.")
+    return(NaN)
+  }
+
+
   if (k == 1) {
-    Result <- Pareto_ML_Estimator_Alpha(losses, t, truncation = truncation, tol = tol, max_iterations = max_iterations)
+    Result <- Pareto_ML_Estimator_Alpha(losses, t, truncation = truncation, weights = weights, tol = tol, max_iterations = max_iterations)
     return(Result)
   }
 
@@ -2748,20 +2773,24 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
   t <- c(t, truncation)
   losses_xs_t <- lapply(t, function(x) losses[losses >= x])
   count_xs_t <- unlist(lapply(losses_xs_t, "length"))
+  weights_xs_t <- lapply(t, function(x) weights[losses >= x])
+  sum_weights_xs_t <- unlist(lapply(weights_xs_t, "sum"))
 
   alpha_hat <- numeric(k)
   for (i in 1:k) {
-    alpha_hat[i] <- (count_xs_t[i] - count_xs_t[i+1]) / (sum(log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])))
+    #alpha_hat[i] <- (count_xs_t[i] - count_xs_t[i+1]) / (sum(log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])))
+    alpha_hat[i] <- (sum_weights_xs_t[i] - sum_weights_xs_t[i+1]) / (sum(weights_xs_t[[i]] * log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])))
   }
   if (!is.infinite(truncation)) {
     if (truncation_type == "lp") {
-      alpha_hat[k] <- Pareto_ML_Estimator_Alpha(losses_xs_t[[k]], t[k], truncation = truncation, tol = tol, max_iterations = max_iterations)
+      alpha_hat[k] <- Pareto_ML_Estimator_Alpha(losses_xs_t[[k]], t[k], truncation = truncation, weights = weights_xs_t[[k]], tol = tol, max_iterations = max_iterations)
     } else {
       iteration <- function(alpha_hat) {
         result <- numeric(k)
         for (i in 1:k) {
           product <- prod((t[-(k+1)] / t[-1])^alpha_hat)
-          result[i] <- (count_xs_t[i] - count_xs_t[i+1]) / (sum(log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])) - count_xs_t[1] * log(t[i] / t[i+1]) * product  / (1 - product))
+          #result[i] <- (count_xs_t[i] - count_xs_t[i+1]) / (sum(log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])) - count_xs_t[1] * log(t[i] / t[i+1]) * product  / (1 - product))
+          result[i] <- (sum_weights_xs_t[i] - sum_weights_xs_t[i+1]) / (sum(weights_xs_t[[i]] * log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])) - sum_weights_xs_t[1] * log(t[i] / t[i+1]) * product  / (1 - product))
         }
         return(result)
       }
@@ -3477,6 +3506,7 @@ GenPareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail
 #' @param losses Numeric vector. Losses that are used for the ML estimation.
 #' @param t Numeric or numeric vector. Threshold of the generalized Pareto distribution. Alternatively, \code{t} can be a vector of same length as \code{losses}. In this case \code{t[i]} is the reporting threshold of \code{losses[i]}.
 #' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the generalized Pareto distribution is truncated at \code{truncation}.
+#' @param weights Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.
 #' @param tol Numeric. Desired accuracy  (only relevant in the truncated case).
 #' @param max_iterations Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).
 #' @param alpha_min Numeric. Lower bound for the estimated alphas.
@@ -3498,9 +3528,16 @@ GenPareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail
 #' GenPareto_ML_Estimator_Alpha(losses, t)
 #' losses <- rGenPareto(10000, t, alpha_ini, alpha_tail, truncation = 2 * max(t))
 #' GenPareto_ML_Estimator_Alpha(losses, t, truncation = 2 * max(t))
+#'
+#' losses <- c(190, 600, 120, 270, 180, 120)
+#' w <- rep(1, length(losses))
+#' w[1] <- 3
+#' losses2 <- c(losses, losses[1], losses[1])
+#' GenPareto_ML_Estimator_Alpha(losses, 100, weights = w)
+#' GenPareto_ML_Estimator_Alpha(losses2, 100)
 #' @export
 
-GenPareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-7, max_iterations = 1000, alpha_min = 0.01, alpha_max = 100) {
+GenPareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, weights = NULL, tol = 1e-7, max_iterations = 1000, alpha_min = 0.01, alpha_max = 100) {
   if (!is.nonnegative.finite.vector(losses)) {
     warning("losses must be non-negative.")
     return(rep(NaN, 2))
@@ -3517,8 +3554,19 @@ GenPareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-
     t <- rep(t, length(losses))
   }
 
+  if (is.null(weights)) weights <- rep(1, length(losses))
+  if (!is.positive.finite.vector(weights)) {
+    warning("weights must NULL or positive.")
+    return(NaN)
+  }
+  if (length(weights) != length(losses)) {
+    warning("weights must have the same length as losses.")
+    return(NaN)
+  }
+
   index <- losses > t
   losses <- losses[index]
+  weights <- weights[index]
   t <- t[index]
   n <- length(losses)
 
@@ -3536,13 +3584,15 @@ GenPareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tol = 1e-
       return(rep(NaN, 2))
     }
   }
+
+
   if (is.null(truncation) || is.infinite(truncation)) {
     negLogLikelihood <- function(alpha) {
-      - sum(log(alpha[1]) + (-alpha[2] - 1) * log(1 + alpha[1] / alpha[2] * (losses / t - 1)))
+      - sum(weights * (log(alpha[1]) + (-alpha[2] - 1) * log(1 + alpha[1] / alpha[2] * (losses / t - 1))))
     }
   } else {
     negLogLikelihood <- function(alpha) {
-      - sum(log(alpha[1]) + (-alpha[2] - 1) * log(1 + alpha[1] / alpha[2] * (losses / t - 1)) - log(1 - (1 + alpha[1] / alpha[2] * (truncation / t - 1))^(-alpha[2])))
+      - sum(weights * (log(alpha[1]) + (-alpha[2] - 1) * log(1 + alpha[1] / alpha[2] * (losses / t - 1)) - log(1 - (1 + alpha[1] / alpha[2] * (truncation / t - 1))^(-alpha[2]))))
     }
   }
   alpha <- NULL

@@ -8,6 +8,7 @@ GenPareto_ML_Estimator_Alpha(
   losses,
   t,
   truncation = NULL,
+  weights = NULL,
   tol = 1e-07,
   max_iterations = 1000,
   alpha_min = 0.01,
@@ -20,6 +21,8 @@ GenPareto_ML_Estimator_Alpha(
 \item{t}{Numeric or numeric vector. Threshold of the generalized Pareto distribution. Alternatively, \code{t} can be a vector of same length as \code{losses}. In this case \code{t[i]} is the reporting threshold of \code{losses[i]}.}
 
 \item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the generalized Pareto distribution is truncated at \code{truncation}.}
+
+\item{weights}{Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.}
 
 \item{tol}{Numeric. Desired accuracy  (only relevant in the truncated case).}
 
@@ -49,4 +52,11 @@ losses <- rGenPareto(10000, t, alpha_ini, alpha_tail)
 GenPareto_ML_Estimator_Alpha(losses, t)
 losses <- rGenPareto(10000, t, alpha_ini, alpha_tail, truncation = 2 * max(t))
 GenPareto_ML_Estimator_Alpha(losses, t, truncation = 2 * max(t))
+
+losses <- c(190, 600, 120, 270, 180, 120)
+w <- rep(1, length(losses))
+w[1] <- 3
+losses2 <- c(losses, losses[1], losses[1])
+GenPareto_ML_Estimator_Alpha(losses, 100, weights = w)
+GenPareto_ML_Estimator_Alpha(losses2, 100)
 }

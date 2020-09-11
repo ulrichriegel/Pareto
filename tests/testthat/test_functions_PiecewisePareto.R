@@ -119,6 +119,16 @@ test_that("Pareto_ML_Estimator_alpha", {
   expect_equal(round(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000)), 4), c(0.8126, 2.6572, 4.4220))
   expect_equal(round(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000), truncation = 5000, truncation_type = "lp"), 4), c(0.8126, 2.6572, 1.3569))
   expect_equal(round(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000), truncation = 5000, truncation_type = "wd"), 4), c(0.5965, 1.5063, 0.9891))
+
+  w <- rep(1, length(losses))
+  w[1:2] <- 2
+  w[3] <- 5
+  losses2 <- c(losses, losses[1:2], rep(losses[3], 4))
+
+  expect_equal(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000), weights = w), PiecewisePareto_ML_Estimator_Alpha(losses2, c(1000, 2000, 3000)))
+  expect_equal(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000), weights = w, truncation = 5000, truncation_type = "lp"), PiecewisePareto_ML_Estimator_Alpha(losses2, c(1000, 2000, 3000), truncation = 5000, truncation_type = "lp"))
+  expect_equal(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000), weights = w, truncation = 5000, truncation_type = "wd"), PiecewisePareto_ML_Estimator_Alpha(losses2, c(1000, 2000, 3000), truncation = 5000, truncation_type = "wd"))
+
 })
 
 

@@ -51,4 +51,11 @@ losses <- rPareto(10000, t, alpha)
 Pareto_ML_Estimator_Alpha(losses, t)
 losses <- rPareto(10000, t, alpha, truncation = 2 * max(t))
 Pareto_ML_Estimator_Alpha(losses, t, truncation = 2 * max(t))
+
+losses <- rPareto(10, 1000, 2)
+w <- rep(1, 10)
+w[1] <- 3
+losses2 <- c(losses, losses[1], losses[1])
+Pareto_ML_Estimator_Alpha(losses, 1000, weights = w)
+Pareto_ML_Estimator_Alpha(losses2, 1000)
 }
