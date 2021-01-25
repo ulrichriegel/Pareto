@@ -12,6 +12,7 @@ Fit_References(
   Frequencies = NULL,
   t_1 = min(c(Attachment_Points, Thresholds)),
   default_alpha = 2,
+  dispersion = 1,
   alpha_max = 100,
   severity_distribution = "PiecewisePareto",
   ignore_inconsistent_references = FALSE
@@ -31,6 +32,8 @@ Fit_References(
 \item{t_1}{Numerical. Lowest threshold of the piecewise Pareto distribution.}
 
 \item{default_alpha}{Numerical. Default alpha for situations where an alpha has to be selected.}
+
+\item{dispersion}{Numerical. Dispersion of the claim count distribution in the resulting PPP_Model.}
 
 \item{alpha_max}{Numerical. Maximum alpha to be used for the matching.}
 

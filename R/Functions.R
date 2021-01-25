@@ -3673,6 +3673,7 @@ rPanjer <- function(n, mean, dispersion) {
 #' @param Frequencies Numeric vector. Expected frequencies excess the \code{Thresholds} from the wishlist.
 #' @param t_1 Numerical. Lowest threshold of the piecewise Pareto distribution.
 #' @param default_alpha Numerical. Default alpha for situations where an alpha has to be selected.
+#' @param dispersion Numerical. Dispersion of the claim count distribution in the resulting PPP_Model.
 #' @param alpha_max Numerical. Maximum alpha to be used for the matching.
 #' @param severity_distribution Character. Currently only "PiecewisePareto" is supported.
 #' @param ignore_inconsistent_references Logical. If TRUE then inconsistent references are ignored in case of the
@@ -3702,11 +3703,21 @@ rPanjer <- function(n, mean, dispersion) {
 #' @export
 
 
-Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Layer_Losses = NULL, Thresholds = NULL, Frequencies = NULL, t_1 = min(c(Attachment_Points, Thresholds)), default_alpha = 2, alpha_max = 100, severity_distribution = "PiecewisePareto", ignore_inconsistent_references = FALSE) {
+Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Layer_Losses = NULL, Thresholds = NULL, Frequencies = NULL, t_1 = min(c(Attachment_Points, Thresholds)), default_alpha = 2, dispersion = 1, alpha_max = 100, severity_distribution = "PiecewisePareto", ignore_inconsistent_references = FALSE) {
 
 
 
   Results <- PPP_Model()
+
+  if (!is.positive.finite.number(dispersion)) {
+    warning("Dispersion must be a positive number.")
+    Results$Comment <- "Dispersion must be a positive number."
+    Results$Status <- 2
+    return(Results)
+  } else {
+    Results$dispersion <- dispersion
+  }
+
 
   if (!is.positive.finite.vector(Attachment_Points) && !is.null(Attachment_Points)) {
     warning("Attachment_Points must be positive or NULL.")
@@ -3831,6 +3842,145 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     }
 
   }
+
+  return(Results)
+
+}
+
+
+
+
+
+
+#' Fits a Collective Model to a PML Curve
+#'
+#' @description Fits a PPP_Model that matches the values of a PML curve
+#'
+#' @param return_periods Numeric vector. Vector containing the return periods of the PML curve.
+#' @param amounts Numeric vector. Vector containing the loss amounts corresponding to the return periods.
+#' @param tail_alpha Numerical. Pareto alpha that is used above the highest amount of the PML curve.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > max(t)}, then the distribution is truncated at \code{truncation}.
+#' @param truncation_type Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
+#' @param dispersion Numerical. Dispersion of the claim count distribution in the resulting PPP_Model.
+
+
+
+#' @return A PPP_Model object that contains the information about a collective model with a Panjer distributed claim count and a Piecewise Pareto distributed severity. The object contains the following elements: \itemize{
+#' \item \code{FQ} Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution
+#' \item \code{t} Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution
+#' \item \code{alpha} Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution
+#' \item \code{truncation} Numerical. If \code{truncation} is not \code{NULL} and \code{truncation > max(t)}, then the distribution is truncated at \code{truncation}.
+#' \item \code{truncation_type} Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
+#' \item \code{dispersion} Numerical. Dispersion of the Panjer distribution (i.e. variance to mean ratio).
+#' \item \code{Status} Numerical indicator: 0 = success, 1 = some information has been ignored, 2 = no solution found
+#' \item \code{Comment} Character. Information on whether the fit was successful
+#' }
+#'
+#' @examples
+#' return_periods <- c(1, 5, 10, 20, 50, 100)
+#' amounts <- c(1000, 4000, 7000, 10000, 13000, 14000)
+#' fit <- Fit_PML_Curve(return_periods, amounts)
+#' 1 / Excess_Frequency(fit, amounts)
+#'
+#' @export
+
+
+Fit_PML_Curve <- function(return_periods, amounts, tail_alpha = 2, truncation = NULL, truncation_type = "lp", dispersion = 1) {
+
+  Results <- PPP_Model()
+  Results$Comment <- ""
+  Results$Status <- 0
+
+  if (!is.positive.finite.number(dispersion)) {
+    warning("Dispersion must be a positive number.")
+    Results$Comment <- "Dispersion must be a positive number."
+    Results$Status <- 2
+    return(Results)
+  } else {
+    Results$dispersion <- dispersion
+  }
+
+  if (!is.positive.finite.vector(return_periods)) {
+    warning("return_periods must be positive.")
+    Results$Comment <- "return_periods must be positive."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (!is.positive.finite.vector(amounts)) {
+    warning("amounts must be positive.")
+    Results$Comment <- "amounts must be positive."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (length(return_periods) != length(amounts)) {
+    warning("return_periods and amounts must have the same length.")
+    Results$Comment <- "return_periods and amounts must have the same length."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (!is.positive.finite.number(tail_alpha)) {
+    warning("tail_alpha must be a positive number.")
+    Results$Comment <- "tail_alpha must be a positive number."
+    Results$Status <- 2
+    return(Results)
+  }
+
+  if (!is.atomic(truncation_type) || length(truncation_type) != 1 || !(truncation_type %in% c("lp", "wd"))) {
+    warning("truncation_type must be 'lp' or 'wd'.")
+    Results$Comment <- "truncation_type must be 'lp' or 'wd'."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be NULL or a positive number ('Inf' allowed).")
+      Results$Comment <- "truncation must be NULL or a positive number ('Inf' allowed)."
+      Results$Status <- 2
+      return(Results)
+    }
+    if (truncation <= max(amounts)) {
+      warning("truncation must be larger than the maximum amount of the PML curve.")
+      Results$Comment <- "truncation must be larger than the maximum amount of the PML curve."
+      Results$Status <- 2
+      return(Results)
+    }
+    if (is.infinite(truncation)) {
+      truncation <- NULL
+    }
+  }
+
+  amounts <- amounts[order(return_periods)]
+  return_periods <- return_periods[order(return_periods)]
+
+  if (min(diff(return_periods)) <= 0) {
+    warning("return_periods must be pairwise different.")
+    Results$Comment <- "return_periods must be pairwise different."
+    Results$Status <- 2
+    return(Results)
+  }
+  if (min(diff(amounts)) <= 0) {
+    warning("amounts must be increasing for increasing return_periods.")
+    Results$Comment <- "amounts must be increasing for increasing return_periods."
+    Results$Status <- 2
+    return(Results)
+  }
+
+  n <- length(amounts)
+
+  Results$FQ <- 1 / return_periods[1]
+  Results$t <- amounts
+  frequencies <- 1 / return_periods
+  if (is.positive.finite.number(truncation) && truncation_type == "wd") {
+    factor_truncation <- (amounts[n] / truncation)^tail_alpha
+    frequencies <- frequencies + frequencies[n] * factor_truncation / (1 - factor_truncation)
+  }
+  Results$alpha <- c(log(frequencies[-1] / frequencies[-n]) / log(amounts[-n] / amounts[-1]), tail_alpha)
+  if (!is.null(truncation)) {
+    Results$truncation <- truncation
+  }
+  Results$truncation_type <- truncation_type
+
+
 
   return(Results)
 
