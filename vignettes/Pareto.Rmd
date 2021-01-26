@@ -322,6 +322,29 @@ The function `PiecewisePareto_Match_Layer_Losses` can be used to match the expec
 ```
 If the package `lpSolve` is installed then the funcion `Fit_References` can handle ovelapping layers.
 
+## Interpolation of PML curves
+
+The function `Fit_PML_Curve` can be used fit a `PPP_Model` that reproduces and interpolates the information provided in the PML curve. A PML curve is a table containing return periods and the corresponding loss amounts:
+
+| $i$ | Return Period $r_i$  | Amount $x_i$ |
+|-----|---------------------:|-------------:|
+|  1  |                    1 |         1000 |
+|  2  |                    5 |         4000 |
+|  3  |                   10 |         7000 |
+|  4  |                   20 |        10000 | 
+|  5  |                   50 |        13000 |
+|  6  |                  100 |        14000 |  
+
+The information contained in such a PML curve can be used to create a `PPP_Model` that has the expected excess frequency $1/r_i$ at $x_i$.
+
+*Example:*
+
+```{r}
+return_periods <- c(1, 5, 10, 20, 50, 100)
+amounts <- c(1000, 4000, 7000, 10000, 13000, 14000)
+fit <- Fit_PML_Curve(return_periods, amounts)
+1 / Excess_Frequency(fit, amounts)
+```
 
 ## PPP_Models (Panjer & Piecewise Pareto Models)
 

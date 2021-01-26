@@ -44,7 +44,12 @@ Fits a PPP_Model that matches the values of a PML curve
 \examples{
 return_periods <- c(1, 5, 10, 20, 50, 100)
 amounts <- c(1000, 4000, 7000, 10000, 13000, 14000)
+
 fit <- Fit_PML_Curve(return_periods, amounts)
+1 / Excess_Frequency(fit, amounts)
+
+fit <- Fit_PML_Curve(return_periods, amounts, tail_alpha = 1.5,
+                     truncation = 20000, truncation_type = "wd")
 1 / Excess_Frequency(fit, amounts)
 
 }

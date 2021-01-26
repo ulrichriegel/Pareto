@@ -164,6 +164,22 @@ test_that("Fit_References with option PiecewisePareto", {
 
 })
 
+test_that("Fit_PML_Curve", {
+  return_periods <- c(1, 5, 10, 20, 50, 100)
+  amounts <- c(1000, 4000, 7000, 10000, 13000, 14000)
+  fit <- Fit_PML_Curve(return_periods, amounts)
+  expect_equal(1 / Excess_Frequency(fit, amounts), return_periods)
+
+  fit <- Fit_PML_Curve(return_periods, amounts, truncation = 20000)
+  expect_equal(1 / Excess_Frequency(fit, amounts), return_periods)
+
+  fit <- Fit_PML_Curve(return_periods, amounts, truncation = 20000, truncation_type = "wd", dispersion = 2)
+  expect_equal(1 / Excess_Frequency(fit, amounts), return_periods)
+  expect_equal(Layer_Sd(fit, 2000, 2000), 1170.105515204815)
+
+})
+
+
 
 
 

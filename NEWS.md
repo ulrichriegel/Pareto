@@ -1,3 +1,7 @@
+# Pareto 2.2.2
+
+* Added function Fit_PML_Curve which fits a PPP_Model to a PML curve..
+
 # Pareto 2.2.1
 
 * Added the option to use weights in Pareto_ML_Estimator_Alpha, PiecewisePareto_ML_Estimator_Alpha and GenPareto_ML_Estimator_Alpha.
