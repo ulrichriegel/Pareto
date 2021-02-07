@@ -31,7 +31,7 @@ test_that("pPiecewisePareto", {
 })
 
 test_that("dPiecewisePareto", {
-  expect_equal(dPiecewisePareto(c(1:4) * 1000, t = (1:3) * 1000, alpha = 1:3, truncation = 4000), c(0, 0.0005, 0.00022222222222222221, 0))
+  expect_equal(dPiecewisePareto(c(1:4) * 1000, t = (1:3) * 1000, alpha = 1:3, truncation = 4000), c(0.001, 0.0005, 0.00022222222222222221, 0))
 })
 
 test_that("dPiecewisePareto", {

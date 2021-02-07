@@ -14,7 +14,10 @@ Local_Pareto_Alpha(x, distribution, ...)
 \item \code{'norm'} for normal distribution (arguments: \code{mean}, \code{sd})
 \item \code{'gamma'} for gamma distribution (arguments: \code{shape}, \code{rate}, \code{scale})
 \item \code{'weibull'} for weibull distribution (arguments: \code{shape}, \code{scale})
-\item \code{'exp'} for exp distribution (arguments: \code{rate})
+\item \code{'exp'} for exponential distribution (arguments: \code{rate})
+\item \code{'Pareto'} for Pareto distribution (arguments: \code{t}, \code{alpha}, \code{truncation = NULL})
+\item \code{'GenPareto'} for exp distribution (arguments: \code{t}, \code{alpha_ini}, \code{alpha_tail}, \code{truncation = NULL})
+\item \code{'PiecewisePareto'} for exp distribution (arguments: \code{t}, \code{alpha}, \code{truncation = NULL}, \code{truncation_type = 'lp'})
 }}
 
 \item{...}{Arguments for the selected distribution}
@@ -26,10 +29,16 @@ Local Pareto alpha of the selected distribution at \code{x}
 Calculates the local Pareto alpha of the normal, lognormal and gamma distribution
 }
 \examples{
-x <- 1:10
-Local_Pareto_Alpha(x, "norm", mean = 1, sd = 5)
-x <- 1:10 * 1000000
-Local_Pareto_Alpha(x, "lnorm", meanlog = 1, sdlog = 5)
+x <- 1:10 * 1e6
+Local_Pareto_Alpha(x, "norm", mean = 5e6, sd = 2e6)
+Local_Pareto_Alpha(x, "lnorm", meanlog = 0, sdlog = 4)
+Local_Pareto_Alpha(x, "gamma", shape = 5, rate = 1e-6)
+Local_Pareto_Alpha(x, "weibull", shape = 0.5, scale = 1e6)
+Local_Pareto_Alpha(x, "exp", rate = 1e-6)
+Local_Pareto_Alpha(x, "Pareto", t = 1e6, alpha = 1, truncation = 20e6)
+Local_Pareto_Alpha(x, "GenPareto", t = 1e6, alpha_ini = 1, alpha_tail = 2)
+Local_Pareto_Alpha(x, "PiecewisePareto", t = c(1e6, 3e6, 5e6), alpha = c(1, 2, 3),
+                       truncation = 20e6, truncation_type = "wd")
 
 }
 \references{

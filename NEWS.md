@@ -1,6 +1,6 @@
-# Pareto 2.3.x
+# Pareto 2.3.1
 
-* Added calculation of local Pareto alphas for
+* Added distributions in function Local_Pareto_Alpha:
     * Pareto distribution
     * Generalized Pareto distribution
     * Piecewise Pareto distribution
