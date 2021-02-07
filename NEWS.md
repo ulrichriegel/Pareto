@@ -1,3 +1,11 @@
+# Pareto 2.3.x
+
+* Added calculation of local Pareto alphas for
+    * Pareto distribution
+    * Generalized Pareto distribution
+    * Piecewise Pareto distribution
+
+
 # Pareto 2.3.0
 
 * Vectorization of the following functions:

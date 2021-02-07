@@ -2976,14 +2976,13 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
 #'
 #' @export
 
-
 Local_Pareto_Alpha <- function(x, distribution, ...) {
   if (!is.atomic(x) || !is.numeric(x)) {
     warning("x must be a numeric vector.")
     return(rep(NaN, length(x)))
   }
-  if (!(distribution %in% c("lnorm", "norm", "gamma", "weibull", "exp"))) {
-    warning("distribution must be 'lnorm', 'norm', 'gamma', 'weibull' or 'exp'.")
+  if (!(distribution %in% c("lnorm", "norm", "gamma", "weibull", "exp", "Pareto", "GenPareto", "PiecewisePareto"))) {
+    warning("distribution must be 'lnorm', 'norm', 'gamma', 'weibull', 'exp', 'Pareto', 'GenPareto' or 'PiecewisePareto'.")
     return(rep(NaN, length(x)))
   }
   if (distribution == "lnorm") {
@@ -3000,6 +2999,15 @@ Local_Pareto_Alpha <- function(x, distribution, ...) {
   }
   if (distribution == "exp") {
     Result <- x * stats::dexp(x, log = FALSE, ...) / (1 - stats::pexp(x, log.p = FALSE, ...))
+  }
+  if (distribution == "Pareto") {
+    Result <- x * dPareto(x, ...) / (1 - pPareto(x, ...))
+  }
+  if (distribution == "GenPareto") {
+    Result <- x * dGenPareto(x, ...) / (1 - pGenPareto(x, ...))
+  }
+  if (distribution == "PiecewisePareto") {
+    Result <- x * dPiecewisePareto(x, ...) / (1 - pPiecewisePareto(x, ...))
   }
   Result[is.na(x) | is.infinite(x) | (x < 0)] <- NaN
   return(Result)
