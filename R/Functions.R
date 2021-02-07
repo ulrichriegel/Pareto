@@ -21,7 +21,23 @@
 #'
 #' @export
 
+
 Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
+  if (!is.null(truncation) && is.null(t)) {
+    vecfun <- Vectorize(Pareto_Layer_Mean_s, c("Cover", "AttachmentPoint", "alpha", "truncation"))
+  } else if (is.null(truncation) && !is.null(t)) {
+    vecfun <- Vectorize(Pareto_Layer_Mean_s, c("Cover", "AttachmentPoint", "alpha", "t"))
+  } else if (is.null(truncation) && is.null(t)) {
+    vecfun <- Vectorize(Pareto_Layer_Mean_s, c("Cover", "AttachmentPoint", "alpha"))
+  } else {
+    vecfun <- Vectorize(Pareto_Layer_Mean_s)
+  }
+  vecfun(Cover, AttachmentPoint, alpha, t, truncation)
+}
+
+
+
+Pareto_Layer_Mean_s <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
   if (!is.nonnegative.finite.number(AttachmentPoint)) {
     warning("AttachmentPoint must be a non-negative number.")
     return(NaN)
@@ -193,7 +209,23 @@ Pareto_Layer_Second_Moment_simple <- function(Cover, AttachmentPoint, alpha) {
 #'
 #' @export
 
+
 Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t = NULL, truncation = NULL) {
+  if (!is.null(truncation) && is.null(t)) {
+    vecfun <- Vectorize(Pareto_Layer_Var_s, c("Cover", "AttachmentPoint", "alpha", "truncation"))
+  } else if (is.null(truncation) && !is.null(t)) {
+    vecfun <- Vectorize(Pareto_Layer_Var_s, c("Cover", "AttachmentPoint", "alpha", "t"))
+  } else if (is.null(truncation) && is.null(t)) {
+    vecfun <- Vectorize(Pareto_Layer_Var_s, c("Cover", "AttachmentPoint", "alpha"))
+  } else {
+    vecfun <- Vectorize(Pareto_Layer_Var_s)
+  }
+  vecfun(Cover, AttachmentPoint, alpha, t, truncation)
+}
+
+
+
+Pareto_Layer_Var_s <- function(Cover, AttachmentPoint, alpha, t = NULL, truncation = NULL) {
   if (!is.nonnegative.finite.number(AttachmentPoint)) {
     warning("AttachmentPoint must be a non-negative number.")
     return(NaN)
@@ -298,7 +330,22 @@ Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t = NULL, truncation
 #' @export
 
 
-Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
+Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t = NULL, truncation = NULL) {
+  if (!is.null(truncation) && is.null(t)) {
+    vecfun <- Vectorize(Pareto_Layer_SM_s, c("Cover", "AttachmentPoint", "alpha", "truncation"))
+  } else if (is.null(truncation) && !is.null(t)) {
+    vecfun <- Vectorize(Pareto_Layer_SM_s, c("Cover", "AttachmentPoint", "alpha", "t"))
+  } else if (is.null(truncation) && is.null(t)) {
+    vecfun <- Vectorize(Pareto_Layer_SM_s, c("Cover", "AttachmentPoint", "alpha"))
+  } else {
+    vecfun <- Vectorize(Pareto_Layer_SM_s)
+  }
+  vecfun(Cover, AttachmentPoint, alpha, t, truncation)
+}
+
+
+
+Pareto_Layer_SM_s <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
   if (!is.nonnegative.finite.number(AttachmentPoint)) {
     warning("AttachmentPoint must be a non-negative number.")
     return(NaN)
@@ -482,7 +529,23 @@ rPareto <- function(n, t, alpha, truncation = NULL) {
 #'
 #' @export
 
+
 Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2, alpha, ExpLoss_1 = NULL, truncation = NULL) {
+  if (!is.null(truncation) && is.null(ExpLoss_1)) {
+    vecfun <- Vectorize(Pareto_Extrapolation_s, c("Cover_1", "AttachmentPoint_1", "Cover_2", "AttachmentPoint_2", "alpha", "truncation"))
+  } else if (is.null(truncation) && !is.null(ExpLoss_1)) {
+    vecfun <- Vectorize(Pareto_Extrapolation_s, c("Cover_1", "AttachmentPoint_1", "Cover_2", "AttachmentPoint_2", "alpha", "ExpLoss_1"))
+  } else if (is.null(truncation) && is.null(ExpLoss_1)) {
+    vecfun <- Vectorize(Pareto_Extrapolation_s, c("Cover_1", "AttachmentPoint_1", "Cover_2", "AttachmentPoint_2", "alpha"))
+  } else {
+    vecfun <- Vectorize(Pareto_Extrapolation_s)
+  }
+  vecfun(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2, alpha, ExpLoss_1, truncation)
+}
+
+
+
+Pareto_Extrapolation_s <- function(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2, alpha, ExpLoss_1 = NULL, truncation = NULL) {
   if (!is.positive.number(Cover_1)) {
     warning("Cover_1 must be a positive number ('Inf' allowed).")
     return(NaN)
@@ -566,7 +629,19 @@ Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachment
 #'
 #' @export
 
+
 Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
+  if (is.null(truncation)) {
+    vecfun <- Vectorize(Pareto_Find_Alpha_btw_Layers_s, c("Cover_1", "AttachmentPoint_1", "ExpLoss_1", "Cover_2", "AttachmentPoint_2", "ExpLoss_2", "max_alpha", "tolerance"))
+  } else {
+    vecfun <- Vectorize(Pareto_Find_Alpha_btw_Layers_s)
+  }
+  vecfun(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha, tolerance, truncation)
+}
+
+
+
+Pareto_Find_Alpha_btw_Layers_s <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
   if (!is.positive.number(Cover_1) || !is.positive.number(Cover_2)) {
     warning("Covers must be positive ('Inf' allowed).")
     return(NaN)
@@ -676,7 +751,20 @@ Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, 
 #'
 #' @export
 
+
 Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, AttachmentPoint, ExpLoss, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
+  if (is.null(truncation)) {
+    vecfun <- Vectorize(Pareto_Find_Alpha_btw_FQ_Layer_s, c("Threshold", "Frequency", "Cover", "AttachmentPoint", "ExpLoss", "max_alpha", "tolerance"))
+  } else {
+    vecfun <- Vectorize(Pareto_Find_Alpha_btw_FQ_Layer_s)
+  }
+  vecfun(Threshold, Frequency, Cover, AttachmentPoint, ExpLoss, max_alpha, tolerance, truncation)
+}
+
+
+
+
+Pareto_Find_Alpha_btw_FQ_Layer_s <- function(Threshold, Frequency, Cover, AttachmentPoint, ExpLoss, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
   if (!is.positive.finite.number(Threshold)) {
     warning("Threshold must be positive.")
     return(NaN)
@@ -783,7 +871,21 @@ Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, Attachme
 #'
 #' @export
 
+
 Pareto_Find_Alpha_btw_FQs <- function(Threshold_1, Frequency_1, Threshold_2, Frequency_2, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
+  if (is.null(truncation)) {
+    vecfun <- Vectorize(Pareto_Find_Alpha_btw_FQs_s, c("Threshold_1", "Frequency_1", "Threshold_2", "Frequency_2", "max_alpha", "tolerance"))
+  } else {
+    vecfun <- Vectorize(Pareto_Find_Alpha_btw_FQs_s)
+  }
+  vecfun(Threshold_1, Frequency_1, Threshold_2, Frequency_2, max_alpha, tolerance, truncation)
+}
+
+
+
+
+
+Pareto_Find_Alpha_btw_FQs_s <- function(Threshold_1, Frequency_1, Threshold_2, Frequency_2, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
   if (!is.positive.finite.number(Threshold_1)) {
     warning("Threshold_1 must be positive!")
     return(NaN)
@@ -888,7 +990,17 @@ Pareto_Find_Alpha_btw_FQs <- function(Threshold_1, Frequency_1, Threshold_2, Fre
 #'
 #' @export
 
+
 PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
+  vecfun <- Vectorize(PiecewisePareto_Layer_Mean_s, c("Cover", "AttachmentPoint"))
+  vecfun(Cover, AttachmentPoint, t, alpha, truncation, truncation_type)
+}
+
+
+
+
+
+PiecewisePareto_Layer_Mean_s <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
   if(!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
     warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
     return(NaN)
@@ -1018,7 +1130,15 @@ PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncat
 #'
 #' @export
 
+
 PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
+  vecfun <- Vectorize(PiecewisePareto_Layer_SM_s, c("Cover", "AttachmentPoint"))
+  vecfun(Cover, AttachmentPoint, t, alpha, truncation, truncation_type)
+}
+
+
+
+PiecewisePareto_Layer_SM_s <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
   if(!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
     warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
     return(NaN)
@@ -1147,6 +1267,12 @@ PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncatio
 #' @export
 
 PiecewisePareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
+  vecfun <- Vectorize(PiecewisePareto_Layer_Var_s, c("Cover", "AttachmentPoint"))
+  vecfun(Cover, AttachmentPoint, t, alpha, truncation, truncation_type)
+}
+
+
+PiecewisePareto_Layer_Var_s <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
 
   if(!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
     warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
@@ -1950,15 +2076,13 @@ Pareto_CDF <- function(x, t, alpha, truncation = NULL) {
 #' @export
 
 pPareto <- function(x, t, alpha, truncation = NULL) {
-  if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
-    warning("x must be a numeric vector.")
-    return(rep(NaN, length(x)))
+  if (is.null(truncation)) {
+    vecfun <- Vectorize(pPareto_s, c("x", "t", "alpha"))
+  } else {
+    vecfun <- Vectorize(pPareto_s)
   }
-  if (!valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE)) {
-    warning(valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE, comment = TRUE))
-    return(rep(NaN, length(x)))
-  }
-  sapply(x, FUN = function(x) pPareto_s(x, t, alpha, truncation))
+  vecfun(x, t, alpha, truncation)
+
 }
 
 pPareto_s <- function(x, t, alpha, truncation = NULL) {
@@ -2051,15 +2175,14 @@ Pareto_PDF <- function(x, t, alpha, truncation = NULL) {
 #' @export
 
 dPareto <- function(x, t, alpha, truncation = NULL) {
-  if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
-    warning("x must be a numeric vector.")
-    return(rep(NaN, length(x)))
+  if (is.null(truncation)) {
+    vecfun <- Vectorize(dPareto_s, c("x", "t", "alpha"))
+  } else {
+    vecfun <- Vectorize(dPareto_s)
   }
-  if (!valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE)) {
-    warning(valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE, comment = TRUE))
-    return(rep(NaN, length(x)))
-  }
-  sapply(x, FUN = function(x) dPareto_s(x, t, alpha, truncation))
+  vecfun(x, t, alpha, truncation)
+
+
 }
 
 dPareto_s <- function(x, t, alpha, truncation = NULL) {
@@ -2167,15 +2290,10 @@ PiecewisePareto_CDF <- function(x, t, alpha, truncation = NULL, truncation_type 
 #' @export
 
 pPiecewisePareto <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
-  if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
-    warning("x must be a numeric vector.")
-    return(rep(NaN, length(x)))
-  }
-  if (!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
-    warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
-    return(rep(NaN, length(x)))
-  }
-  sapply(x, FUN = function(x) pPiecewisePareto_s(x, t, alpha, truncation, truncation_type))
+
+  vecfun <- Vectorize(pPiecewisePareto_s, "x")
+  vecfun(x, t, alpha, truncation, truncation_type)
+
 }
 
 pPiecewisePareto_s <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
@@ -2295,15 +2413,8 @@ PiecewisePareto_PDF <- function(x, t, alpha, truncation = NULL, truncation_type 
 #' @export
 
 dPiecewisePareto <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
-  if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
-    warning("x must be a numeric vector.")
-    return(rep(NaN, length(x)))
-  }
-  if (!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
-    warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
-    return(rep(NaN, length(x)))
-  }
-  sapply(x, FUN = function(x) dPiecewisePareto_s(x, t, alpha, truncation, truncation_type))
+  vecfun <- Vectorize(dPiecewisePareto_s, "x")
+  vecfun(x, t, alpha, truncation, truncation_type)
 }
 
 dPiecewisePareto_s <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
@@ -2393,15 +2504,18 @@ dPiecewisePareto_s <- function(x, t, alpha, truncation = NULL, truncation_type =
 #' @export
 
 qPiecewisePareto <- function(p, t, alpha, truncation = NULL, truncation_type = "lp") {
-  if (!is.positive.finite.vector(p) || max(p) > 1) {
-    warning("p must be a vector with elements in [0,1].")
-    return(rep(NaN, length(p)))
-  }
-  if (!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
-    warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
-    return(rep(NaN, length(p)))
-  }
-  sapply(p, FUN = function(y) qPiecewisePareto_s(y, t, alpha, truncation, truncation_type))
+  vecfun <- Vectorize(qPiecewisePareto_s, "y")
+  vecfun(p, t, alpha, truncation, truncation_type)
+
+  # if (!is.positive.finite.vector(p) || max(p) > 1) {
+  #   warning("p must be a vector with elements in [0,1].")
+  #   return(rep(NaN, length(p)))
+  # }
+  # if (!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
+  #   warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
+  #   return(rep(NaN, length(p)))
+  # }
+  # sapply(p, FUN = function(y) qPiecewisePareto_s(y, t, alpha, truncation, truncation_type))
 }
 
 qPiecewisePareto_s <- function(y, t, alpha, truncation = NULL, truncation_type = "lp") {
@@ -2478,15 +2592,25 @@ qPiecewisePareto_s <- function(y, t, alpha, truncation = NULL, truncation_type =
 #' @export
 
 qPareto <- function(p, t, alpha, truncation = NULL) {
-  if (!is.nonnegative.finite.vector(p) || max(p) > 1) {
-    warning("p must be a vector with elements in [0,1].")
-    return(rep(NaN, length(p)))
+  if (is.null(truncation)) {
+    vecfun <- Vectorize(qPareto_s, c("y", "t", "alpha"))
+  } else {
+    vecfun <- Vectorize(qPareto_s)
   }
-  if (!valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE)) {
-    warning(valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE, comment = TRUE))
-    return(rep(NaN, length(p)))
-  }
-  sapply(p, FUN = function(y) qPareto_s(y, t, alpha, truncation))
+
+  vecfun(p, t, alpha, truncation)
+
+
+
+  # if (!is.nonnegative.finite.vector(p) || max(p) > 1) {
+  #   warning("p must be a vector with elements in [0,1].")
+  #   return(rep(NaN, length(p)))
+  # }
+  # if (!valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE)) {
+  #   warning(valid.parameters.Pareto(t, alpha, truncation, allow.alpha.zero = TRUE, comment = TRUE))
+  #   return(rep(NaN, length(p)))
+  # }
+  # sapply(p, FUN = function(y) qPareto_s(y, t, alpha, truncation))
 }
 
 qPareto_s <- function(y, t, alpha, truncation = NULL) {
@@ -2837,6 +2961,8 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
 #' \item \code{'lnorm'} for lognormal distribution (arguments: \code{meanlog}, \code{sdlog})
 #' \item \code{'norm'} for normal distribution (arguments: \code{mean}, \code{sd})
 #' \item \code{'gamma'} for gamma distribution (arguments: \code{shape}, \code{rate}, \code{scale})
+#' \item \code{'weibull'} for weibull distribution (arguments: \code{shape}, \code{scale})
+#' \item \code{'exp'} for exp distribution (arguments: \code{rate})
 #' }
 #' @param ... Arguments for the selected distribution
 #'
@@ -2917,15 +3043,25 @@ Local_Pareto_Alpha <- function(x, distribution, ...) {
 #' @export
 
 pGenPareto <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
-  if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
-    warning("x must be a numeric vector.")
-    return(rep(NaN, length(x)))
+
+  if (is.null(truncation)) {
+    vecfun <- Vectorize(pGenPareto_s, c("x", "t", "alpha_ini", "alpha_tail"))
+  } else {
+    vecfun <- Vectorize(pGenPareto_s)
   }
-  if (!valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation)) {
-    warning(valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation, comment = TRUE))
-    return(rep(NaN, length(x)))
-  }
-  sapply(x, FUN = function(x) pGenPareto_s(x, t, alpha_ini, alpha_tail, truncation))
+  vecfun(x, t, alpha_ini, alpha_tail, truncation)
+  #
+  #
+  #
+  # if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
+  #   warning("x must be a numeric vector.")
+  #   return(rep(NaN, length(x)))
+  # }
+  # if (!valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation)) {
+  #   warning(valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation, comment = TRUE))
+  #   return(rep(NaN, length(x)))
+  # }
+  # sapply(x, FUN = function(x) pGenPareto_s(x, t, alpha_ini, alpha_tail, truncation))
 }
 
 pGenPareto_s <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
@@ -2978,15 +3114,22 @@ pGenPareto_s <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
 #' @export
 
 dGenPareto <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
-  if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
-    warning("x must be a numeric vector.")
-    return(rep(NaN, length(x)))
+  if (is.null(truncation)) {
+    vecfun <- Vectorize(dGenPareto_s, c("x", "t", "alpha_ini", "alpha_tail"))
+  } else {
+    vecfun <- Vectorize(dGenPareto_s)
   }
-  if (!valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation)) {
-    warning(valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation, comment = TRUE))
-    return(rep(NaN, length(x)))
-  }
-  sapply(x, FUN = function(x) dGenPareto_s(x, t, alpha_ini, alpha_tail, truncation))
+  vecfun(x, t, alpha_ini, alpha_tail, truncation)
+
+  # if (!is.atomic(x) || !is.numeric(x) || length(x) < 1) {
+  #   warning("x must be a numeric vector.")
+  #   return(rep(NaN, length(x)))
+  # }
+  # if (!valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation)) {
+  #   warning(valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation, comment = TRUE))
+  #   return(rep(NaN, length(x)))
+  # }
+  # sapply(x, FUN = function(x) dGenPareto_s(x, t, alpha_ini, alpha_tail, truncation))
 }
 
 dGenPareto_s <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
@@ -3034,15 +3177,24 @@ dGenPareto_s <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
 #' @export
 
 qGenPareto <- function(p, t, alpha_ini, alpha_tail, truncation = NULL) {
-  if (!is.nonnegative.finite.vector(p) || max(p) > 1) {
-    warning("p must be a vector with elements in [0,1].")
-    return(rep(NaN, length(p)))
+  if (is.null(truncation)) {
+    vecfun <- Vectorize(qGenPareto_s, c("y", "t", "alpha_ini", "alpha_tail"))
+  } else {
+    vecfun <- Vectorize(qGenPareto_s)
   }
-  if (!valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation)) {
-    warning(valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation, comment = TRUE))
-    return(rep(NaN, length(p)))
-  }
-  sapply(p, FUN = function(y) qGenPareto_s(y, t, alpha_ini, alpha_tail, truncation))
+
+  vecfun(p, t, alpha_ini, alpha_tail, truncation)
+
+
+  # if (!is.nonnegative.finite.vector(p) || max(p) > 1) {
+  #   warning("p must be a vector with elements in [0,1].")
+  #   return(rep(NaN, length(p)))
+  # }
+  # if (!valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation)) {
+  #   warning(valid.parameters.GenPareto(t, alpha_ini, alpha_tail, truncation, comment = TRUE))
+  #   return(rep(NaN, length(p)))
+  # }
+  # sapply(p, FUN = function(y) qGenPareto_s(y, t, alpha_ini, alpha_tail, truncation))
 }
 
 qGenPareto_s <- function(y, t, alpha_ini, alpha_tail, truncation = NULL) {
@@ -3185,9 +3337,17 @@ rGenPareto <- function(n, t, alpha_ini, alpha_tail, truncation = NULL) {
 #'
 #' @export
 
-
-
 GenPareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (is.null(truncation)) {
+    vecfun <- Vectorize(GenPareto_Layer_Mean_s, c("Cover", "AttachmentPoint", "t", "alpha_ini", "alpha_tail"))
+  } else {
+    vecfun <- Vectorize(GenPareto_Layer_Mean_s)
+  }
+  vecfun(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation)
+}
+
+
+GenPareto_Layer_Mean_s <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation = NULL) {
   if (!is.nonnegative.finite.number(AttachmentPoint)) {
     warning("AttachmentPoint must be a non-negative number.")
     return(NaN)
@@ -3294,8 +3454,17 @@ GenPareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tai
 #'
 #' @export
 
-
 GenPareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (is.null(truncation)) {
+    vecfun <- Vectorize(GenPareto_Layer_SM_s, c("Cover", "AttachmentPoint", "t", "alpha_ini", "alpha_tail"))
+  } else {
+    vecfun <- Vectorize(GenPareto_Layer_SM_s)
+  }
+  vecfun(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation)
+}
+
+
+GenPareto_Layer_SM_s <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation = NULL) {
   if (!is.nonnegative.finite.number(AttachmentPoint)) {
     warning("AttachmentPoint must be a non-negative number.")
     return(NaN)
@@ -3442,6 +3611,17 @@ GenPareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail,
 
 
 GenPareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (is.null(truncation)) {
+    vecfun <- Vectorize(GenPareto_Layer_Var_s, c("Cover", "AttachmentPoint", "t", "alpha_ini", "alpha_tail"))
+  } else {
+    vecfun <- Vectorize(GenPareto_Layer_Var_s)
+  }
+  vecfun(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation)
+}
+
+
+
+GenPareto_Layer_Var_s <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation = NULL) {
   if (!is.nonnegative.finite.number(AttachmentPoint)) {
     warning("AttachmentPoint must be a non-negative number.")
     return(NaN)

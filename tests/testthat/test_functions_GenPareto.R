@@ -6,6 +6,7 @@ test_that("GenPareto_Layer_Mean", {
   expect_equal(GenPareto_Layer_Mean(8000, 2000, 1000, 2, 2), 400)
   expect_equal(GenPareto_Layer_Mean(8000, 2000, 5000, 2, 1, truncation = 10000), 4619.7960825054124)
   expect_equal(GenPareto_Layer_Mean(2000, 1000, 500, 0.01, 3, truncation = 5000), 1308.8417333286236)
+  expect_equal(GenPareto_Layer_Mean(8000, 2000, c(2000, 1000, 5000), 2, c(2, 2, 1), truncation = c(Inf, Inf, 10000)), c(1600, 400, 4619.7960825054124))
 })
 
 test_that("GenPareto_Layer_SM", {
@@ -13,14 +14,26 @@ test_that("GenPareto_Layer_SM", {
   expect_equal(GenPareto_Layer_SM(8000, 2000, 1000, 2.5, 2.5), 705034.42336793197)
   expect_equal(GenPareto_Layer_SM(8000, 2000, 5000, 0.8, 2, truncation = 10000), 27842963.469263397)
   expect_equal(GenPareto_Layer_SM(2000, 1000, 500, 0.1, 0.9, truncation = 1000), 0)
+  expect_equal(GenPareto_Layer_SM(c(8000, 2000), c(2000, 1000), c(2000, 500), c(2, 0.1), c(2, 0.9), truncation = c(Inf, 1000)), c(6475503.2994728, 0))
 })
 
-test_that("Pareto_Layer_Var", {
+test_that("GenPareto_Layer_Var", {
   expect_equal(GenPareto_Layer_Var(8000, 2000, 1000, 2.1, 4), 398133.28976341535)
   expect_equal(GenPareto_Layer_Var(8000, 2000, 1000, 2, 2), 1458875.8248682)
   expect_equal(GenPareto_Layer_Var(8000, 2000, t = 5000, 1.5, 2.7, truncation = 10000), 1869703.2726483792)
   expect_equal(GenPareto_Layer_Var(2000, 1000, 500, 3, 1, truncation = 5000), 196333.67104755351)
+  expect_equal(GenPareto_Layer_Var(c(8000, 2000), c(2000, 1000), c(1000, 500), c(2.1, 3), c(4, 1), truncation = c(Inf, 5000)), c(398133.28976341535, 196333.67104755351))
 })
+
+test_that("pGenPareto", {
+  expect_equal(pGenPareto(c(1:3) * 2000, t = (1:3) * 1000, alpha_ini = c(1, 1.5, 2), alpha_tail = 1:3, truncation = NULL), c(0.5, 0.67346938775510212, 0.78399999999999992))
+})
+
+test_that("dGenPareto", {
+  expect_equal(dGenPareto(c(1:3) * 2000, t = (1:3) * 1000, alpha_ini = c(1, 1.5, 2), alpha_tail = 1:3, truncation = NULL), c(2.5000000000000001e-04, 1.3994169096209912e-04, 8.6400000000000027e-05))
+})
+
+
 
 
 ################################

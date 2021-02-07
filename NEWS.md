@@ -1,3 +1,26 @@
+# Pareto 2.3.0
+
+* Vectorization of the following functions:
+    * Pareto_Layer_Mean
+    * Pareto_Layer_Var
+    * Pareto_Layer_SM
+    * Pareto_Extrapolation
+    * Pareto_Find_Alpha_btw_Layers
+    * Pareto_Find_Alpha_btw_FQ_Layer
+    * Pareto_Find_Alpha_btw_FQs
+    * PiecewisePareto_Layer_Mean (only parameters Cover and AttachmentPoint)
+    * PiecewisePareto_Layer_SM (only parameters Cover and AttachmentPoint)
+    * PiecewisePareto_Layer_Var (only parameters Cover and AttachmentPoint)
+    * pPareto
+    * dPareto
+    * qPareto
+    * pGenPareto
+    * dGenPareto
+    * qGenPareto
+    * GenPareto_Layer_Mean
+    * GenPareto_Layer_Var
+    * GenPareto_Layer_SM
+
 # Pareto 2.2.2
 
 * Added function Fit_PML_Curve which fits a PPP_Model to a PML curve..

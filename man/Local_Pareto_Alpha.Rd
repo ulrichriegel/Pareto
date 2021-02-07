@@ -13,6 +13,8 @@ Local_Pareto_Alpha(x, distribution, ...)
 \item \code{'lnorm'} for lognormal distribution (arguments: \code{meanlog}, \code{sdlog})
 \item \code{'norm'} for normal distribution (arguments: \code{mean}, \code{sd})
 \item \code{'gamma'} for gamma distribution (arguments: \code{shape}, \code{rate}, \code{scale})
+\item \code{'weibull'} for weibull distribution (arguments: \code{shape}, \code{scale})
+\item \code{'exp'} for exp distribution (arguments: \code{rate})
 }}
 
 \item{...}{Arguments for the selected distribution}

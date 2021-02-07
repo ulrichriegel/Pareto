@@ -2,18 +2,40 @@ library(Pareto)
 context("test functions PiecewisePareto")
 
 test_that("PiecewisePareto_Layer_Mean", {
-  expect_equal(PiecewisePareto_Layer_Mean(8000, 2000, 2, t = 1000), 400)
-  expect_equal(PiecewisePareto_Layer_Mean(8000, 2000, 2, t = 5000, truncation = 10000), 4666.66666666667)
+  expect_equal(PiecewisePareto_Layer_Mean(8000, 2000, t = 1000, alpha = 2), 400)
+  expect_equal(PiecewisePareto_Layer_Mean(8000, 2000, t = 5000, alpha = 2, truncation = 10000), 4666.66666666667)
+  expect_equal(PiecewisePareto_Layer_Mean(c(8000, 2000), c(2000, 1000), t = 5000, alpha = 2, truncation = 10000), c(4666.66666666667, 2000))
+  expect_equal(PiecewisePareto_Layer_Mean(c(8000, 2000), c(2000, 1000), t = c(1000, 3000, 5000), alpha = c(1, 2, 3), truncation = 10000), c(976.89367953673514, 1098.61228866810916))
 })
 
 test_that("PiecewisePareto_Layer_SM", {
-  expect_equal(PiecewisePareto_Layer_SM(8000, 2000, 2, t = 1000), 1618875.8248682)
-  expect_equal(PiecewisePareto_Layer_SM(8000, 2000, 2, t = 5000, truncation = 10000), 23543145.370663)
+  expect_equal(PiecewisePareto_Layer_SM(8000, 2000, t = 1000, alpha = 2), 1618875.8248682)
+  expect_equal(PiecewisePareto_Layer_SM(8000, 2000, t = 5000, alpha = 2, truncation = 10000), 23543145.370663)
+  expect_equal(PiecewisePareto_Layer_SM(c(1000, 8000), c(1000, 2000), t = c(1000, 3000, 5000), alpha = c(1, 2, 3), truncation = 10000), c(613705.63888010941, 3300236.16730614332))
 })
 
-test_that("PiecewisePareto_Layer_SM", {
+test_that("PiecewisePareto_Layer_Var", {
   expect_equal(PiecewisePareto_Layer_Var(8000, 2000, 2, t = 1000), 1458875.8248682)
   expect_equal(PiecewisePareto_Layer_Var(8000, 2000, 2, t = 5000, truncation = 10000), 1765367.59288524)
+  expect_equal(PiecewisePareto_Layer_Var(c(1000, 8000), c(1000, 2000), t = c(1000, 3000, 5000), alpha = c(1, 2, 3), truncation = 10000), c(133252.62496190792, 2345914.90618732199))
+})
+
+test_that("qPiecewisePareto", {
+  expect_equal(qPiecewisePareto((1:9) * 0.1, c(1000,2000), c(1,2)), c(1111.1111111111111, 1250.0000000000000,
+            1428.5714285714287, 1666.6666666666667, 2000.0000000000000, 2236.0679774997902,
+            2581.9888974716114, 3162.2776601683800, 4472.1359549995805))
+})
+
+test_that("pPiecewisePareto", {
+  expect_equal(pPiecewisePareto(c(1:4) * 1000, t = (1:3) * 1000, alpha = 1:3, truncation = 4000), c(0, 0.5, 0.77777777777777779, 1))
+})
+
+test_that("dPiecewisePareto", {
+  expect_equal(dPiecewisePareto(c(1:4) * 1000, t = (1:3) * 1000, alpha = 1:3, truncation = 4000), c(0, 0.0005, 0.00022222222222222221, 0))
+})
+
+test_that("dPiecewisePareto", {
+  expect_equal(qPiecewisePareto(c(1:4) * 0.2, t = (1:3) * 1000, alpha = 1:3, truncation = 4000), c(1250.0000000000000, 1666.6666666666667, 2236.0679774997902, 3060.1459631738917))
 })
 
 
