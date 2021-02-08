@@ -2076,6 +2076,10 @@ Pareto_CDF <- function(x, t, alpha, truncation = NULL) {
 #' @export
 
 pPareto <- function(x, t, alpha, truncation = NULL) {
+  if (is.null(x) || (is.atomic(x) && length(x) == 0)) {
+    return(numeric())
+  }
+
   if (is.null(truncation)) {
     vecfun <- Vectorize(pPareto_s, c("x", "t", "alpha"))
   } else {
@@ -2175,6 +2179,10 @@ Pareto_PDF <- function(x, t, alpha, truncation = NULL) {
 #' @export
 
 dPareto <- function(x, t, alpha, truncation = NULL) {
+  if (is.null(x) || (is.atomic(x) && length(x) == 0)) {
+    return(numeric())
+  }
+
   if (is.null(truncation)) {
     vecfun <- Vectorize(dPareto_s, c("x", "t", "alpha"))
   } else {
@@ -2290,6 +2298,10 @@ PiecewisePareto_CDF <- function(x, t, alpha, truncation = NULL, truncation_type 
 #' @export
 
 pPiecewisePareto <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+  if (is.null(x) || (is.atomic(x) && length(x) == 0)) {
+    return(numeric())
+  }
+
 
   vecfun <- Vectorize(pPiecewisePareto_s, "x")
   vecfun(x, t, alpha, truncation, truncation_type)
@@ -2418,6 +2430,10 @@ dPiecewisePareto <- function(x, t, alpha, truncation = NULL, truncation_type = "
 }
 
 dPiecewisePareto_s <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+  if (is.null(x) || (is.atomic(x) && length(x) == 0)) {
+    return(numeric())
+  }
+
   if (!valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type)) {
     warning(valid.parameters.PiecewisePareto(t, alpha, truncation, truncation_type, comment = TRUE))
     return(NaN)
@@ -2504,6 +2520,10 @@ dPiecewisePareto_s <- function(x, t, alpha, truncation = NULL, truncation_type =
 #' @export
 
 qPiecewisePareto <- function(p, t, alpha, truncation = NULL, truncation_type = "lp") {
+  if (is.null(p) || (is.atomic(p) && length(p) == 0)) {
+    return(numeric())
+  }
+
   vecfun <- Vectorize(qPiecewisePareto_s, "y")
   vecfun(p, t, alpha, truncation, truncation_type)
 }
@@ -2582,6 +2602,10 @@ qPiecewisePareto_s <- function(y, t, alpha, truncation = NULL, truncation_type =
 #' @export
 
 qPareto <- function(p, t, alpha, truncation = NULL) {
+  if (is.null(p) || (is.atomic(p) && length(p) == 0)) {
+    return(numeric())
+  }
+
   if (is.null(truncation)) {
     vecfun <- Vectorize(qPareto_s, c("y", "t", "alpha"))
   } else {
@@ -3038,6 +3062,9 @@ Local_Pareto_Alpha <- function(x, distribution, ...) {
 #' @export
 
 pGenPareto <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (is.null(x) || (is.atomic(x) && length(x) == 0)) {
+    return(numeric())
+  }
 
   if (is.null(truncation)) {
     vecfun <- Vectorize(pGenPareto_s, c("x", "t", "alpha_ini", "alpha_tail"))
@@ -3109,6 +3136,10 @@ pGenPareto_s <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
 #' @export
 
 dGenPareto <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (is.null(x) || (is.atomic(x) && length(x) == 0)) {
+    return(numeric())
+  }
+
   if (is.null(truncation)) {
     vecfun <- Vectorize(dGenPareto_s, c("x", "t", "alpha_ini", "alpha_tail"))
   } else {
@@ -3172,6 +3203,10 @@ dGenPareto_s <- function(x, t, alpha_ini, alpha_tail, truncation = NULL) {
 #' @export
 
 qGenPareto <- function(p, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (is.null(p) || (is.atomic(p) && length(p) == 0)) {
+    return(numeric())
+  }
+
   if (is.null(truncation)) {
     vecfun <- Vectorize(qGenPareto_s, c("y", "t", "alpha_ini", "alpha_tail"))
   } else {
