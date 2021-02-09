@@ -213,7 +213,22 @@ PPP_Model_Exp_Layer_Loss <- function(Cover, AttachmentPoint, PPP_Model) {
 
 
 
-PPP_Model_Exp_Layer_Loss_v <- Vectorize(PPP_Model_Exp_Layer_Loss_s, c("Cover", "AttachmentPoint"))
+#PPP_Model_Exp_Layer_Loss_v <- Vectorize(PPP_Model_Exp_Layer_Loss_s, c("Cover", "AttachmentPoint"))
+
+PPP_Model_Exp_Layer_Loss_v <- function(Cover, AttachmentPoint, PPP_Model) {
+
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
+  vecfun <- Vectorize(PPP_Model_Exp_Layer_Loss_s, c("Cover", "AttachmentPoint"))
+  vecfun(Cover, AttachmentPoint, PPP_Model)
+}
+
+
 
 
 
@@ -253,8 +268,20 @@ PPP_Model_Layer_Var <- function(Cover, AttachmentPoint, PPP_Model) {
   PPP_Model_Layer_Var_v(Cover, AttachmentPoint, PPP_Model)
 }
 
-PPP_Model_Layer_Var_v <- Vectorize(PPP_Model_Layer_Var_s, c("Cover", "AttachmentPoint"))
+#PPP_Model_Layer_Var_v <- Vectorize(PPP_Model_Layer_Var_s, c("Cover", "AttachmentPoint"))
 
+PPP_Model_Layer_Var_v <- function(Cover, AttachmentPoint, PPP_Model) {
+
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
+  vecfun <- Vectorize(PPP_Model_Layer_Var_s, c("Cover", "AttachmentPoint"))
+  vecfun(Cover, AttachmentPoint, PPP_Model)
+}
 
 
 
@@ -292,8 +319,20 @@ PPP_Model_Layer_Sd <- function(Cover, AttachmentPoint, PPP_Model) {
   PPP_Model_Layer_Sd_v(Cover, AttachmentPoint, PPP_Model)
 }
 
-PPP_Model_Layer_Sd_v <- Vectorize(PPP_Model_Layer_Sd_s, c("Cover", "AttachmentPoint"))
+#PPP_Model_Layer_Sd_v <- Vectorize(PPP_Model_Layer_Sd_s, c("Cover", "AttachmentPoint"))
 
+PPP_Model_Layer_Sd_v <- function(Cover, AttachmentPoint, PPP_Model) {
+
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
+  vecfun <- Vectorize(PPP_Model_Layer_Sd_s, c("Cover", "AttachmentPoint"))
+  vecfun(Cover, AttachmentPoint, PPP_Model)
+}
 
 
 
@@ -333,7 +372,17 @@ PPP_Model_Excess_Frequency <- function(x, PPP_Model) {
 }
 
 
-PPP_Model_Excess_Frequency_v <- Vectorize(PPP_Model_Excess_Frequency_s, c("x"))
+#PPP_Model_Excess_Frequency_v <- Vectorize(PPP_Model_Excess_Frequency_s, c("x"))
+
+PPP_Model_Excess_Frequency_v <- function(x, PPP_Model) {
+
+  if (is.null(x) || (is.atomic(x) && length(x) == 0)) {
+    return(numeric())
+  }
+
+  vecfun <- Vectorize(PPP_Model_Excess_Frequency_s, "x")
+  vecfun(x, PPP_Model)
+}
 
 
 

@@ -23,6 +23,13 @@
 
 
 Pareto_Layer_Mean <- function(Cover, AttachmentPoint, alpha, t=NULL, truncation = NULL) {
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
   if (!is.null(truncation) && is.null(t)) {
     vecfun <- Vectorize(Pareto_Layer_Mean_s, c("Cover", "AttachmentPoint", "alpha", "truncation"))
   } else if (is.null(truncation) && !is.null(t)) {
@@ -211,6 +218,13 @@ Pareto_Layer_Second_Moment_simple <- function(Cover, AttachmentPoint, alpha) {
 
 
 Pareto_Layer_Var <- function(Cover, AttachmentPoint, alpha, t = NULL, truncation = NULL) {
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
   if (!is.null(truncation) && is.null(t)) {
     vecfun <- Vectorize(Pareto_Layer_Var_s, c("Cover", "AttachmentPoint", "alpha", "truncation"))
   } else if (is.null(truncation) && !is.null(t)) {
@@ -331,6 +345,13 @@ Pareto_Layer_Var_s <- function(Cover, AttachmentPoint, alpha, t = NULL, truncati
 
 
 Pareto_Layer_SM <- function(Cover, AttachmentPoint, alpha, t = NULL, truncation = NULL) {
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
   if (!is.null(truncation) && is.null(t)) {
     vecfun <- Vectorize(Pareto_Layer_SM_s, c("Cover", "AttachmentPoint", "alpha", "truncation"))
   } else if (is.null(truncation) && !is.null(t)) {
@@ -531,6 +552,22 @@ rPareto <- function(n, t, alpha, truncation = NULL) {
 
 
 Pareto_Extrapolation <- function(Cover_1, AttachmentPoint_1, Cover_2, AttachmentPoint_2, alpha, ExpLoss_1 = NULL, truncation = NULL) {
+  if (is.null(Cover_1) || (is.atomic(Cover_1) && length(Cover_1) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint_1) || (is.atomic(AttachmentPoint_1) && length(AttachmentPoint_1) == 0)) {
+    return(numeric())
+  }
+  if (is.null(Cover_2) || (is.atomic(Cover_2) && length(Cover_2) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint_2) || (is.atomic(AttachmentPoint_2) && length(AttachmentPoint_2) == 0)) {
+    return(numeric())
+  }
+  if (is.null(alpha) || (is.atomic(alpha) && length(alpha) == 0)) {
+    return(numeric())
+  }
+
   if (!is.null(truncation) && is.null(ExpLoss_1)) {
     vecfun <- Vectorize(Pareto_Extrapolation_s, c("Cover_1", "AttachmentPoint_1", "Cover_2", "AttachmentPoint_2", "alpha", "truncation"))
   } else if (is.null(truncation) && !is.null(ExpLoss_1)) {
@@ -631,6 +668,25 @@ Pareto_Extrapolation_s <- function(Cover_1, AttachmentPoint_1, Cover_2, Attachme
 
 
 Pareto_Find_Alpha_btw_Layers <- function(Cover_1, AttachmentPoint_1, ExpLoss_1, Cover_2, AttachmentPoint_2, ExpLoss_2, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
+  if (is.null(Cover_1) || (is.atomic(Cover_1) && length(Cover_1) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint_1) || (is.atomic(AttachmentPoint_1) && length(AttachmentPoint_1) == 0)) {
+    return(numeric())
+  }
+  if (is.null(ExpLoss_1) || (is.atomic(ExpLoss_1) && length(ExpLoss_1) == 0)) {
+    return(numeric())
+  }
+  if (is.null(Cover_2) || (is.atomic(Cover_2) && length(Cover_2) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint_2) || (is.atomic(AttachmentPoint_2) && length(AttachmentPoint_2) == 0)) {
+    return(numeric())
+  }
+  if (is.null(ExpLoss_2) || (is.atomic(ExpLoss_2) && length(ExpLoss_2) == 0)) {
+    return(numeric())
+  }
+
   if (is.null(truncation)) {
     vecfun <- Vectorize(Pareto_Find_Alpha_btw_Layers_s, c("Cover_1", "AttachmentPoint_1", "ExpLoss_1", "Cover_2", "AttachmentPoint_2", "ExpLoss_2", "max_alpha", "tolerance"))
   } else {
@@ -753,6 +809,22 @@ Pareto_Find_Alpha_btw_Layers_s <- function(Cover_1, AttachmentPoint_1, ExpLoss_1
 
 
 Pareto_Find_Alpha_btw_FQ_Layer <- function(Threshold, Frequency, Cover, AttachmentPoint, ExpLoss, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
+  if (is.null(Threshold) || (is.atomic(Threshold) && length(Threshold) == 0)) {
+    return(numeric())
+  }
+  if (is.null(Frequency) || (is.atomic(Frequency) && length(Frequency) == 0)) {
+    return(numeric())
+  }
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+  if (is.null(ExpLoss) || (is.atomic(ExpLoss) && length(ExpLoss) == 0)) {
+    return(numeric())
+  }
+
   if (is.null(truncation)) {
     vecfun <- Vectorize(Pareto_Find_Alpha_btw_FQ_Layer_s, c("Threshold", "Frequency", "Cover", "AttachmentPoint", "ExpLoss", "max_alpha", "tolerance"))
   } else {
@@ -873,6 +945,19 @@ Pareto_Find_Alpha_btw_FQ_Layer_s <- function(Threshold, Frequency, Cover, Attach
 
 
 Pareto_Find_Alpha_btw_FQs <- function(Threshold_1, Frequency_1, Threshold_2, Frequency_2, max_alpha = 100, tolerance = 1e-10, truncation = NULL) {
+  if (is.null(Threshold_1) || (is.atomic(Threshold_1) && length(Threshold_1) == 0)) {
+    return(numeric())
+  }
+  if (is.null(Frequency_1) || (is.atomic(Frequency_1) && length(Frequency_1) == 0)) {
+    return(numeric())
+  }
+  if (is.null(Threshold_2) || (is.atomic(Threshold_2) && length(Threshold_2) == 0)) {
+    return(numeric())
+  }
+  if (is.null(Frequency_2) || (is.atomic(Frequency_2) && length(Frequency_2) == 0)) {
+    return(numeric())
+  }
+
   if (is.null(truncation)) {
     vecfun <- Vectorize(Pareto_Find_Alpha_btw_FQs_s, c("Threshold_1", "Frequency_1", "Threshold_2", "Frequency_2", "max_alpha", "tolerance"))
   } else {
@@ -992,6 +1077,13 @@ Pareto_Find_Alpha_btw_FQs_s <- function(Threshold_1, Frequency_1, Threshold_2, F
 
 
 PiecewisePareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
   vecfun <- Vectorize(PiecewisePareto_Layer_Mean_s, c("Cover", "AttachmentPoint"))
   vecfun(Cover, AttachmentPoint, t, alpha, truncation, truncation_type)
 }
@@ -1132,6 +1224,13 @@ PiecewisePareto_Layer_Mean_s <- function(Cover, AttachmentPoint, t, alpha, trunc
 
 
 PiecewisePareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
   vecfun <- Vectorize(PiecewisePareto_Layer_SM_s, c("Cover", "AttachmentPoint"))
   vecfun(Cover, AttachmentPoint, t, alpha, truncation, truncation_type)
 }
@@ -1267,6 +1366,13 @@ PiecewisePareto_Layer_SM_s <- function(Cover, AttachmentPoint, t, alpha, truncat
 #' @export
 
 PiecewisePareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha, truncation = NULL, truncation_type = "lp") {
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
   vecfun <- Vectorize(PiecewisePareto_Layer_Var_s, c("Cover", "AttachmentPoint"))
   vecfun(Cover, AttachmentPoint, t, alpha, truncation, truncation_type)
 }
@@ -2425,6 +2531,10 @@ PiecewisePareto_PDF <- function(x, t, alpha, truncation = NULL, truncation_type 
 #' @export
 
 dPiecewisePareto <- function(x, t, alpha, truncation = NULL, truncation_type = "lp") {
+  if (is.null(x) || (is.atomic(x) && length(x) == 0)) {
+    return(numeric())
+  }
+
   vecfun <- Vectorize(dPiecewisePareto_s, "x")
   vecfun(x, t, alpha, truncation, truncation_type)
 }
@@ -2988,6 +3098,10 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
 #' @export
 
 Local_Pareto_Alpha <- function(x, distribution, ...) {
+  if (is.null(x) || (is.atomic(x) && length(x) == 0)) {
+    return(numeric())
+  }
+
   if (!is.atomic(x) || !is.numeric(x)) {
     warning("x must be a numeric vector.")
     return(rep(NaN, length(x)))
@@ -3368,6 +3482,13 @@ rGenPareto <- function(n, t, alpha_ini, alpha_tail, truncation = NULL) {
 #' @export
 
 GenPareto_Layer_Mean <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
   if (is.null(truncation)) {
     vecfun <- Vectorize(GenPareto_Layer_Mean_s, c("Cover", "AttachmentPoint", "t", "alpha_ini", "alpha_tail"))
   } else {
@@ -3485,6 +3606,13 @@ GenPareto_Layer_Mean_s <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_t
 #' @export
 
 GenPareto_Layer_SM <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
   if (is.null(truncation)) {
     vecfun <- Vectorize(GenPareto_Layer_SM_s, c("Cover", "AttachmentPoint", "t", "alpha_ini", "alpha_tail"))
   } else {
@@ -3641,6 +3769,13 @@ GenPareto_Layer_SM_s <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tai
 
 
 GenPareto_Layer_Var <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_tail, truncation = NULL) {
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
   if (is.null(truncation)) {
     vecfun <- Vectorize(GenPareto_Layer_Var_s, c("Cover", "AttachmentPoint", "t", "alpha_ini", "alpha_tail"))
   } else {

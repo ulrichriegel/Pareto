@@ -1,10 +1,10 @@
-# Pareto 2.3.1
+# Pareto 2.3.2
 
 * Added distributions in function Local_Pareto_Alpha:
     * Pareto distribution
     * Generalized Pareto distribution
     * Piecewise Pareto distribution
-
+* Improved handling of inputs of length zero in vectorized functions
 
 # Pareto 2.3.0
 

@@ -196,7 +196,20 @@ PGP_Model_Exp_Layer_Loss_s <- function(Cover, AttachmentPoint, PGP_Model) {
 
 
 
-PGP_Model_Exp_Layer_Loss_v <- Vectorize(PGP_Model_Exp_Layer_Loss_s, c("Cover", "AttachmentPoint"))
+#PGP_Model_Exp_Layer_Loss_v <- Vectorize(PGP_Model_Exp_Layer_Loss_s, c("Cover", "AttachmentPoint"))
+
+PGP_Model_Exp_Layer_Loss_v <- function(Cover, AttachmentPoint, PGP_Model) {
+
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
+  vecfun <- Vectorize(PGP_Model_Exp_Layer_Loss_s, c("Cover", "AttachmentPoint"))
+  vecfun(Cover, AttachmentPoint, PGP_Model)
+}
 
 
 
@@ -213,8 +226,20 @@ PGP_Model_Layer_Var_s <- function(Cover, AttachmentPoint, PGP_Model) {
   }
 }
 
-PGP_Model_Layer_Var_v <- Vectorize(PGP_Model_Layer_Var_s, c("Cover", "AttachmentPoint"))
+#PGP_Model_Layer_Var_v <- Vectorize(PGP_Model_Layer_Var_s, c("Cover", "AttachmentPoint"))
 
+PGP_Model_Layer_Var_v <- function(Cover, AttachmentPoint, PGP_Model) {
+
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
+  vecfun <- Vectorize(PGP_Model_Layer_Var_s, c("Cover", "AttachmentPoint"))
+  vecfun(Cover, AttachmentPoint, PGP_Model)
+}
 
 
 
@@ -231,8 +256,20 @@ PGP_Model_Layer_Sd_s <- function(Cover, AttachmentPoint, PGP_Model) {
 }
 
 
-PGP_Model_Layer_Sd_v <- Vectorize(PGP_Model_Layer_Sd_s, c("Cover", "AttachmentPoint"))
+#PGP_Model_Layer_Sd_v <- Vectorize(PGP_Model_Layer_Sd_s, c("Cover", "AttachmentPoint"))
 
+PGP_Model_Layer_Sd_v <- function(Cover, AttachmentPoint, PGP_Model) {
+
+  if (is.null(Cover) || (is.atomic(Cover) && length(Cover) == 0)) {
+    return(numeric())
+  }
+  if (is.null(AttachmentPoint) || (is.atomic(AttachmentPoint) && length(AttachmentPoint) == 0)) {
+    return(numeric())
+  }
+
+  vecfun <- Vectorize(PGP_Model_Layer_Sd_s, c("Cover", "AttachmentPoint"))
+  vecfun(Cover, AttachmentPoint, PGP_Model)
+}
 
 
 
@@ -247,7 +284,21 @@ PGP_Model_Excess_Frequency_s <- function(x, PGP_Model) {
     return(PGP_Model$FQ * (1 - pGenPareto(x, PGP_Model$alpha_ini, PGP_Model$alpha_tail, t = PGP_Model$t, truncation = PGP_Model$truncation)))
   }
 }
-PGP_Model_Excess_Frequency_v <- Vectorize(PGP_Model_Excess_Frequency_s, c("x"))
+
+
+#PGP_Model_Excess_Frequency_v <- Vectorize(PGP_Model_Excess_Frequency_s, c("x"))
+
+PGP_Model_Excess_Frequency_v <- function(x, PGP_Model) {
+
+  if (is.null(x) || (is.atomic(x) && length(x) == 0)) {
+    return(numeric())
+  }
+
+  vecfun <- Vectorize(PGP_Model_Excess_Frequency_s, "x")
+  vecfun(x, PGP_Model)
+}
+
+
 
 
 
