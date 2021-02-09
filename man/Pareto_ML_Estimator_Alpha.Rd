@@ -8,11 +8,13 @@ Pareto_ML_Estimator_Alpha(
   losses,
   t,
   truncation = NULL,
+  reporting_thresholds = NULL,
+  is.censored = NULL,
   weights = NULL,
   tol = 1e-07,
   max_iterations = 1000,
-  alpha_min = 0,
-  alpha_max = Inf
+  alpha_min = 0.001,
+  alpha_max = 10
 )
 }
 \arguments{
@@ -22,21 +24,25 @@ Pareto_ML_Estimator_Alpha(
 
 \item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.}
 
+\item{reporting_thresholds}{Numeric vector. Allows to enter loss specific reporting thresholds. If \code{NULL} then all reporting thresholds are assumed to be less than or equal to \code{t}.}
+
+\item{is.censored}{Logical vector. Indicates whether a loss has been censored by the policy limit. If \code{NULL} then no losses are censored.}
+
 \item{weights}{Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.}
 
 \item{tol}{Numeric. Desired accuracy  (only relevant in the truncated case).}
 
 \item{max_iterations}{Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).}
 
-\item{alpha_min}{Numeric. Deprecated.}
+\item{alpha_min}{Numeric. Lower bound for alpha used for optimization in case of censored losses.}
 
-\item{alpha_max}{Numeric. Deprecated.}
+\item{alpha_max}{Numeric. Upper bound for alpha used for optimization in case of censored losses}
 }
 \value{
 Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribution with threshold \code{t} given the observations \code{losses}
 }
 \description{
-Calculates the maximum likelihood estimator of the parameter alpha of a Pareto distribution
+Calculates the maximum likelihood estimator for the alpha of a (truncated) Pareto distribution with a given threshold t
 }
 \examples{
 losses <- rPareto(100, 1000, 2)

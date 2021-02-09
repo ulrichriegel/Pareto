@@ -2772,16 +2772,18 @@ qPareto_s <- function(y, t, alpha, truncation = NULL) {
 
 #' Maximum Likelihood Estimation of the Pareto Alpha
 #'
-#' @description Calculates the maximum likelihood estimator of the parameter alpha of a Pareto distribution
+#' @description Calculates the maximum likelihood estimator for the alpha of a (truncated) Pareto distribution with a given threshold t
 #'
 #' @param losses Numeric vector. Losses that are used for the ML estimation.
 #' @param t Numeric or numeric vector. Threshold of the Pareto distribution. Alternatively, \code{t} can be a vector of same length as \code{losses}. In this case \code{t[i]} is the reporting threshold of \code{losses[i]}.
 #' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
+#' @param reporting_thresholds Numeric vector. Allows to enter loss specific reporting thresholds. If \code{NULL} then all reporting thresholds are assumed to be less than or equal to \code{t}.
+#' @param is.censored Logical vector. Indicates whether a loss has been censored by the policy limit. If \code{NULL} then no losses are censored.
 #' @param weights Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.
 #' @param tol Numeric. Desired accuracy  (only relevant in the truncated case).
 #' @param max_iterations Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).
-#' @param alpha_min Numeric. Deprecated.
-#' @param alpha_max Numeric. Deprecated.
+#' @param alpha_min Numeric. Lower bound for alpha used for optimization in case of censored losses.
+#' @param alpha_max Numeric. Upper bound for alpha used for optimization in case of censored losses
 #'
 #' @return Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribution with threshold \code{t} given the observations \code{losses}
 #'
@@ -2807,10 +2809,10 @@ qPareto_s <- function(y, t, alpha, truncation = NULL) {
 #' Pareto_ML_Estimator_Alpha(losses2, 1000)
 #' @export
 
-Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, weights = NULL, tol = 1e-7, max_iterations = 1000, alpha_min = 0, alpha_max = Inf) {
-  if (!missing(alpha_min) || !missing(alpha_max)) {
-    warning("arguments alpha_min and alpha_max are deprecated and are ignored", call. = FALSE)
-  }
+Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting_thresholds = NULL, is.censored = NULL, weights = NULL, tol = 1e-7, max_iterations = 1000, alpha_min = 0.001, alpha_max = 10) {
+  # if (!missing(alpha_min) || !missing(alpha_max)) {
+  #   warning("arguments alpha_min and alpha_max are deprecated and are ignored", call. = FALSE)
+  # }
   if (!is.nonnegative.finite.vector(losses)) {
     warning("losses must be non-negative.")
     return(NaN)
@@ -2823,8 +2825,33 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, weights = NU
     warning("t must have length 1 or same length as losses.")
     return(NaN)
   }
+  if (length(t) != 1) {
+    warning("Please use a threshold t with length 1. Use reporting_thresholds to take loss specific reporting thresholds into account.")
+  }
+  if (!is.positive.finite.vector(reporting_thresholds) && !is.null(reporting_thresholds)) {
+    warning("reporting_thresholds must be NULL or non-negative.")
+    return(NaN)
+  }
+  if (is.positive.finite.vector(reporting_thresholds)) {
+    if (length(reporting_thresholds) != length(losses)) {
+      warning("reporting_thresholds must be NULL or a vector of the same length as losses.")
+      return(NaN)
+    }
+    if (min(losses - reporting_thresholds) < 0) {
+      warning("losses which are less then the corresponding reporting threshold are ignored.")
+    }
+  }
+  if (!is.TRUEorFALSE.vector(is.censored) && !is.null(is.censored)) {
+    warning("is.censored must be NULL or logical with only TRUE or FALSE entries.")
+    return(NaN)
+  }
+
+
   if (length(t) == 1) {
     t <- rep(t, length(losses))
+  }
+  if (is.positive.finite.vector(reporting_thresholds)) {
+    t <- pmax(t, reporting_thresholds)
   }
   if (is.null(weights)) weights <- rep(1, length(losses))
   if (!is.positive.finite.vector(weights)) {
@@ -2842,13 +2869,21 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, weights = NU
   t <- t[index]
   n <- length(losses)
 
+  contains_censored_loss <- FALSE
+  if (is.TRUEorFALSE.vector(is.censored)) {
+    is.censored <- is.censored[index]
+    if (sum(is.censored) > 0) {
+      contains_censored_loss <- TRUE
+    }
+  }
+
   if (!is.null(truncation)) {
     if (!is.positive.number(truncation)) {
       warning("truncation must be NULL or a positive number ('Inf' allowed).")
       return(NaN)
     }
     if (truncation <= max(t)) {
-      warning("truncation must be larger than t")
+      warning("truncation must be larger than t and the reporting_thresholds")
       return(NaN)
     }
     if (max(losses) >= truncation) {
@@ -2856,7 +2891,26 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, weights = NU
       return(NaN)
     }
   }
-  if (is.null(truncation) || is.infinite(truncation)) {
+  if (contains_censored_loss) {
+    nll <- function(alpha) {
+      ll <- 0
+      ll <- sum(ifelse(is.censored, log(1 - pPareto(losses, t, alpha, truncation)), log(dPareto(losses, t, alpha, truncation))))
+      # for (i in 1:n) {
+      #   if (is.censored[i]) {
+      #     ll <- ll + log(1 - pPareto(losses[i], t[i], alpha, truncation))
+      #   } else {
+      #     ll <- ll + log(dPareto(losses[i], t[i], alpha, truncation))
+      #   }
+      # }
+      return(-ll)
+    }
+    optim_result <- optim(1, nll, method = "Brent", lower = alpha_min, upper = alpha_max)
+    if (optim_result$convergence != 0) {
+      warning("optimization did not converge")
+      return(NaN)
+    }
+    return(optim_result$par)
+  } else if (is.null(truncation) || is.infinite(truncation)) {
     alpha_hat <- sum(weights) / sum(weights * log(losses / t))
   } else {
     alpha_hat_iteration <- numeric(max_iterations)

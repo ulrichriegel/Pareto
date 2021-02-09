@@ -124,6 +124,19 @@ is.TRUEorFALSE <- function(x) {
 }
 
 
+is.TRUEorFALSE.vector <- function(x) {
+  if(!is.atomic(x) || !is.logical(x) || length(x) < 1) {
+    return(FALSE)
+  }
+  k <- length(x)
+  if (sum(x, na.rm = T) + sum(!x, na.rm = T) < k) {
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
+
+
 valid.parameters.PiecewisePareto <- function(t, alpha, truncation, truncation_type, comment = FALSE) {
   if (!is.positive.finite.vector(t) || !is.nonnegative.finite.vector(alpha)) {
     if (!comment) {
