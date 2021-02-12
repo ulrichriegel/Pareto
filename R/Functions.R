@@ -2772,13 +2772,14 @@ qPareto_s <- function(y, t, alpha, truncation = NULL) {
 
 #' Maximum Likelihood Estimation of the Pareto Alpha
 #'
-#' @description Calculates the maximum likelihood estimator for the alpha of a (truncated) Pareto distribution with a given threshold t
+#' @description Calculates the maximum likelihood estimator for the alpha of a (truncated) Pareto distribution
+#' with a known threshold and (if applicable) a known truncation
 #'
 #' @param losses Numeric vector. Losses that are used for the ML estimation.
-#' @param t Numeric or numeric vector. Threshold of the Pareto distribution. Alternatively, \code{t} can be a vector of same length as \code{losses}. In this case \code{t[i]} is the reporting threshold of \code{losses[i]}.
-#' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
+#' @param t Numeric. Threshold of the Pareto distribution.
+#' @param truncation Numeric. If \code{truncation} is not \code{NULL}, then the Pareto distribution is truncated at \code{truncation}.
 #' @param reporting_thresholds Numeric vector. Allows to enter loss specific reporting thresholds. If \code{NULL} then all reporting thresholds are assumed to be less than or equal to \code{t}.
-#' @param is.censored Logical vector. Indicates whether a loss has been censored by the policy limit. If \code{NULL} then no losses are censored.
+#' @param is.censored Logical vector. \code{TRUE} indicates that a loss has been censored by the policy limit. The assumption is that the uncensored losses are Pareto distributed with the alpha we are looking for. \code{is.censored = NULL} means that no losses are censored.
 #' @param weights Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.
 #' @param tol Numeric. Desired accuracy  (only relevant in the truncated case).
 #' @param max_iterations Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).
@@ -2904,7 +2905,7 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting_th
       # }
       return(-ll)
     }
-    optim_result <- optim(1, nll, method = "Brent", lower = alpha_min, upper = alpha_max)
+    optim_result <- stats::optim(1, nll, method = "Brent", lower = alpha_min, upper = alpha_max)
     if (optim_result$convergence != 0) {
       warning("optimization did not converge")
       return(NaN)

@@ -20,13 +20,13 @@ Pareto_ML_Estimator_Alpha(
 \arguments{
 \item{losses}{Numeric vector. Losses that are used for the ML estimation.}
 
-\item{t}{Numeric or numeric vector. Threshold of the Pareto distribution. Alternatively, \code{t} can be a vector of same length as \code{losses}. In this case \code{t[i]} is the reporting threshold of \code{losses[i]}.}
+\item{t}{Numeric. Threshold of the Pareto distribution.}
 
-\item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.}
+\item{truncation}{Numeric. If \code{truncation} is not \code{NULL}, then the Pareto distribution is truncated at \code{truncation}.}
 
 \item{reporting_thresholds}{Numeric vector. Allows to enter loss specific reporting thresholds. If \code{NULL} then all reporting thresholds are assumed to be less than or equal to \code{t}.}
 
-\item{is.censored}{Logical vector. Indicates whether a loss has been censored by the policy limit. If \code{NULL} then no losses are censored.}
+\item{is.censored}{Logical vector. \code{TRUE} indicates that a loss has been censored by the policy limit. The assumption is that the uncensored losses are Pareto distributed with the alpha we are looking for. \code{is.censored = NULL} means that no losses are censored.}
 
 \item{weights}{Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.}
 
@@ -42,7 +42,8 @@ Pareto_ML_Estimator_Alpha(
 Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribution with threshold \code{t} given the observations \code{losses}
 }
 \description{
-Calculates the maximum likelihood estimator for the alpha of a (truncated) Pareto distribution with a given threshold t
+Calculates the maximum likelihood estimator for the alpha of a (truncated) Pareto distribution
+with a known threshold and (if applicable) a known truncation
 }
 \examples{
 losses <- rPareto(100, 1000, 2)
