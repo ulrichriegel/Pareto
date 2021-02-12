@@ -8,11 +8,13 @@ GenPareto_ML_Estimator_Alpha(
   losses,
   t,
   truncation = NULL,
+  reporting_thresholds = NULL,
+  is.censored = NULL,
   weights = NULL,
   tol = 1e-07,
   max_iterations = 1000,
-  alpha_min = 0.01,
-  alpha_max = 100
+  alpha_min = 0.001,
+  alpha_max = 10
 )
 }
 \arguments{
@@ -21,6 +23,10 @@ GenPareto_ML_Estimator_Alpha(
 \item{t}{Numeric or numeric vector. Threshold of the generalized Pareto distribution. Alternatively, \code{t} can be a vector of same length as \code{losses}. In this case \code{t[i]} is the reporting threshold of \code{losses[i]}.}
 
 \item{truncation}{Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the generalized Pareto distribution is truncated at \code{truncation}.}
+
+\item{reporting_thresholds}{Numeric vector. Allows to enter loss specific reporting thresholds. If \code{NULL} then all reporting thresholds are assumed to be less than or equal to \code{t}.}
+
+\item{is.censored}{Logical vector. \code{TRUE} indicates that a loss has been censored by the policy limit. The assumption is that the uncensored losses are Generalized Pareto distributed with the alphas we are looking for. \code{is.censored = NULL} means that no losses are censored.}
 
 \item{weights}{Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.}
 

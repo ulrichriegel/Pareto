@@ -2,7 +2,7 @@
 % Please edit documentation in R/Functions.R
 \name{Pareto_ML_Estimator_Alpha}
 \alias{Pareto_ML_Estimator_Alpha}
-\title{Maximum Likelihood Estimation of the Pareto Alpha}
+\title{Maximum Likelihood Estimation of the Alpha of a Pareto distribution}
 \usage{
 Pareto_ML_Estimator_Alpha(
   losses,
