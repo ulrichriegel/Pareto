@@ -9,9 +9,13 @@ PiecewisePareto_ML_Estimator_Alpha(
   t,
   truncation = NULL,
   truncation_type = "lp",
+  reporting_thresholds = NULL,
+  is.censored = NULL,
   weights = NULL,
   tol = 1e-07,
-  max_iterations = 1000
+  max_iterations = 1000,
+  alpha_min = 0.001,
+  alpha_max = 10
 )
 }
 \arguments{
@@ -23,11 +27,19 @@ PiecewisePareto_ML_Estimator_Alpha(
 
 \item{truncation_type}{Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.}
 
+\item{reporting_thresholds}{Numeric vector. Allows to enter loss specific reporting thresholds. If \code{NULL} then all reporting thresholds are assumed to be less than or equal to \code{t[1]}.}
+
+\item{is.censored}{Logical vector. \code{TRUE} indicates that a loss has been censored by the policy limit. The assumption is that the uncensored losses are piecewise Pareto distributed with the alphas we are looking for. \code{is.censored = NULL} means that no losses are censored.}
+
 \item{weights}{Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.}
 
 \item{tol}{Numeric. Desired accuracy (only relevant in the truncated case).}
 
 \item{max_iterations}{Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).}
+
+\item{alpha_min}{Numeric. Lower bound for the estimated alphas in case that reporting_thresholds or censoring are used.}
+
+\item{alpha_max}{Numeric. Upper bound for the estimated alphas in case that reporting_thresholds or censoring are used.}
 }
 \value{
 Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribution with threshold \code{t} given the observations \code{losses}

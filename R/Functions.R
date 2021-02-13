@@ -2971,9 +2971,13 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting_th
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
 #' @param truncation Numeric. If \code{truncation} is not \code{NULL} and \code{truncation > max(t)}, then the distribution is truncated at \code{truncation}.
 #' @param truncation_type Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
+#' @param reporting_thresholds Numeric vector. Allows to enter loss specific reporting thresholds. If \code{NULL} then all reporting thresholds are assumed to be less than or equal to \code{t[1]}.
+#' @param is.censored Logical vector. \code{TRUE} indicates that a loss has been censored by the policy limit. The assumption is that the uncensored losses are piecewise Pareto distributed with the alphas we are looking for. \code{is.censored = NULL} means that no losses are censored.
 #' @param weights Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.
 #' @param tol Numeric. Desired accuracy (only relevant in the truncated case).
 #' @param max_iterations Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).
+#' @param alpha_min Numeric. Lower bound for the estimated alphas in case that reporting_thresholds or censoring are used.
+#' @param alpha_max Numeric. Upper bound for the estimated alphas in case that reporting_thresholds or censoring are used.
 #'
 #' @return Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribution with threshold \code{t} given the observations \code{losses}
 #'
@@ -2999,74 +3003,128 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting_th
 #' PiecewisePareto_ML_Estimator_Alpha(losses2, c(100,200,300))
 #' @export
 
-PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, truncation_type = "lp", weights = NULL, tol = 1e-7, max_iterations = 1000) {
-  if (!is.nonnegative.finite.vector(losses)) {
-    warning("losses must be non-negative.")
-    return(NaN)
-  }
+PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, truncation_type = "lp", reporting_thresholds = NULL, is.censored = NULL, weights = NULL, tol = 1e-7, max_iterations = 1000, alpha_min = 0.001, alpha_max = 10) {
   if (!is.positive.finite.vector(t)) {
     warning("t must be positive.")
     return(NaN)
   }
+  k <- length(t)
+
+  if (!is.nonnegative.finite.vector(losses)) {
+    warning("losses must be non-negative.")
+    return(rep(NaN, k))
+  }
   if (!is.atomic(truncation_type) || length(truncation_type) != 1 || !(truncation_type %in% c("lp", "wd"))) {
     warning("truncation_type must be 'lp' or 'wd'.")
-    return(NaN)
+    return(rep(NaN, k))
   }
   if (!is.positive.finite.number(tol)) {
     warning("tol must be a positive number.")
-    return(NaN)
+    return(rep(NaN, k))
   }
   if (!is.positive.finite.number(max_iterations) || max_iterations < 2) {
     warning("max_iterations must be a number >= 2.")
-    return(NaN)
+    return(rep(NaN, k))
   } else {
     max_iterations <- ceiling(max_iterations)
   }
 
 
-  k <- length(t)
 
 
 
   if (k > 1 && min(diff(t)) <= 0) {
     warning("t must be strictily ascending!")
-    return(NaN)
+    return(rep(NaN, k))
   }
   if (max(losses) <= max(t)) {
     warning("Number of losses > max(t) must be positive.")
-    return(NaN)
+    return(rep(NaN, k))
   }
   if (!is.null(truncation)) {
     if (!is.positive.number(truncation)) {
       warning("truncation must be a positive number ('Inf' allowed).")
+      return(rep(NaN, k))
     }
     if (truncation <= t[k]) {
       warning("truncation must be larger than max(t)")
-      return(NaN)
+      return(rep(NaN, k))
     }
     if (max(losses) >= truncation) {
       warning("Losses must be < truncation.")
-      return(NaN)
+      return(rep(NaN, k))
     }
   } else {
     truncation <- Inf
   }
 
+
+  if (is.null(reporting_thresholds)) {
+    reporting_thresholds <- rep(t[1], length(losses))
+  }
+  if (!is.positive.finite.vector(reporting_thresholds)) {
+    warning("reporting_thresholds must be NULL or non-negative.")
+    return(rep(NaN, k))
+  }
+  if (length(reporting_thresholds) == 1) {
+    reporting_thresholds <- rep(reporting_thresholds, length(losses))
+  }
+  if (length(reporting_thresholds) != length(losses)) {
+    warning("reporting_thresholds must be NULL or a vector of the same length as losses.")
+    return(rep(NaN, k))
+  }
+  if (min(losses - reporting_thresholds) < 0) {
+    warning("losses which are less then the corresponding reporting threshold are ignored.")
+  }
+
+  if (is.null(is.censored)) {
+    is.censored <- rep(FALSE, length(losses))
+  }
+  if (!is.TRUEorFALSE.vector(is.censored)) {
+    warning("is.censored must be NULL or logical with only TRUE or FALSE entries.")
+    return(rep(NaN, k))
+  }
+  if (length(is.censored) == 1) {
+    is.censored <- rep(is.censored, length(losses))
+  }
+  if (length(is.censored) != length(losses)) {
+    warning("is.censored must have the same length as the losses.")
+    return(rep(NaN, k))
+  }
+
+
+
+
+
   if (is.null(weights)) weights <- rep(1, length(losses))
   if (!is.positive.finite.vector(weights)) {
     warning("weights must NULL or positive.")
-    return(NaN)
+    return(rep(NaN, k))
   }
   if (length(weights) != length(losses)) {
     warning("weights must have the same length as losses.")
-    return(NaN)
+    return(rep(NaN, k))
   }
+
+
+
 
 
   if (k == 1) {
-    Result <- Pareto_ML_Estimator_Alpha(losses, t, truncation = truncation, weights = weights, tol = tol, max_iterations = max_iterations)
+    Result <- Pareto_ML_Estimator_Alpha(losses, t, truncation = truncation, reporting_thresholds = reporting_thresholds, is.censored = is.censored, weights = weights, tol = tol, max_iterations = max_iterations)
     return(Result)
   }
+
+  index <- losses > pmax(t[1], reporting_thresholds)
+  if (sum(index) == 0) {
+    warning("No losses larger than reporting_thresholds and t[1].") ##########
+    return(rep(NaN, k))
+  }
+  losses <- losses[index]
+  weights <- weights[index]
+  reporting_thresholds <- reporting_thresholds[index]
+  reporting_thresholds <- pmax(reporting_thresholds, t[1])
+  is.censored <- is.censored[index]
 
 
   t <- c(t, truncation)
@@ -3075,50 +3133,94 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
   weights_xs_t <- lapply(t, function(x) weights[losses >= x])
   sum_weights_xs_t <- unlist(lapply(weights_xs_t, "sum"))
 
+
+  if (max(reporting_thresholds) > t[1]) {
+    use_rep_thresholds <- TRUE
+  } else {
+    use_rep_thresholds <- FALSE
+  }
+  if (sum(is.censored) > 0) {
+    contains_censored_loss <- TRUE
+  } else {
+    contains_censored_loss <- FALSE
+  }
+
+  if (min(reporting_thresholds) >= t[2]) {
+    warning("At least one reporting threshold bust be < t[2].") ##########
+    return(rep(NaN, k))
+  }
+
   alpha_hat <- numeric(k)
   for (i in 1:k) {
     #alpha_hat[i] <- (count_xs_t[i] - count_xs_t[i+1]) / (sum(log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])))
     alpha_hat[i] <- (sum_weights_xs_t[i] - sum_weights_xs_t[i+1]) / (sum(weights_xs_t[[i]] * log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])))
   }
-  if (!is.infinite(truncation)) {
-    if (truncation_type == "lp") {
-      alpha_hat[k] <- Pareto_ML_Estimator_Alpha(losses_xs_t[[k]], t[k], truncation = truncation, weights = weights_xs_t[[k]], tol = tol, max_iterations = max_iterations)
-    } else {
-      iteration <- function(alpha_hat) {
-        result <- numeric(k)
-        for (i in 1:k) {
-          product <- prod((t[-(k+1)] / t[-1])^alpha_hat)
-          #result[i] <- (count_xs_t[i] - count_xs_t[i+1]) / (sum(log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])) - count_xs_t[1] * log(t[i] / t[i+1]) * product  / (1 - product))
-          result[i] <- (sum_weights_xs_t[i] - sum_weights_xs_t[i+1]) / (sum(weights_xs_t[[i]] * log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])) - sum_weights_xs_t[1] * log(t[i] / t[i+1]) * product  / (1 - product))
+  if (!use_rep_thresholds && !contains_censored_loss && is.infinite(truncation)) {
+    return(alpha_hat)
+  }  else if (!use_rep_thresholds && !contains_censored_loss) {
+    #if (!is.infinite(truncation)) {
+      if (truncation_type == "lp") {
+        alpha_hat[k] <- Pareto_ML_Estimator_Alpha(losses_xs_t[[k]], t[k], truncation = truncation, weights = weights_xs_t[[k]], tol = tol, max_iterations = max_iterations)
+      } else {
+        iteration <- function(alpha_hat) {
+          result <- numeric(k)
+          for (i in 1:k) {
+            product <- prod((t[-(k+1)] / t[-1])^alpha_hat)
+            #result[i] <- (count_xs_t[i] - count_xs_t[i+1]) / (sum(log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])) - count_xs_t[1] * log(t[i] / t[i+1]) * product  / (1 - product))
+            result[i] <- (sum_weights_xs_t[i] - sum_weights_xs_t[i+1]) / (sum(weights_xs_t[[i]] * log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])) - sum_weights_xs_t[1] * log(t[i] / t[i+1]) * product  / (1 - product))
+          }
+          return(result)
         }
-        return(result)
-      }
 
-      if(max_iterations < 2) {
-        warning("max_iterations must be > 1")
-        return(NaN)
-      }
-
-      alpha_hat_iteration <- matrix(NaN, nrow = k, ncol = max_iterations)
-      alpha_hat_iteration[, 1] <- alpha_hat
-
-      check_tol <- function(i) {
-        if (max(abs(alpha_hat_iteration[, i] - alpha_hat_iteration[, i-1])) < tol) {
-          return(TRUE)
-        } else {
-          return(FALSE)
+        if(max_iterations < 2) {
+          warning("max_iterations must be > 1")
+          return(rep(NaN), k)
         }
-      }
 
-      for (i in 2:max_iterations) {
-        alpha_hat_iteration[, i] <- iteration(alpha_hat_iteration[, i-1])
-        if (check_tol(i)) {
-          alpha_hat <- alpha_hat_iteration[, i]
-          return(alpha_hat)
+        alpha_hat_iteration <- matrix(NaN, nrow = k, ncol = max_iterations)
+        alpha_hat_iteration[, 1] <- alpha_hat
+
+        check_tol <- function(i) {
+          if (max(abs(alpha_hat_iteration[, i] - alpha_hat_iteration[, i-1])) < tol) {
+            return(TRUE)
+          } else {
+            return(FALSE)
+          }
         }
+
+        for (i in 2:max_iterations) {
+          alpha_hat_iteration[, i] <- iteration(alpha_hat_iteration[, i-1])
+          if (check_tol(i)) {
+            alpha_hat <- alpha_hat_iteration[, i]
+            return(alpha_hat)
+          }
+        }
+        warning("desired accuracy not achieved; increase max_iterations")
+        alpha_hat <- alpha_hat_iteration[, max_iterations]
       }
-      warning("desired accuracy not achieved; increase max_iterations")
-      alpha_hat <- alpha_hat_iteration[, max_iterations]
+    #}
+  } else {
+    t_orig <- t[1:k]
+    if (!contains_censored_loss) {
+      negLogLikelihood <- function(alpha) {
+        - sum(weights * log(dPiecewisePareto(losses, t_orig, alpha, truncation, truncation_type) / (1 - pPiecewisePareto(reporting_thresholds, t_orig, alpha, truncation, truncation_type))))
+      }
+    } else  {
+      negLogLikelihood <- function(alpha) {
+        - sum(weights * ifelse(is.censored,
+                               log((1 - pPiecewisePareto(losses, t_orig, alpha, truncation, truncation_type)) / (1 - pPiecewisePareto(reporting_thresholds, t_orig, alpha, truncation, truncation_type))),
+                               log(dPiecewisePareto(losses, t_orig, alpha, truncation, truncation_type) / (1 - pPiecewisePareto(reporting_thresholds, t_orig, alpha, truncation, truncation_type)))
+        )
+        )
+      }
+    }
+
+    alpha_start <- alpha_hat
+    alpha_hat <- NULL
+    try(alpha_hat <- stats::optim(alpha_start, negLogLikelihood, lower = rep(alpha_min, k), upper = rep(alpha_max, k), method = "L-BFGS-B")$par, silent = T)
+    if (is.null(alpha_hat)) {
+      warning("No solution found.")
+      return(rep(NaN, k))
     }
   }
   return(alpha_hat)
@@ -3970,14 +4072,14 @@ GenPareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting
   }
   if (!is.positive.finite.vector(reporting_thresholds)) {
     warning("reporting_thresholds must be NULL or non-negative.")
-    return(NaN)
+    return(rep(NaN, 2))
   }
   if (length(reporting_thresholds) == 1) {
     reporting_thresholds <- rep(reporting_thresholds, length(losses))
   }
   if (length(reporting_thresholds) != length(losses)) {
     warning("reporting_thresholds must be NULL or a vector of the same length as losses.")
-    return(NaN)
+    return(rep(NaN, 2))
   }
   if (min(losses - reporting_thresholds) < 0) {
     warning("losses which are less then the corresponding reporting threshold are ignored.")
@@ -3988,32 +4090,32 @@ GenPareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting
   }
   if (!is.TRUEorFALSE.vector(is.censored)) {
     warning("is.censored must be NULL or logical with only TRUE or FALSE entries.")
-    return(NaN)
+    return(rep(NaN, 2))
   }
   if (length(is.censored) == 1) {
     is.censored <- rep(is.censored, length(losses))
   }
   if (length(is.censored) != length(losses)) {
     warning("is.censored must have the same length as the losses.")
-    return(NaN)
+    return(rep(NaN, 2))
   }
-
-  # if (length(t) == 1) {
-  #   t <- rep(t, length(losses))
-  # }
 
 
   if (is.null(weights)) weights <- rep(1, length(losses))
   if (!is.positive.finite.vector(weights)) {
     warning("weights must NULL or positive.")
-    return(NaN)
+    return(rep(NaN, 2))
   }
   if (length(weights) != length(losses)) {
     warning("weights must have the same length as losses.")
-    return(NaN)
+    return(rep(NaN, 2))
   }
 
   index <- losses > pmax(t, reporting_thresholds)
+  if (sum(index) == 0) {
+    warning("No losses larger than reporting_thresholds and t.")
+    return(rep(NaN, 2))
+  }
   losses <- losses[index]
   weights <- weights[index]
   reporting_thresholds <- reporting_thresholds[index]
@@ -4047,7 +4149,7 @@ GenPareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting
     contains_censored_loss <- FALSE
   }
 
-  if (!reporting_thresholds && !contains_censored_loss) {
+  if (!use_rep_thresholds && !contains_censored_loss) {
     if (is.null(truncation) || is.infinite(truncation)) {
       negLogLikelihood <- function(alpha) {
         - sum(weights * (log(alpha[1]) + (-alpha[2] - 1) * log(1 + alpha[1] / alpha[2] * (losses / t - 1))))
