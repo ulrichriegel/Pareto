@@ -3127,11 +3127,6 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
   is.censored <- is.censored[index]
 
 
-  t <- c(t, truncation)
-  losses_xs_t <- lapply(t, function(x) losses[losses >= x])
-  count_xs_t <- unlist(lapply(losses_xs_t, "length"))
-  weights_xs_t <- lapply(t, function(x) weights[losses >= x])
-  sum_weights_xs_t <- unlist(lapply(weights_xs_t, "sum"))
 
 
   if (max(reporting_thresholds) > t[1]) {
@@ -3151,11 +3146,35 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
   }
 
   alpha_hat <- numeric(k)
-  for (i in 1:k) {
-    #alpha_hat[i] <- (count_xs_t[i] - count_xs_t[i+1]) / (sum(log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])))
-    alpha_hat[i] <- (sum_weights_xs_t[i] - sum_weights_xs_t[i+1]) / (sum(weights_xs_t[[i]] * log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])))
+
+  if (!use_rep_thresholds) {
+    t <- c(t, truncation)
+    losses_xs_t <- lapply(t, function(x) losses[losses >= x])
+    count_xs_t <- unlist(lapply(losses_xs_t, "length"))
+    weights_xs_t <- lapply(t, function(x) weights[losses >= x])
+    sum_weights_xs_t <- unlist(lapply(weights_xs_t, "sum"))
+
+    for (i in 1:k) {
+      #alpha_hat[i] <- (count_xs_t[i] - count_xs_t[i+1]) / (sum(log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])))
+      alpha_hat[i] <- (sum_weights_xs_t[i] - sum_weights_xs_t[i+1]) / (sum(weights_xs_t[[i]] * log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])))
+    }
+  } else {
+    for (i in 1:k) {
+      losses_xs_t_rt_i <- losses[losses >= t[i] & reporting_thresholds < t[i+1]]
+      weights_xs_t_rt_i <- weights[losses >= t[i] & reporting_thresholds < t[i+1]]
+      sum_weights_xs_rt_i <- sum(weights_xs_t_rt_i)
+      weights_xs_t_rt_ip1 <- weights[losses >= t[i+1] & reporting_thresholds < t[i+1]]
+      sum_weights_xs_rt_ip1 <- sum(weights_xs_t_rt_ip1)
+      rep_ths_xs_t_rt_i <- reporting_thresholds[losses >= t[i] & reporting_thresholds < t[i+1]]
+
+      #alpha_hat[i] <- (sum_weights_xs[i] - sum_weights_xs_t[i+1]) / (sum(weights_xs_t[[i]] * log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])))
+      alpha_hat[i] <- (sum_weights_xs_rt_i - sum_weights_xs_rt_ip1) / (sum(weights_xs_t_rt_i * log(pmin(losses_xs_t_rt_i, t[i+1]) / pmax(t[i], rep_ths_xs_t_rt_i))))
+    }
   }
-  if (!use_rep_thresholds && !contains_censored_loss && is.infinite(truncation)) {
+
+
+
+  if (!contains_censored_loss && is.infinite(truncation)) {
     return(alpha_hat)
   }  else if (!use_rep_thresholds && !contains_censored_loss) {
     #if (!is.infinite(truncation)) {
