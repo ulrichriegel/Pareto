@@ -4179,16 +4179,183 @@ GenPareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting
       }
     }
   } else if (!contains_censored_loss) {
+    if (is.null(truncation) || is.infinite(truncation)) {
+      negLogLikelihood <- function(alpha) {
+        - sum(weights * (
+          log(alpha[1])
+          + (-alpha[2] - 1) * log(1 + alpha[1] / alpha[2] * (losses / t - 1))
+          - log( (1 + alpha[1] / alpha[2] * (reporting_thresholds / t - 1))^(-alpha[2]))
+        ))
+      }
+
+    } else {
+      negLogLikelihood <- function(alpha) {
+        - sum(weights * (
+          log(alpha[1])
+          + (-alpha[2] - 1) * log(1 + alpha[1] / alpha[2] * (losses / t - 1))
+          - log( (1 + alpha[1] / alpha[2] * (reporting_thresholds / t - 1))^(-alpha[2]) - (1 + alpha[1] / alpha[2] * (truncation / t - 1))^(-alpha[2]))
+        ))
+      }
+
+    }
+  } else  {
+    if (is.null(truncation)) {
+      truncation = Inf
+    }
+    negLogLikelihood <- function(alpha) {
+      - sum(weights * ifelse(is.censored,
+                             log((1 + alpha[1] / alpha[2] * (losses / t - 1))^(-alpha[2])   - (1 + alpha[1] / alpha[2] * (truncation / t - 1))^(-alpha[2]) )
+                                      - log( (1 + alpha[1] / alpha[2] * (reporting_thresholds / t - 1))^(-alpha[2]) - (1 + alpha[1] / alpha[2] * (truncation / t - 1))^(-alpha[2])),
+                             log(alpha[1])
+                             + (-alpha[2] - 1) * log(1 + alpha[1] / alpha[2] * (losses / t - 1))
+                             - log( (1 + alpha[1] / alpha[2] * (reporting_thresholds / t - 1))^(-alpha[2]) - (1 + alpha[1] / alpha[2] * (truncation / t - 1))^(-alpha[2]))
+      )
+      )
+    }
+  }
+  #   negLogLikelihood <- function(alpha) {
+  #     - sum(weights * ifelse(is.censored,
+  #                            log((1 - pGenPareto(losses, t, alpha[1], alpha[2], truncation)) / (1 - pGenPareto(reporting_thresholds, t, alpha[1], alpha[2], truncation))),
+  #                            log(dGenPareto(losses, t, alpha[1], alpha[2], truncation) / (1 - pGenPareto(reporting_thresholds, t, alpha[1], alpha[2], truncation)))
+  #     )
+  #     )
+  #   }
+  # }
+
+  alpha <- NULL
+  try(alpha <- stats::optim(c(1,1), negLogLikelihood, lower = rep(alpha_min, 2), upper = rep(alpha_max, 2), method = "L-BFGS-B")$par, silent = T)
+  if (is.null(alpha)) {
+    warning("No solution found.")
+    alpha <- rep(NaN, 2)
+  }
+  return(alpha)
+}
+
+
+
+
+
+GenPareto_ML_Estimator_Alpha_old <- function(losses, t, truncation = NULL, reporting_thresholds = NULL, is.censored = NULL, weights = NULL, tol = 1e-7, max_iterations = 1000, alpha_min = 0.001, alpha_max = 10) {
+  if (!is.nonnegative.finite.vector(losses)) {
+    warning("losses must be non-negative.")
+    return(rep(NaN, 2))
+  }
+  if (!is.positive.finite.vector(t)) {
+    warning("t must be positive.")
+    return(rep(NaN, 2))
+  }
+  # if (length(t) != 1 && length(t) != length(losses)) {
+  #   warning("t must have length 1 or same length as losses.")
+  #   return(rep(NaN, 2))
+  # }
+  if (length(t) != 1) {
+    warning("Please use a threshold t with length 1. Use reporting_thresholds to take loss specific reporting thresholds into account.")
+    return(rep(NaN, 2))
+  }
+
+  if (is.null(reporting_thresholds)) {
+    reporting_thresholds <- rep(t, length(losses))
+  }
+  if (!is.positive.finite.vector(reporting_thresholds)) {
+    warning("reporting_thresholds must be NULL or non-negative.")
+    return(rep(NaN, 2))
+  }
+  if (length(reporting_thresholds) == 1) {
+    reporting_thresholds <- rep(reporting_thresholds, length(losses))
+  }
+  if (length(reporting_thresholds) != length(losses)) {
+    warning("reporting_thresholds must be NULL or a vector of the same length as losses.")
+    return(rep(NaN, 2))
+  }
+  if (min(losses - reporting_thresholds) < 0) {
+    warning("losses which are less then the corresponding reporting threshold are ignored.")
+  }
+
+  if (is.null(is.censored)) {
+    is.censored <- rep(FALSE, length(losses))
+  }
+  if (!is.TRUEorFALSE.vector(is.censored)) {
+    warning("is.censored must be NULL or logical with only TRUE or FALSE entries.")
+    return(rep(NaN, 2))
+  }
+  if (length(is.censored) == 1) {
+    is.censored <- rep(is.censored, length(losses))
+  }
+  if (length(is.censored) != length(losses)) {
+    warning("is.censored must have the same length as the losses.")
+    return(rep(NaN, 2))
+  }
+
+
+  if (is.null(weights)) weights <- rep(1, length(losses))
+  if (!is.positive.finite.vector(weights)) {
+    warning("weights must NULL or positive.")
+    return(rep(NaN, 2))
+  }
+  if (length(weights) != length(losses)) {
+    warning("weights must have the same length as losses.")
+    return(rep(NaN, 2))
+  }
+
+  index <- losses > pmax(t, reporting_thresholds)
+  if (sum(index) == 0) {
+    warning("No losses larger than reporting_thresholds and t.")
+    return(rep(NaN, 2))
+  }
+  losses <- losses[index]
+  weights <- weights[index]
+  reporting_thresholds <- reporting_thresholds[index]
+  reporting_thresholds <- pmax(reporting_thresholds, t)
+  is.censored <- is.censored[index]
+  n <- length(losses)
+
+  if (!is.null(truncation)) {
+    if (!is.positive.number(truncation)) {
+      warning("truncation must be NULL or a positive number ('Inf' allowed).")
+      return(rep(NaN, 2))
+    }
+    if (truncation <= t) {
+      warning("truncation must be larger than t")
+      return(rep(NaN, 2))
+    }
+    if (max(losses) >= truncation) {
+      warning("Losses must be < truncation.")
+      return(rep(NaN, 2))
+    }
+  }
+
+  if (max(reporting_thresholds) > t) {
+    use_rep_thresholds <- TRUE
+  } else {
+    use_rep_thresholds <- FALSE
+  }
+  if (sum(is.censored) > 0) {
+    contains_censored_loss <- TRUE
+  } else {
+    contains_censored_loss <- FALSE
+  }
+
+  if (!use_rep_thresholds && !contains_censored_loss) {
+    if (is.null(truncation) || is.infinite(truncation)) {
+      negLogLikelihood <- function(alpha) {
+        - sum(weights * (log(alpha[1]) + (-alpha[2] - 1) * log(1 + alpha[1] / alpha[2] * (losses / t - 1))))
+      }
+    } else {
+      negLogLikelihood <- function(alpha) {
+        - sum(weights * (log(alpha[1]) + (-alpha[2] - 1) * log(1 + alpha[1] / alpha[2] * (losses / t - 1)) - log(1 - (1 + alpha[1] / alpha[2] * (truncation / t - 1))^(-alpha[2]))))
+      }
+    }
+  } else if (!contains_censored_loss) {
     negLogLikelihood <- function(alpha) {
       - sum(weights * log(dGenPareto(losses, t, alpha[1], alpha[2], truncation) / (1 - pGenPareto(reporting_thresholds, t, alpha[1], alpha[2], truncation))))
     }
   } else  {
     negLogLikelihood <- function(alpha) {
       - sum(weights * ifelse(is.censored,
-                              log((1 - pGenPareto(losses, t, alpha[1], alpha[2], truncation)) / (1 - pGenPareto(reporting_thresholds, t, alpha[1], alpha[2], truncation))),
-                              log(dGenPareto(losses, t, alpha[1], alpha[2], truncation) / (1 - pGenPareto(reporting_thresholds, t, alpha[1], alpha[2], truncation)))
-                              )
-            )
+                             log((1 - pGenPareto(losses, t, alpha[1], alpha[2], truncation)) / (1 - pGenPareto(reporting_thresholds, t, alpha[1], alpha[2], truncation))),
+                             log(dGenPareto(losses, t, alpha[1], alpha[2], truncation) / (1 - pGenPareto(reporting_thresholds, t, alpha[1], alpha[2], truncation)))
+      )
+      )
     }
   }
 
@@ -4200,6 +4367,7 @@ GenPareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting
   }
   return(alpha)
 }
+
 
 
 
