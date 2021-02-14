@@ -11,8 +11,6 @@ GenPareto_ML_Estimator_Alpha(
   reporting_thresholds = NULL,
   is.censored = NULL,
   weights = NULL,
-  tol = 1e-07,
-  max_iterations = 1000,
   alpha_min = 0.001,
   alpha_max = 10
 )
@@ -29,10 +27,6 @@ GenPareto_ML_Estimator_Alpha(
 \item{is.censored}{Logical vector. \code{TRUE} indicates that a loss has been censored by the policy limit. The assumption is that the uncensored losses are Generalized Pareto distributed with the alphas we are looking for. \code{is.censored = NULL} means that no losses are censored.}
 
 \item{weights}{Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.}
-
-\item{tol}{Numeric. Desired accuracy  (only relevant in the truncated case).}
-
-\item{max_iterations}{Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).}
 
 \item{alpha_min}{Numeric. Lower bound for the estimated alphas.}
 
@@ -51,13 +45,26 @@ losses <- rGenPareto(1000, 1000, 2, 1, truncation = 10000)
 GenPareto_ML_Estimator_Alpha(losses, 1000)
 GenPareto_ML_Estimator_Alpha(losses, 1000, truncation = 10000)
 
-t <- rPareto(10000, 100, 2)
+t <- 1000
 alpha_ini <- 1
 alpha_tail <- 3
-losses <- rGenPareto(10000, t, alpha_ini, alpha_tail)
+losses <- rGenPareto(5000, t, alpha_ini, alpha_tail)
+reporting_thresholds <- rPareto(5000, 1000, 3)
+reported <- losses > reporting_thresholds
+losses <- losses[reported]
+reporting_thresholds <- reporting_thresholds[reported]
 GenPareto_ML_Estimator_Alpha(losses, t)
-losses <- rGenPareto(10000, t, alpha_ini, alpha_tail, truncation = 2 * max(t))
-GenPareto_ML_Estimator_Alpha(losses, t, truncation = 2 * max(t))
+GenPareto_ML_Estimator_Alpha(losses, t, reporting_thresholds = reporting_thresholds)
+limit <- 3000
+censored <- losses > limit
+losses[censored] <- limit
+reported <- losses > reporting_thresholds
+losses <- losses[reported]
+censored <- censored[reported]
+reporting_thresholds <- reporting_thresholds[reported]
+GenPareto_ML_Estimator_Alpha(losses, t, reporting_thresholds = reporting_thresholds)
+GenPareto_ML_Estimator_Alpha(losses, t, reporting_thresholds = reporting_thresholds,
+                             is.censored = censored)
 
 losses <- c(190, 600, 120, 270, 180, 120)
 w <- rep(1, length(losses))
