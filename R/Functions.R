@@ -2820,7 +2820,7 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting_th
     return(NaN)
   }
   if (length(t) != 1 && length(t) != length(losses)) {
-    warning("t must have length 1 or same length as losses.")
+    warning("t must have length 1.")
     return(NaN)
   }
   if (length(t) != 1) {
@@ -2842,18 +2842,19 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting_th
       warning("losses that are less then the corresponding reporting threshold are ignored.")
     }
   }
-  if (!is.TRUEorFALSE.vector(is.censored) && !is.null(is.censored)) {
+  if (is.null(is.censored)) {
+    is.censored <- rep(FALSE, length(losses))
+  }
+  if (!is.TRUEorFALSE.vector(is.censored)) {
     warning("is.censored must be NULL or logical with only TRUE or FALSE entries.")
     return(NaN)
   }
-  if (is.TRUEorFALSE.vector(is.censored)) {
-    if (length(is.censored) == 1) {
-      is.censored <- rep(is.censored, length(losses))
-    }
-    if (length(is.censored) != length(losses)) {
-      warning("is.censored must have the same length as the losses.")
-      return(NaN)
-    }
+  if (length(is.censored) == 1) {
+    is.censored <- rep(is.censored, length(losses))
+  }
+  if (length(is.censored) != length(losses)) {
+    warning("is.censored must have the same length as the losses.")
+    return(NaN)
   }
 
 
@@ -2874,42 +2875,65 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting_th
   }
 
   index <- losses > t
-  losses <- losses[index]
-  weights <- weights[index]
-  t <- t[index]
-  n <- length(losses)
-
-  contains_censored_loss <- FALSE
-  if (is.TRUEorFALSE.vector(is.censored)) {
-    is.censored <- is.censored[index]
-    if (sum(is.censored) > 0) {
-      contains_censored_loss <- TRUE
-    }
-  }
-
-  if (length(losses) == 0) {
+  if (sum(index) == 0) {
     warning("No loss is larger than t and the specific reporting_threshold.")
     return(NaN)
   }
+  losses <- losses[index]
+  weights <- weights[index]
+  t <- t[index]
+  is.censored <- is.censored[index]
+  n <- length(losses)
 
-  if (!is.null(truncation)) {
-    if (!is.positive.number(truncation)) {
-      warning("truncation must be NULL or a positive number ('Inf' allowed).")
-      return(NaN)
-    }
-    if (truncation <= max(t)) {
-      warning("truncation must be larger than t and the reporting_thresholds")
-      return(NaN)
-    }
-    if (max(losses) >= truncation) {
-      warning("Losses must be < truncation.")
-      return(NaN)
-    }
+  contains_censored_loss <- FALSE
+  if (sum(is.censored) > 0) {
+    contains_censored_loss <- TRUE
   }
+
+  if (is.null(truncation)) {
+    truncation <- Inf
+  }
+  if (!is.positive.number(truncation)) {
+    warning("truncation must be NULL or a positive number ('Inf' allowed).")
+    return(NaN)
+  }
+  if (truncation <= max(t)) {
+    warning("truncation must be larger than t and the reporting_thresholds")
+    return(NaN)
+  }
+  if (max(losses) >= truncation) {
+    warning("Losses must be < truncation.")
+    return(NaN)
+  }
+
   if (contains_censored_loss) {
+    if (is.infinite(truncation)) {
+      alpha_hat <- sum(weights[!is.censored]) / sum(weights * log(losses / t))
+    } else   {
+      nll <- function(alpha) {
+        ll <- sum(weights * ifelse(is.censored,
+                                   log((t / losses)^alpha - (t / truncation)^alpha) - log(1 - (t / truncation)^alpha),
+                                   log(alpha * t^alpha * losses^(-alpha - 1)) - log(1 - (t / truncation)^alpha)
+                                   ))
+        # ll <- sum(weights * ifelse(is.censored,
+        #                            log(1 - pPareto(losses, t, alpha, truncation)),
+        #                            log(dPareto(losses, t, alpha, truncation))))
+        return(-ll)
+      }
+      optim_result <- NULL
+      try(optim_result <- stats::optim(1, nll, method = "Brent", lower = alpha_min, upper = alpha_max))
+      if (is.null(optim_result) || optim_result$convergence != 0) {
+        warning("optimization did not converge")
+        return(NaN)
+      }
+      return(optim_result$par)
+    }
+  } else if (is.infinite(truncation)) {
+    alpha_hat <- sum(weights) / sum(weights * log(losses / t))
+  } else {
+
     nll <- function(alpha) {
-      ll <- 0
-      ll <- sum(weights * ifelse(is.censored, log(1 - pPareto(losses, t, alpha, truncation)), log(dPareto(losses, t, alpha, truncation))))
+      ll <- sum(weights * log(alpha * t^alpha * losses^(-alpha - 1)) - log(1 - (t / truncation)^alpha))
       return(-ll)
     }
     optim_result <- NULL
@@ -2919,45 +2943,43 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting_th
       return(NaN)
     }
     return(optim_result$par)
-  } else if (is.null(truncation) || is.infinite(truncation)) {
-    alpha_hat <- sum(weights) / sum(weights * log(losses / t))
-  } else {
-    alpha_hat_iteration <- numeric(max_iterations)
-    alpha_hat_iteration[1] <- n / sum(log(losses / t))
-    iteration <- function(alpha_hat) {
-      result <- sum(weights) * (sum(weights * log(losses / t)) - sum(weights * log(t / truncation) * (t / truncation)^alpha_hat / (1 - (t / truncation)^alpha_hat)))^{-1}
-      return(result)
-    }
 
-
-    if(!is.positive.finite.number(max_iterations) || max_iterations < 2) {
-      warning("max_iterations must be > 1")
-      return(NaN)
-    } else {
-      max_iterations <- ceiling(max_iterations)
-    }
-
-    if (!is.positive.finite.number(tol)) {
-      warning("tol must be > 1")
-      return(NaN)
-    }
-    check_tol <- function(i) {
-      if (abs(alpha_hat_iteration[i] - alpha_hat_iteration[i-1]) < tol) {
-        return(TRUE)
-      } else {
-        return(FALSE)
-      }
-    }
-
-    for (i in 2:max_iterations) {
-      alpha_hat_iteration[i] <- iteration(alpha_hat_iteration[i-1])
-      if (check_tol(i)) {
-        alpha_hat <- alpha_hat_iteration[i]
-        return(alpha_hat)
-      }
-    }
-    warning("desired accuracy not achieved; increase max_iterations")
-    alpha_hat <- alpha_hat_iteration[max_iterations]
+    # alpha_hat_iteration <- numeric(max_iterations)
+    # alpha_hat_iteration[1] <- sum(weights) / sum(weights * log(losses / t))
+    # iteration <- function(alpha_hat) {
+    #   result <- sum(weights) * (sum(weights * log(losses / t)) - sum(weights * log(t / truncation) * (t / truncation)^alpha_hat / (1 - (t / truncation)^alpha_hat)))^{-1}
+    #   return(result)
+    # }
+    #
+    #
+    # if(!is.positive.finite.number(max_iterations) || max_iterations < 2) {
+    #   warning("max_iterations must be > 1")
+    #   return(NaN)
+    # } else {
+    #   max_iterations <- ceiling(max_iterations)
+    # }
+    #
+    # if (!is.positive.finite.number(tol)) {
+    #   warning("tol must be > 1")
+    #   return(NaN)
+    # }
+    # check_tol <- function(i) {
+    #   if (abs(alpha_hat_iteration[i] - alpha_hat_iteration[i-1]) < tol) {
+    #     return(TRUE)
+    #   } else {
+    #     return(FALSE)
+    #   }
+    # }
+    #
+    # for (i in 2:max_iterations) {
+    #   alpha_hat_iteration[i] <- iteration(alpha_hat_iteration[i-1])
+    #   if (check_tol(i)) {
+    #     alpha_hat <- alpha_hat_iteration[i]
+    #     return(alpha_hat)
+    #   }
+    # }
+    # warning("desired accuracy not achieved; increase max_iterations")
+    # alpha_hat <- alpha_hat_iteration[max_iterations]
   }
   return(alpha_hat)
 }
