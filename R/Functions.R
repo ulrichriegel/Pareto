@@ -3127,13 +3127,13 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
 
 
   if (k == 1) {
-    Result <- Pareto_ML_Estimator_Alpha(losses, t, truncation = truncation, reporting_thresholds = reporting_thresholds, is.censored = is.censored, weights = weights)
+    Result <- Pareto_ML_Estimator_Alpha(losses, t, truncation = truncation, reporting_thresholds = reporting_thresholds, is.censored = is.censored, weights = weights, alpha_min = alpha_min, alpha_max = alpha_max)
     return(Result)
   }
 
   index <- losses > pmax(t[1], reporting_thresholds)
   if (sum(index) == 0) {
-    warning("No losses larger than reporting_thresholds and t[1].") ##########
+    warning("No losses larger than reporting_thresholds and t[1].")
     return(rep(NaN, k))
   }
   losses <- losses[index]
@@ -3142,6 +3142,10 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
   reporting_thresholds <- pmax(reporting_thresholds, t[1])
   is.censored <- is.censored[index]
 
+  if (max(losses) <= max(t)) {
+    warning("Number of losses > max(t) must be positive.")
+    return(rep(NaN, k))
+  }
 
 
 
@@ -3157,7 +3161,7 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
   }
 
   if (min(reporting_thresholds) >= t[2]) {
-    warning("At least one reporting threshold bust be < t[2].") ##########
+    warning("At least one reporting threshold bust be < t[2].")
     return(rep(NaN, k))
   }
 
@@ -3205,6 +3209,8 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
 
   if (is.infinite(truncation)) {
     return(alpha_hat)
+  }  else if (truncation_type == "lp") {
+    alpha_hat[k] <- Pareto_ML_Estimator_Alpha(losses, t[k], truncation = truncation, reporting_thresholds = reporting_thresholds, is.censored = is.censored, weights = weights, alpha_min = alpha_min, alpha_max = alpha_max)
   }  else if (!use_rep_thresholds && !contains_censored_loss) {
     #if (!is.infinite(truncation)) {
       if (truncation_type == "lp") {
