@@ -3212,47 +3212,155 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
   }  else if (truncation_type == "lp") {
     alpha_hat[k] <- Pareto_ML_Estimator_Alpha(losses, t[k], truncation = truncation, reporting_thresholds = reporting_thresholds, is.censored = is.censored, weights = weights, alpha_min = alpha_min, alpha_max = alpha_max)
   }  else if (!use_rep_thresholds && !contains_censored_loss) {
-    #if (!is.infinite(truncation)) {
-      if (truncation_type == "lp") {
-        alpha_hat[k] <- Pareto_ML_Estimator_Alpha(losses_xs_t[[k]], t[k], truncation = truncation, weights = weights_xs_t[[k]])
-      } else {
-        iteration <- function(alpha_hat) {
-          result <- numeric(k)
-          for (i in 1:k) {
-            product <- prod((t[-(k+1)] / t[-1])^alpha_hat)
-            #result[i] <- (count_xs_t[i] - count_xs_t[i+1]) / (sum(log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])) - count_xs_t[1] * log(t[i] / t[i+1]) * product  / (1 - product))
-            result[i] <- (sum_weights_xs_t[i] - sum_weights_xs_t[i+1]) / (sum(weights_xs_t[[i]] * log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])) - sum_weights_xs_t[1] * log(t[i] / t[i+1]) * product  / (1 - product))
-          }
-          return(result)
-        }
-
-        if(max_iterations < 2) {
-          warning("max_iterations must be > 1")
-          return(rep(NaN), k)
-        }
-
-        alpha_hat_iteration <- matrix(NaN, nrow = k, ncol = max_iterations)
-        alpha_hat_iteration[, 1] <- alpha_hat
-
-        check_tol <- function(i) {
-          if (max(abs(alpha_hat_iteration[, i] - alpha_hat_iteration[, i-1])) < tol) {
-            return(TRUE)
-          } else {
-            return(FALSE)
-          }
-        }
-
-        for (i in 2:max_iterations) {
-          alpha_hat_iteration[, i] <- iteration(alpha_hat_iteration[, i-1])
-          if (check_tol(i)) {
-            alpha_hat <- alpha_hat_iteration[, i]
-            return(alpha_hat)
-          }
-        }
-        warning("desired accuracy not achieved; increase max_iterations")
-        alpha_hat <- alpha_hat_iteration[, max_iterations]
+    iteration <- function(alpha_hat) {
+      result <- numeric(k)
+      for (i in 1:k) {
+        product <- prod((t[-(k+1)] / t[-1])^alpha_hat)
+        result[i] <- (sum_weights_xs_t[i] - sum_weights_xs_t[i+1]) / (sum(weights_xs_t[[i]] * log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])) - sum_weights_xs_t[1] * log(t[i] / t[i+1]) * product  / (1 - product))
       }
-    #}
+      return(result)
+    }
+
+    if(max_iterations < 2) {
+      warning("max_iterations must be > 1")
+      return(rep(NaN), k)
+    }
+
+    alpha_hat_iteration <- matrix(NaN, nrow = k, ncol = max_iterations)
+    alpha_hat_iteration[, 1] <- alpha_hat
+
+    check_tol <- function(i) {
+      if (max(abs(alpha_hat_iteration[, i] - alpha_hat_iteration[, i-1])) < tol) {
+        return(TRUE)
+      } else {
+        return(FALSE)
+      }
+    }
+
+    for (i in 2:max_iterations) {
+      alpha_hat_iteration[, i] <- iteration(alpha_hat_iteration[, i-1])
+      if (check_tol(i)) {
+        alpha_hat <- alpha_hat_iteration[, i]
+        return(alpha_hat)
+      }
+    }
+    warning("desired accuracy not achieved; increase max_iterations")
+    alpha_hat <- alpha_hat_iteration[, max_iterations]
+  } else if (TRUE) {
+    index_losses <- sapply(losses, function(x) sum(x >= t))
+    index_rt <- sapply(reporting_thresholds, function(x) sum(x >= t))
+    ratio_t <- numeric(k+1)
+    ratio_t[1] <- 1
+
+    negLogLikelihood <- function(alpha) {
+      ratio_t[-1] <- (t[-(k+1)] / t[-1])^alpha
+      survival_t <- cumprod(ratio_t)
+
+      survival_losses <- survival_t[index_losses] * (t[index_losses] / losses)^alpha[index_losses]
+      survival_rt <- survival_t[index_rt] * (t[index_rt] / reporting_thresholds)^alpha[index_rt]
+      survival_truncation <- survival_t[k+1]
+      density_losses <- survival_t[index_losses] * alpha[index_losses] / t[index_losses] *(t[index_losses] / losses)^alpha[index_losses]
+
+      - sum(weights * ifelse(is.censored,
+                             log(survival_losses - survival_truncation) - log(survival_rt - survival_truncation),
+                             log(density_losses) - log(survival_rt - survival_truncation)
+      )
+      )
+    }
+    # negLogLikelihood <- function(alpha) {
+    #   - sum(weights * ifelse(is.censored,
+    #                          log((1 - pPiecewisePareto(losses, t_orig, alpha, truncation, truncation_type)) / (1 - pPiecewisePareto(reporting_thresholds, t_orig, alpha, truncation, truncation_type))),
+    #                          log(dPiecewisePareto(losses, t_orig, alpha, truncation, truncation_type) / (1 - pPiecewisePareto(reporting_thresholds, t_orig, alpha, truncation, truncation_type)))
+    #   )
+    #   )
+    # }
+
+    alpha_start <- rep(1, k)
+    result_optim <- NULL
+    try(result_optim <- stats::optim(alpha_start, negLogLikelihood, lower = rep(alpha_min, k), upper = rep(alpha_max, k), method = "L-BFGS-B"), silent = T)
+    if (is.null(result_optim) || result_optim$convergence != 0) {
+      warning("No solution found.")
+      return(rep(NaN, k))
+    }
+    alpha_hat <- result_optim$par
+
+  } else if (TRUE) {
+
+    losses_xs_t <- lapply(t, function(x) losses[losses >= x])
+    count_xs_t <- unlist(lapply(losses_xs_t, "length"))
+    weights_xs_t <- lapply(t, function(x) weights[losses >= x])
+    sum_weights_xs_t <- unlist(lapply(weights_xs_t, "sum"))
+
+
+    product <- prod((t[-(k+1)] / t[-1])^alpha_hat)
+    weights_not_censored <- weights
+    weights_not_censored[is.censored] <- 0
+
+    losses_xs_t_rt <- list()
+    weights_xs_t_rt <- list()
+    sum_weights_xs_rt <- numeric(k)
+    weights_xs_t_rt_not_censored <- list()
+    sum_weights_xs_rt_not_censored <- numeric(k+1)
+    #weights_xs_t_rt_ip1_not_censored <- list()
+    #sum_weights_xs_rt_ip1_not_censored <- numeric(k)
+    rep_ths_xs_t_rt <- list()
+
+    for (i in 1:k) {
+      losses_xs_t_rt[[i]] <- losses[losses >= t[i] & reporting_thresholds < t[i+1]]
+      weights_xs_t_rt[[i]] <- weights[losses >= t[i] & reporting_thresholds < t[i+1]]
+      sum_weights_xs_rt[i] <- sum(weights_xs_t_rt[[i]])
+      weights_xs_t_rt_not_censored[[i]] <- weights_not_censored[losses >= t[i] & reporting_thresholds < t[i+1]]
+      sum_weights_xs_rt_not_censored[i] <- sum(weights_xs_t_rt_not_censored[[i]])
+      #weights_xs_t_rt_ip1_not_censored <- weights_not_censored[losses >= t[i+1] & reporting_thresholds < t[i+1]]
+      #sum_weights_xs_rt_ip1_not_censored <- sum(weights_xs_t_rt_ip1_not_censored)
+      rep_ths_xs_t_rt[[i]] <- reporting_thresholds[losses >= t[i] & reporting_thresholds < t[i+1]]
+
+    }
+    sum_weights_xs_rt_not_censored[k+1] <- 0
+
+    iteration <- function(alpha_hat) {
+      result <- numeric(k)
+      #product <- prod((t[-(k+1)] / t[-1])^alpha_hat)
+      for (i in 1:k) {
+        ####################################################
+        #########überarbeiten
+        ####################################################
+
+        result[i] <- (sum_weights_xs_rt_not_censored[i] - sum_weights_xs_rt_not_censored[i+1]) / (sum(weights_xs_t_rt[[i]] * log(pmin(losses_xs_t_rt[[i]], t[i+1]) / pmax(t[i], rep_ths_xs_t_rt[[i]])))  - sum_weights_xs_t[1] * log(t[i] / t[i+1]) * product  / (1 - product)  )
+
+        ######################################################
+        ######################################################
+        #result[i] <- (sum_weights_xs_t[i] - sum_weights_xs_t[i+1]) / (sum(weights_xs_t[[i]] * log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])) - sum_weights_xs_t[1] * log(t[i] / t[i+1]) * product  / (1 - product))
+      }
+      return(result)
+    }
+
+    if(max_iterations < 2) {
+      warning("max_iterations must be > 1")
+      return(rep(NaN), k)
+    }
+
+    alpha_hat_iteration <- matrix(NaN, nrow = k, ncol = max_iterations)
+    alpha_hat_iteration[, 1] <- alpha_hat
+
+    check_tol <- function(i) {
+      if (max(abs(alpha_hat_iteration[, i] - alpha_hat_iteration[, i-1])) < tol) {
+        return(TRUE)
+      } else {
+        return(FALSE)
+      }
+    }
+
+    for (i in 2:max_iterations) {
+      alpha_hat_iteration[, i] <- iteration(alpha_hat_iteration[, i-1])
+      if (check_tol(i)) {
+        alpha_hat <- alpha_hat_iteration[, i]
+        return(alpha_hat)
+      }
+    }
+    warning("desired accuracy not achieved; increase max_iterations")
+    alpha_hat <- alpha_hat_iteration[, max_iterations]
+
   } else {
     t_orig <- t[1:k]
     if (!contains_censored_loss) {
