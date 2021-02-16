@@ -12,8 +12,6 @@ PiecewisePareto_ML_Estimator_Alpha(
   reporting_thresholds = NULL,
   is.censored = NULL,
   weights = NULL,
-  tol = 1e-07,
-  max_iterations = 1000,
   alpha_min = 0.001,
   alpha_max = 10
 )
@@ -32,10 +30,6 @@ PiecewisePareto_ML_Estimator_Alpha(
 \item{is.censored}{Logical vector. \code{TRUE} indicates that a loss has been censored by the policy limit. The assumption is that the uncensored losses are piecewise Pareto distributed with the alphas we are looking for. \code{is.censored = NULL} means that no losses are censored.}
 
 \item{weights}{Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.}
-
-\item{tol}{Numeric. Desired accuracy (only relevant in the truncated case).}
-
-\item{max_iterations}{Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).}
 
 \item{alpha_min}{Numeric. Lower bound for the estimated alphas in case that reporting_thresholds or censoring are used.}
 

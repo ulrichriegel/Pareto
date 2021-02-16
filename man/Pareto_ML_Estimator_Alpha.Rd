@@ -11,8 +11,6 @@ Pareto_ML_Estimator_Alpha(
   reporting_thresholds = NULL,
   is.censored = NULL,
   weights = NULL,
-  tol = 1e-07,
-  max_iterations = 1000,
   alpha_min = 0.001,
   alpha_max = 10
 )
@@ -30,13 +28,9 @@ Pareto_ML_Estimator_Alpha(
 
 \item{weights}{Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.}
 
-\item{tol}{Numeric. Desired accuracy  (only relevant in the truncated case).}
+\item{alpha_min}{Numeric. Lower bound for alpha (only used in truncated case).}
 
-\item{max_iterations}{Numeric. Maximum number of iteration in the case \code{truncation < Inf}  (only relevant in the truncated case).}
-
-\item{alpha_min}{Numeric. Lower bound for alpha used for optimization in case of censored losses.}
-
-\item{alpha_max}{Numeric. Upper bound for alpha used for optimization in case of censored losses}
+\item{alpha_max}{Numeric. Upper bound for alpha (only used in truncated case).}
 }
 \value{
 Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribution with threshold \code{t} given the observations \code{losses}
@@ -52,12 +46,15 @@ losses <- rPareto(100, 1000, 2, truncation = 2000)
 Pareto_ML_Estimator_Alpha(losses, 1000)
 Pareto_ML_Estimator_Alpha(losses, 1000, truncation = 2000)
 
-t <- rPareto(10000, 100, 2)
+t <- 100
 alpha <- 2
 losses <- rPareto(10000, t, alpha)
+reporting_thresholds <- rPareto(10000, t, 5)
+index <- losses > reporting_thresholds
+losses <- losses[index]
+reporting_thresholds <- reporting_thresholds[index]
 Pareto_ML_Estimator_Alpha(losses, t)
-losses <- rPareto(10000, t, alpha, truncation = 2 * max(t))
-Pareto_ML_Estimator_Alpha(losses, t, truncation = 2 * max(t))
+Pareto_ML_Estimator_Alpha(losses, t, reporting_thresholds = reporting_thresholds)
 
 losses <- rPareto(10, 1000, 2)
 w <- rep(1, 10)
