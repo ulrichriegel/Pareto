@@ -31,9 +31,9 @@ PiecewisePareto_ML_Estimator_Alpha(
 
 \item{weights}{Numeric vector. Weights for the losses. For instance \code{weights[i] = 2} and \code{weights[j] = 1} for \code{j != i} has the same effect as adding another loss of size \code{loss[i]}.}
 
-\item{alpha_min}{Numeric. Lower bound for the estimated alphas in case that reporting_thresholds or censoring are used.}
+\item{alpha_min}{Numeric. Lower bound for the estimated alphas (only used in truncated case).}
 
-\item{alpha_max}{Numeric. Upper bound for the estimated alphas in case that reporting_thresholds or censoring are used.}
+\item{alpha_max}{Numeric. Upper bound for the estimated alphas (only used in truncated case).}
 }
 \value{
 Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribution with threshold \code{t} given the observations \code{losses}
@@ -44,16 +44,21 @@ Calculates the maximum likelihood estimator of the parameter vector alpha of a p
 \examples{
 losses <- rPiecewisePareto(10000, t = c(100,200,300), alpha = c(1,2,3))
 PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300))
-losses <- rPiecewisePareto(10000, t = c(100,200,300), alpha = c(1,2,3),
-                           truncation = 500, truncation_type = "lp")
-PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300))
-PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300),
-                                   truncation = 500, truncation_type = "lp")
+
 losses <- rPiecewisePareto(10000, t = c(100,200,300), alpha = c(1,2,3),
                            truncation = 500, truncation_type = "wd")
 PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300))
 PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300),
-                                   truncation = 500, truncation_type = "wd")
+                                 truncation = 500, truncation_type = "wd")
+reporting_thresholds <- rPareto(10000, 100, 3)
+index <- losses > reporting_thresholds
+losses <- losses[index]
+reporting_thresholds <- reporting_thresholds[index]
+PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300),
+                                 truncation = 500, truncation_type = "wd")
+PiecewisePareto_ML_Estimator_Alpha(losses, c(100,200,300),
+                                 truncation = 500, truncation_type = "wd",
+                                 reporting_thresholds = reporting_thresholds)
 
 losses <- c(140, 240, 490, 200, 110, 710, 120, 190, 210, 310)
 w <- rep(1, length(losses))
