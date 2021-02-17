@@ -171,8 +171,8 @@ Pareto_Find_Alpha_btw_FQs(t_1, f_1, t_2, f_2)
 
 ### Maximum likelihood estimation of the parameter alpha
 
-For $i=1,\dots,n$ let $X_i\sim \text{Pareto}(t_i,\alpha)$ be Pareto distributed observations. Then we have the ML estimator $$
-\hat{\alpha}^{ML}=\frac{n}{\sum_{i=1}^n\log(X_i/t_i)}.
+For $i=1,\dots,n$ let $X_i\sim \text{Pareto}(t,\alpha)$ be Pareto distributed observations. Then we have the ML estimator $$
+\hat{\alpha}^{ML}=\frac{n}{\sum_{i=1}^n\log(X_i/t)}.
 $$
 *Example:*
 
@@ -185,7 +185,7 @@ Pareto_ML_Estimator_Alpha(losses, t = 100)
 
 ### Truncation
 
-Let $X\sim \text{Pareto}(t,\alpha)$ and $T>t$. Then $X|(X>T)$ has a *truncated Pareto distribution*. The Pareto functions mentioned above are also available for the truncated Pareto distribution.
+Let $X\sim \text{Pareto}(t,\alpha)$ and $T>t$. Then $X|(X<T)$ has a *truncated Pareto distribution*. The Pareto functions mentioned above are also available for the truncated Pareto distribution.
 
 
 ## Piecewise Pareto distribution

@@ -2772,7 +2772,7 @@ qPareto_s <- function(y, t, alpha, truncation = NULL) {
 
 #' Maximum Likelihood Estimation of the Alpha of a Pareto distribution
 #'
-#' @description Calculates the maximum likelihood estimator for the alpha of a (truncated) Pareto distribution
+#' @description Calculates the maximum likelihood estimator for the parameter alpha of a Pareto distribution
 #' with a known threshold and (if applicable) a known truncation
 #'
 #' @param losses Numeric vector. Losses that are used for the ML estimation.
@@ -2982,7 +2982,8 @@ Pareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, reporting_th
 
 #' Maximum Likelihood Estimation of the Alphas of the Piecewise Pareto Distribution
 #'
-#' @description Calculates the maximum likelihood estimator of the parameter vector alpha of a piecewise Pareto distribution
+#' @description Calculates the maximum likelihood estimator of the parameter vector alpha for a a piecewise Pareto distribution with given vector t
+#' and (if applicable) a known truncation
 #'
 #' @param losses Numeric vector. Losses that are used for the ML estimation.
 #' @param t Numeric vector. Thresholds of the piecewise Pareto distribution.
@@ -3203,69 +3204,51 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
 
   if (is.infinite(truncation)) {
     return(alpha_hat)
-  }  else if (truncation_type == "lp") {
+  } else if (truncation_type == "lp") {
     alpha_hat[k] <- Pareto_ML_Estimator_Alpha(losses, t[k], truncation = truncation, reporting_thresholds = reporting_thresholds, is.censored = is.censored, weights = weights, alpha_min = alpha_min, alpha_max = alpha_max)
-  # }  else if (!use_rep_thresholds && !contains_censored_loss) {
-  #
-  #   Alternative Iteration (search for fixed point)
-  #
-  #   tol <- 1e-6
-  #   max_iterations <- 1000
-  #   iteration <- function(alpha_hat) {
-  #     result <- numeric(k)
-  #     for (i in 1:k) {
-  #       product <- prod((t[-(k+1)] / t[-1])^alpha_hat)
-  #       result[i] <- (sum_weights_xs_t[i] - sum_weights_xs_t[i+1]) / (sum(weights_xs_t[[i]] * log(pmin(losses_xs_t[[i]], t[i+1]) / t[i])) - sum_weights_xs_t[1] * log(t[i] / t[i+1]) * product  / (1 - product))
-  #     }
-  #     return(result)
-  #   }
-  #
-  #   if(max_iterations < 2) {
-  #     warning("max_iterations must be > 1")
-  #     return(rep(NaN), k)
-  #   }
-  #
-  #   alpha_hat_iteration <- matrix(NaN, nrow = k, ncol = max_iterations)
-  #   alpha_hat_iteration[, 1] <- alpha_hat
-  #
-  #   check_tol <- function(i) {
-  #     if (max(abs(alpha_hat_iteration[, i] - alpha_hat_iteration[, i-1])) < tol) {
-  #       return(TRUE)
-  #     } else {
-  #       return(FALSE)
-  #     }
-  #   }
-  #
-  #   for (i in 2:max_iterations) {
-  #     alpha_hat_iteration[, i] <- iteration(alpha_hat_iteration[, i-1])
-  #     if (check_tol(i)) {
-  #       alpha_hat <- alpha_hat_iteration[, i]
-  #       return(alpha_hat)
-  #     }
-  #   }
-  #   warning("desired accuracy not achieved; increase max_iterations")
-  #   alpha_hat <- alpha_hat_iteration[, max_iterations]
   } else {
-    index_losses <- sapply(losses, function(x) sum(x >= t))
-    index_rt <- sapply(reporting_thresholds, function(x) sum(x >= t))
-    ratio_t <- numeric(k+1)
-    ratio_t[1] <- 1
+    if (!contains_censored_loss) {
+      index_losses <- sapply(losses, function(x) sum(x >= t))
+      index_rt <- sapply(reporting_thresholds, function(x) sum(x >= t))
+      ratio_t <- numeric(k+1)
+      ratio_t[1] <- 1
 
-    negLogLikelihood <- function(alpha) {
-      ratio_t[-1] <- (t[-(k+1)] / t[-1])^alpha
-      survival_t <- cumprod(ratio_t)
+      negLogLikelihood <- function(alpha) {
+        ratio_t[-1] <- (t[-(k+1)] / t[-1])^alpha
+        survival_t <- cumprod(ratio_t)
 
-      survival_losses <- survival_t[index_losses] * (t[index_losses] / losses)^alpha[index_losses]
-      survival_rt <- survival_t[index_rt] * (t[index_rt] / reporting_thresholds)^alpha[index_rt]
-      survival_truncation <- survival_t[k+1]
-      density_losses <- survival_t[index_losses] * alpha[index_losses] / t[index_losses] * (t[index_losses] / losses)^alpha[index_losses]
+        survival_rt <- survival_t[index_rt] * (t[index_rt] / reporting_thresholds)^alpha[index_rt]
+        survival_truncation <- survival_t[k+1]
+        density_losses <- survival_t[index_losses] * alpha[index_losses] / t[index_losses] * (t[index_losses] / losses)^alpha[index_losses]
 
-      - sum(weights * ifelse(is.censored,
-                             log(survival_losses - survival_truncation) - log(survival_rt - survival_truncation),
-                             log(density_losses) - log(survival_rt - survival_truncation)
-                             )
-            )
+        - sum(weights * (
+                          log(density_losses) - log(survival_rt - survival_truncation)
+                        )
+              )
+      }
+    } else {
+      index_losses <- sapply(losses, function(x) sum(x >= t))
+      index_rt <- sapply(reporting_thresholds, function(x) sum(x >= t))
+      ratio_t <- numeric(k+1)
+      ratio_t[1] <- 1
+
+      negLogLikelihood <- function(alpha) {
+        ratio_t[-1] <- (t[-(k+1)] / t[-1])^alpha
+        survival_t <- cumprod(ratio_t)
+
+        survival_losses <- survival_t[index_losses] * (t[index_losses] / losses)^alpha[index_losses]
+        survival_rt <- survival_t[index_rt] * (t[index_rt] / reporting_thresholds)^alpha[index_rt]
+        survival_truncation <- survival_t[k+1]
+        density_losses <- survival_t[index_losses] * alpha[index_losses] / t[index_losses] * (t[index_losses] / losses)^alpha[index_losses]
+
+        - sum(weights * ifelse(is.censored,
+                               log(survival_losses - survival_truncation) - log(survival_rt - survival_truncation),
+                               log(density_losses) - log(survival_rt - survival_truncation)
+        )
+        )
+      }
     }
+
 
     alpha_start <- alpha_hat
     alpha_start <- rep(1, k)
@@ -4067,6 +4050,7 @@ GenPareto_Layer_Var_s <- function(Cover, AttachmentPoint, t, alpha_ini, alpha_ta
 #' Maximum Likelihood Estimation of the Pareto Alphas of a Generalized Pareto Distribution
 #'
 #' @description Calculates the maximum likelihood estimators of the parameters alpha_ini and alpha_tail of a generalized Pareto distribution
+#' with known threshold and (if applicable) known truncation
 #'
 #' @param losses Numeric vector. Losses that are used for the ML estimation.
 #' @param t Numeric or numeric vector. Threshold of the generalized Pareto distribution. Alternatively, \code{t} can be a vector of same length as \code{losses}. In this case \code{t[i]} is the reporting threshold of \code{losses[i]}.
