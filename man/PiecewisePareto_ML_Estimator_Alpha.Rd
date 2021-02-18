@@ -39,7 +39,8 @@ PiecewisePareto_ML_Estimator_Alpha(
 Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribution with threshold \code{t} given the observations \code{losses}
 }
 \description{
-Calculates the maximum likelihood estimator of the parameter vector alpha of a piecewise Pareto distribution
+Calculates the maximum likelihood estimator of the parameter vector alpha for a a piecewise Pareto distribution with given vector t
+and (if applicable) a known truncation
 }
 \examples{
 losses <- rPiecewisePareto(10000, t = c(100,200,300), alpha = c(1,2,3))

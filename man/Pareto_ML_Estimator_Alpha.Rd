@@ -36,7 +36,7 @@ Pareto_ML_Estimator_Alpha(
 Maximum likelihood estimator for the parameter \code{alpha} of a Pareto distribution with threshold \code{t} given the observations \code{losses}
 }
 \description{
-Calculates the maximum likelihood estimator for the alpha of a (truncated) Pareto distribution
+Calculates the maximum likelihood estimator for the parameter alpha of a Pareto distribution
 with a known threshold and (if applicable) a known truncation
 }
 \examples{

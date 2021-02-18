@@ -37,6 +37,7 @@ Maximum likelihood estimator for the parameters \code{alpha_ini} and \code{alpha
 }
 \description{
 Calculates the maximum likelihood estimators of the parameters alpha_ini and alpha_tail of a generalized Pareto distribution
+with known threshold and (if applicable) known truncation
 }
 \examples{
 losses <- rGenPareto(1000, 1000, 2,3)
