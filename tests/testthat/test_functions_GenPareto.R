@@ -101,14 +101,14 @@ test_that("GenPareto_ML_Estimator_alpha", {
 
   reporting_thresholds <- rep(1000, 12)
   reporting_thresholds[1]<- 1500
-  expect_equal(GenPareto_ML_Estimator_Alpha(losses, 1000, reporting_thresholds = reporting_thresholds), c(2.5434144812786736, 2.1535373931428583))
-  expect_equal(GenPareto_ML_Estimator_Alpha(losses, 1000, truncation = 10000, reporting_thresholds = reporting_thresholds), c(2.9133853717895160, 1.4145866650288137))
+  expect_equal(round(GenPareto_ML_Estimator_Alpha(losses, 1000, reporting_thresholds = reporting_thresholds), 5), c(2.54341, 2.15354))
+  expect_equal(round(GenPareto_ML_Estimator_Alpha(losses, 1000, truncation = 10000, reporting_thresholds = reporting_thresholds), 5), c(2.91339, 1.41459))
 
   is.censored <- rep(FALSE, 12)
   is.censored[1:2] <- TRUE
-  expect_equal(GenPareto_ML_Estimator_Alpha(losses, 1000, reporting_thresholds = reporting_thresholds, is.censored = is.censored), c(1.7337658833711358, 2.9020301444112442))
-  expect_equal(GenPareto_ML_Estimator_Alpha(losses, 1000, is.censored = is.censored), c(1.4761320297570411, 3.6847429917966052))
-  expect_equal(GenPareto_ML_Estimator_Alpha(losses, 1000, truncation = 10000, reporting_thresholds = reporting_thresholds, is.censored = is.censored), c(1.8862593677310127, 1.9325479707351645))
+  expect_equal(round(GenPareto_ML_Estimator_Alpha(losses, 1000, reporting_thresholds = reporting_thresholds, is.censored = is.censored), 5), c(1.73377, 2.90203))
+  expect_equal(round(GenPareto_ML_Estimator_Alpha(losses, 1000, is.censored = is.censored), 5), c(1.47613, 3.68474))
+  expect_equal(round(GenPareto_ML_Estimator_Alpha(losses, 1000, truncation = 10000, reporting_thresholds = reporting_thresholds, is.censored = is.censored), 5), c(1.88626, 1.93255))
 
   w <- rep(1, length(losses))
   index <- c(1, 4, 6)

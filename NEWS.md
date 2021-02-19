@@ -1,3 +1,7 @@
+# Pareto 2.4.1
+
+* Improved tests for ML estimators
+
 # Pareto 2.4.0
 
 * Improved functionality for maximum likelihood estimation

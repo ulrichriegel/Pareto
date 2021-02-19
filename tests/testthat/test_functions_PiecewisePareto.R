@@ -138,9 +138,25 @@ test_that("Pareto_ML_Estimator_alpha", {
               1700.45433736218, 2269.02625009652, 3545.91823730921, 3112.72960104325, 2757.85209289505, 1073.92628882837,
               3697.84111140716, 2567.88718258095, 2624.17812649749, 2430.48340413282, 2399.39130252127, 1194.87342560877,
               1733.25071770226, 2177.58393770677, 2313.84456911248, 2561.30080556934)
-  expect_equal(round(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000)), 2), c(0.81, 2.66, 4.42))
-  expect_equal(round(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000), truncation = 5000, truncation_type = "lp"), 2), c(0.81, 2.66, 1.36))
-  expect_equal(round(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000), truncation = 5000, truncation_type = "wd"), 2), c(0.60, 1.51, 0.99))
+  expect_equal(round(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000)), 5), c(0.81259, 2.65715, 4.42204))
+  expect_equal(round(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000), truncation = 5000, truncation_type = "lp"), 5), c(0.81259, 2.65715, 1.35691))
+  expect_equal(round(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000), truncation = 5000, truncation_type = "wd"), 5), c(0.59649, 1.50625, 0.98904))
+  reporting_thresholds <- rep(1000, length(losses))
+  reporting_thresholds[1] <- 1500
+  reporting_thresholds[4] <- 1500
+  expect_equal(round(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000), reporting_thresholds = reporting_thresholds), 5), c(0.82524, 2.65715, 4.42204))
+  censored <- rep(FALSE, length(losses))
+  censored [1:3] <- TRUE
+  expect_equal(round(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000), reporting_thresholds = reporting_thresholds, is.censored = censored), 5),
+               c(0.78686, 2.58902, 4.42204))
+  expect_equal(round(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000),
+                                                        reporting_thresholds = reporting_thresholds, is.censored = censored,
+                                                        truncation = 5000, truncation_type = "lp"), 5),
+               c(0.78686, 2.58902, 1.35691))
+  expect_equal(round(PiecewisePareto_ML_Estimator_Alpha(losses, c(1000, 2000, 3000),
+                                                        reporting_thresholds = reporting_thresholds, is.censored = censored,
+                                                        truncation = 5000, truncation_type = "wd"), 5),
+               c(0.51603, 1.24380, 0.74810))
 
   w <- rep(1, length(losses))
   w[1:2] <- 2
