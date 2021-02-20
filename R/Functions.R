@@ -4321,7 +4321,7 @@ rPanjer <- function(n, mean, dispersion) {
 #' @param Expected_Layer_Losses Numeric vector. Vector containing the expected losses of the layers from the wishlist.
 #' @param Thresholds Numeric vector. Contains the thresholds from the whishlist for which excess frequencies are given.
 #' @param Frequencies Numeric vector. Expected frequencies excess the \code{Thresholds} from the wishlist.
-#' @param t_1 Numerical. Lowest threshold of the piecewise Pareto distribution.
+#' @param model_threshold Numerical. Lowest threshold of the fitted piecewise Pareto distribution.
 #' @param default_alpha Numerical. Default alpha for situations where an alpha has to be selected.
 #' @param dispersion Numerical. Dispersion of the claim count distribution in the resulting PPP_Model.
 #' @param alpha_max Numerical. Maximum alpha to be used for the matching.
@@ -4353,7 +4353,7 @@ rPanjer <- function(n, mean, dispersion) {
 #' @export
 
 
-Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Layer_Losses = NULL, Thresholds = NULL, Frequencies = NULL, t_1 = min(c(Attachment_Points, Thresholds)), default_alpha = 2, dispersion = 1, alpha_max = 100, severity_distribution = "PiecewisePareto", ignore_inconsistent_references = FALSE) {
+Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Layer_Losses = NULL, Thresholds = NULL, Frequencies = NULL, model_threshold = min(c(Attachment_Points, Thresholds)), default_alpha = 2, dispersion = 1, alpha_max = 100, severity_distribution = "PiecewisePareto", ignore_inconsistent_references = FALSE) {
 
 
 
@@ -4417,9 +4417,9 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     Results$Status <- 2
     return(Results)
   }
-  if (!is.positive.finite.number(t_1)) {
-    warning("t_1 must be a positive number.")
-    Results$Comment <- "t_1 must be a positive number."
+  if (!is.positive.finite.number(model_threshold)) {
+    warning("model_threshold must be a positive number.")
+    Results$Comment <- "model_threshold must be a positive number."
     Results$Status <- 2
     return(Results)
 
@@ -4489,6 +4489,12 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
       }
 
       Results <- PiecewisePareto_Match_Layer_Losses((layer_losses$tower)$att, (layer_losses$tower)$exp_loss_new, Frequencies = (layer_losses$tower)$frequency_new, alpha_max = alpha_max)
+      if (Results$t[1] > model_threshold) {
+        Results$FQ <- Results$FQ * (Results$t[1] / model_threshold)^Results$alpha[1]
+        Results$t[1] <- model_threshold
+      } else if (Results$t[1] < model_threshold) {
+        warning("model_threshold is ignored.")
+      }
     }
 
   }

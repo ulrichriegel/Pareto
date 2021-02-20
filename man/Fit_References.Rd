@@ -10,7 +10,7 @@ Fit_References(
   Expected_Layer_Losses = NULL,
   Thresholds = NULL,
   Frequencies = NULL,
-  t_1 = min(c(Attachment_Points, Thresholds)),
+  model_threshold = min(c(Attachment_Points, Thresholds)),
   default_alpha = 2,
   dispersion = 1,
   alpha_max = 100,
@@ -29,7 +29,7 @@ Fit_References(
 
 \item{Frequencies}{Numeric vector. Expected frequencies excess the \code{Thresholds} from the wishlist.}
 
-\item{t_1}{Numerical. Lowest threshold of the piecewise Pareto distribution.}
+\item{model_threshold}{Numerical. Lowest threshold of the fitted piecewise Pareto distribution.}
 
 \item{default_alpha}{Numerical. Default alpha for situations where an alpha has to be selected.}
 
