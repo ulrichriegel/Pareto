@@ -1,6 +1,6 @@
 # Pareto 2.4.1
 
-* Improved tests for ML estimators
+* Minor bug fix in Fit_References
 
 # Pareto 2.4.0
 
