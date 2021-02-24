@@ -4533,7 +4533,12 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
       return(result$value)
     }
     result <- NULL
-    try(result <- stats::optim(c(1), target_FQ, lower = 1e-6, upper = 1e6, method = "Brent"), silent = T)
+    f <- Vectorize(target_FQ)
+    FQ_discrete <- exp(log(1e12) * (0:100) / 100) * 1e-6 # range from 1e-6 to 1e6
+    f_discrete <- f(FQ_discrete)
+    FQ_min <- FQ_discrete[max(1, order(f_discrete)[1] - 1)]
+    FQ_max <- FQ_discrete[min(length(FQ_discrete), order(f_discrete)[1] + 1)]
+    try(result <- stats::optim(c(1), target_FQ, lower = FQ_min, upper = FQ_max, method = "Brent"), silent = T)
     if (is.null(result) || result$convergence > 0) {
       warning("No solution found.")
       Results$Comment <- "No solution found."
@@ -4552,6 +4557,57 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
       return(Results)
     }
     Results$alpha <- result$par
+    Results$Status <- 0
+    Results$Comment <- "OK"
+  } else if (severity_distribution == "GenPareto") {
+    if (nrow(df_layers) > 0 && nrow(df_thresholds) > 0) {
+      target <- function(FQ, alpha_ini, alpha_tail) {
+        result <- sum((FQ * GenPareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, alpha_ini = alpha_ini, alpha_tail = alpha_tail, t = model_threshold) - df_layers$exp_loss)^2 / (df_layers$exp_loss)^2) +
+          sum((FQ * (1 - pGenPareto(df_thresholds$threshold, alpha_ini = alpha_ini, alpha_tail = alpha_tail, t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
+      }
+    } else if (nrow(df_layers) > 0) {
+      target <- function(FQ, alpha_ini, alpha_tail) {
+        result <- sum((FQ * GenPareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, alpha_ini = alpha_ini, alpha_tail = alpha_tail, t = model_threshold) - df_layers$exp_loss)^2 / (df_layers$exp_loss)^2)
+      }
+    } else {
+      target <- function(FQ, alpha_ini, alpha_tail) {
+        result <- sum((FQ * (1 - pGenPareto(df_thresholds$threshold, alpha_ini = alpha_ini, alpha_tail = alpha_tail, t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
+      }
+    }
+    target_FQ <- function(FQ) {
+      result <- NULL
+      try(result <- stats::optim(c(1, 1), function(x) target(FQ, x[1], x[2]), lower = rep(0.001, 2), upper = rep(alpha_max, 2), method = "L-BFGS-B"), silent = T)
+      if (is.null(result) || result$convergence > 0) {
+        return(Inf)
+      }
+      return(result$value)
+    }
+    result <- NULL
+    f <- Vectorize(target_FQ)
+    FQ_discrete <- exp(log(1e12) * (0:100) / 100) * 1e-6 # range from 1e-6 to 1e6
+    f_discrete <- f(FQ_discrete)
+    FQ_min <- FQ_discrete[max(1, order(f_discrete)[1] - 1)]
+    FQ_max <- FQ_discrete[min(length(FQ_discrete), order(f_discrete)[1] + 1)]
+    try(result <- stats::optim(c(1), target_FQ, lower = FQ_min, upper = FQ_max, method = "Brent"), silent = T)
+    if (is.null(result) || result$convergence > 0) {
+      warning("No solution found.")
+      Results$Comment <- "No solution found."
+      Results$Status <- 2
+      return(Results)
+    }
+    Results$FQ <- result$par
+    Results$t <- model_threshold
+    result <- NULL
+    try(result <- stats::optim(c(1, 1), function(x) target(Results$FQ, x[1], x[2]), lower = rep(0.001, 2), upper = rep(alpha_max, 2), method = "L-BFGS-B"), silent = T)
+
+    if (is.null(result) || result$convergence > 0) {
+      warning("No solution found.")
+      Results$Comment <- "No solution found."
+      Results$Status <- 2
+      return(Results)
+    }
+    Results$alpha_ini <- result$par[1]
+    Results$alpha_tail <- result$par[2]
     Results$Status <- 0
     Results$Comment <- "OK"
   } else {
