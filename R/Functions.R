@@ -4524,9 +4524,14 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
         result <- sum((FQ * (1 - pPareto(df_thresholds$threshold, alpha, t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
       }
     }
+    if (nrow(df_layers) > 0 && is.infinite(max(df_layers$limit))) {
+      lb <- 1.001
+    } else {
+      lb <- 0.001
+    }
     target_FQ <- function(FQ) {
       result <- NULL
-      try(result <- stats::optim(1, function(x) target(FQ, x), lower = 0.001, upper = alpha_max, method = "Brent"), silent = T)
+      try(result <- stats::optim(1.5, function(x) target(FQ, x), lower = lb, upper = alpha_max, method = "Brent"), silent = T)
       if (is.null(result) || result$convergence > 0) {
         return(Inf)
       }
@@ -4548,7 +4553,7 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     Results$FQ <- result$par
     Results$t <- model_threshold
     result <- NULL
-    try(result <- stats::optim(1, function(x) target(Results$FQ, x), lower = 0.001, upper = alpha_max, method = "Brent"), silent = T)
+    try(result <- stats::optim(1, function(x) target(Results$FQ, x), lower = lb, upper = alpha_max, method = "Brent"), silent = T)
 
     if (is.null(result) || result$convergence > 0) {
       warning("No solution found.")
@@ -4574,9 +4579,14 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
         result <- sum((FQ * (1 - pGenPareto(df_thresholds$threshold, alpha_ini = alpha_ini, alpha_tail = alpha_tail, t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
       }
     }
+    if (nrow(df_layers) > 0 && is.infinite(max(df_layers$limit))) {
+      lb <- 1.001
+    } else {
+      lb <- 0.001
+    }
     target_FQ <- function(FQ) {
       result <- NULL
-      try(result <- stats::optim(c(1, 1), function(x) target(FQ, x[1], x[2]), lower = rep(0.001, 2), upper = rep(alpha_max, 2), method = "L-BFGS-B"), silent = T)
+      try(result <- stats::optim(c(1.5, 1.5), function(x) target(FQ, x[1], x[2]), lower = c(0.001, lb), upper = rep(alpha_max, 2), method = "L-BFGS-B"), silent = T)
       if (is.null(result) || result$convergence > 0) {
         return(Inf)
       }
@@ -4598,7 +4608,7 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     Results$FQ <- result$par
     Results$t <- model_threshold
     result <- NULL
-    try(result <- stats::optim(c(1, 1), function(x) target(Results$FQ, x[1], x[2]), lower = rep(0.001, 2), upper = rep(alpha_max, 2), method = "L-BFGS-B"), silent = T)
+    try(result <- stats::optim(c(1, 1), function(x) target(Results$FQ, x[1], x[2]), lower = c(0.001, lb), upper = rep(alpha_max, 2), method = "L-BFGS-B"), silent = T)
 
     if (is.null(result) || result$convergence > 0) {
       warning("No solution found.")
