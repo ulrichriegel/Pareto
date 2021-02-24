@@ -4510,23 +4510,23 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     }
 
   } else if (severity_distribution == "Pareto") {
-    target_FQ <- function(FQ) {
-      if (nrow(df_layers) > 0 && nrow(df_thresholds) > 0) {
-        target_given_FQ <- function(alpha) {
-          result <- sum((FQ * Pareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, alpha, t = model_threshold) - df_layers$exp_loss)^2 / (df_layers$exp_loss)^2) +
-            sum((FQ * (1 - pPareto(df_thresholds$threshold, alpha, t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
-        }
-      } else if (nrow(df_layers) > 0) {
-        target_given_FQ <- function(alpha) {
-          result <- sum((FQ * Pareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, alpha, t = model_threshold) - df_layers$exp_loss)^2 / (df_layers$exp_loss)^2)
-        }
-      } else {
-        target_given_FQ <- function(alpha) {
-          result <- sum((FQ * (1 - pPareto(df_thresholds$threshold, alpha, t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
-        }
+    if (nrow(df_layers) > 0 && nrow(df_thresholds) > 0) {
+      target <- function(FQ, alpha) {
+        result <- sum((FQ * Pareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, alpha, t = model_threshold) - df_layers$exp_loss)^2 / (df_layers$exp_loss)^2) +
+          sum((FQ * (1 - pPareto(df_thresholds$threshold, alpha, t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
       }
+    } else if (nrow(df_layers) > 0) {
+      target <- function(FQ, alpha) {
+        result <- sum((FQ * Pareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, alpha, t = model_threshold) - df_layers$exp_loss)^2 / (df_layers$exp_loss)^2)
+      }
+    } else {
+      target <- function(FQ, alpha) {
+        result <- sum((FQ * (1 - pPareto(df_thresholds$threshold, alpha, t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
+      }
+    }
+    target_FQ <- function(FQ) {
       result <- NULL
-      try(result <- stats::optim(1, target_given_FQ, lower = 0.001, upper = alpha_max, method = "Brent"), silent = T)
+      try(result <- stats::optim(1, function(x) target(FQ, x), lower = 0.001, upper = alpha_max, method = "Brent"), silent = T)
       if (is.null(result) || result$convergence > 0) {
         return(Inf)
       }
@@ -4543,15 +4543,15 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     Results$FQ <- result$par
     Results$t <- model_threshold
     result <- NULL
-    FQ <- Results$FQ
-    # try(result <- stats::optim(1, target_given_FQ, lower = 0.001, upper = alpha_max, method = "Brent"), silent = T)
-    # if (is.null(result) || result$convergence > 0) {
-    #   warning("No solution found.")
-    #   Results$Comment <- "No solution found."
-    #   Results$Status <- 2
-    #   return(Results)
-    # }
-    # Results$alpha <- result$par
+    try(result <- stats::optim(1, function(x) target(Results$FQ, x), lower = 0.001, upper = alpha_max, method = "Brent"), silent = T)
+
+    if (is.null(result) || result$convergence > 0) {
+      warning("No solution found.")
+      Results$Comment <- "No solution found."
+      Results$Status <- 2
+      return(Results)
+    }
+    Results$alpha <- result$par
     Results$Status <- 0
     Results$Comment <- "OK"
   } else {
