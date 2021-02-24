@@ -115,6 +115,14 @@ is.nonnegative.finite.number <- function(x) {
   }
 }
 
+is.string <- function(x) {
+  if (!is.character(x) || !is.atomic(x) || length(x) != 1) {
+    return(FALSE)
+  } else {
+    return(TRUE)
+  }
+}
+
 is.TRUEorFALSE <- function(x) {
   if (isTRUE(x) || isFALSE(x)) {
     return(TRUE)

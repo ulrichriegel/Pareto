@@ -4312,9 +4312,15 @@ rPanjer <- function(n, mean, dispersion) {
 
 
 
-#' Fit a Tailor-Made Collective Model that Satisfies a Wishlist of Conditions
+#' Fit a Collective Model to a Wishlist of References
 #'
-#' @description Fits a PPP_Model that fulfils a wishlist of conditions (expected layer losses and excess frequencies)
+#' @description The function fits a collective model to a wishlist of references (expected layer losses and excess frequencies).
+#'  The function allows to specify the family of the severity distribution that is used. Depending on this distribution family the
+#'  function works slightly differently: \itemize{
+#'  \item For the severity distribution \code{PiecewisePareto} the function returns a \code{PPP_Model} that satisfies all the references
+#'  \item For the severity distribution \code{Pareto} the function returns a \code{PPP_Model} that minimizes the squared relative deviations from the references
+#'  \item For the severity distribution \code{GenPareto} the function returns a \code{PGP_Model} that minimizes the squared relative deviations from the references
+#' }
 #'
 #' @param Covers Numeric vector. Vector containing the covers of the layers from the wishlist.
 #' @param Attachment_Points Numeric vector. Vector containing the attachment points of the layers from the wishlist.
@@ -4356,8 +4362,20 @@ rPanjer <- function(n, mean, dispersion) {
 Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Layer_Losses = NULL, Thresholds = NULL, Frequencies = NULL, model_threshold = min(c(Attachment_Points, Thresholds)), default_alpha = 2, dispersion = 1, alpha_max = 100, severity_distribution = "PiecewisePareto", ignore_inconsistent_references = FALSE) {
 
 
+  if (!is.string(severity_distribution) || !(severity_distribution %in% c("PiecewisePareto", "Pareto", "GenPareto"))) {
+    Results <- PPP_Model()
+    warning("severity_distribution not valid.")
+    Results$Comment <- "severity_distribution not valid."
+    Results$Status <- 2
+    Results <- NA
+    return(Results)
+  } else if (severity_distribution == "PiecewisePareto" || severity_distribution == "Pareto") {
+    Results <- PPP_Model()
+  } else {
+    Results <- PGP_Model()
+  }
 
-  Results <- PPP_Model()
+
 
   if (!is.positive.finite.number(dispersion)) {
     warning("Dispersion must be a positive number.")
@@ -4430,12 +4448,6 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     Results$Status <- 2
     return(Results)
   }
-  if (!(severity_distribution %in% c("PiecewisePareto"))) {
-    warning("severity_distribution not valid.")
-    Results$Comment <- "severity_distribution not valid."
-    Results$Status <- 2
-    return(Results)
-  }
   if (!is.TRUEorFALSE(ignore_inconsistent_references)) {
     warning("ignore_inconsistent_references must be TRUE or FALSE.")
     Results$Comment <- "ignore_inconsistent_references must be TRUE or FALSE."
@@ -4496,6 +4508,90 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
         warning("model_threshold is ignored.")
       }
     }
+
+  } else if (severity_distribution == "Pareto") {
+    target_FQ <- function(FQ) {
+      if (nrow(df_layers) > 0 && nrow(df_thresholds) > 0) {
+        target_given_FQ <- function(alpha) {
+          result <- sum((FQ * Pareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, alpha, t = model_threshold) - df_layers$exp_loss)^2 / (df_layers$exp_loss)^2) +
+            sum((FQ * (1 - pPareto(df_thresholds$threshold, alpha, t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
+        }
+      } else if (nrow(df_layers) > 0) {
+        target_given_FQ <- function(alpha) {
+          result <- sum((FQ * Pareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, alpha, t = model_threshold) - df_layers$exp_loss)^2 / (df_layers$exp_loss)^2)
+        }
+      } else {
+        target_given_FQ <- function(alpha) {
+          result <- sum((FQ * (1 - pPareto(df_thresholds$threshold, alpha, t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
+        }
+      }
+      result <- NULL
+      try(result <- stats::optim(1, target_given_FQ, lower = 0.001, upper = alpha_max, method = "Brent"), silent = T)
+      if (is.null(result) || result$convergence > 0) {
+        return(Inf)
+      }
+      return(result$value)
+    }
+    result <- NULL
+    try(result <- stats::optim(c(1), target_FQ, lower = 1e-6, upper = 1e6, method = "Brent"), silent = T)
+    if (is.null(result) || result$convergence > 0) {
+      warning("No solution found.")
+      Results$Comment <- "No solution found."
+      Results$Status <- 2
+      return(Results)
+    }
+    Results$FQ <- result$par
+    Results$t <- model_threshold
+    result <- NULL
+    FQ <- Results$FQ
+    # try(result <- stats::optim(1, target_given_FQ, lower = 0.001, upper = alpha_max, method = "Brent"), silent = T)
+    # if (is.null(result) || result$convergence > 0) {
+    #   warning("No solution found.")
+    #   Results$Comment <- "No solution found."
+    #   Results$Status <- 2
+    #   return(Results)
+    # }
+    # Results$alpha <- result$par
+    Results$Status <- 0
+    Results$Comment <- "OK"
+  } else {
+      if (nrow(df_layers) > 0 && nrow(df_thresholds) > 0) {
+        target <- function(parameter) {
+          # parameter[1] = alpha_ini
+          # parameter[2] = alpha_tail
+          # parameter[3] = frequency at model_threshold
+          result <- sum((parameter[3] * GenPareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, alpha_ini = parameter[1], alpha_tail = parameter[2], t = model_threshold) - df_layers$exp_loss)^2 / (df_layers$exp_loss)^2) +
+            sum((parameter[3] * (1 - pGenPareto(df_thresholds$threshold, alpha_ini = parameter[1], alpha_tail = parameter[2], t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
+        }
+      } else if (nrow(df_layers) > 0) {
+        target <- function(parameter) {
+          # parameter[1] = alpha_ini
+          # parameter[2] = alpha_tail
+          # parameter[3] = frequency at model_threshold
+          result <- sum((parameter[3] * GenPareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, alpha_ini = parameter[1], alpha_tail = parameter[2], t = model_threshold) - df_layers$exp_loss)^2 / (df_layers$exp_loss)^2)
+        }
+      } else {
+        target <- function(parameter) {
+          # parameter[1] = alpha_ini
+          # parameter[2] = alpha_tail
+          # parameter[3] = frequency at model_threshold
+          result <- sum((parameter[3] * (1 - pGenPareto(df_thresholds$threshold, alpha_ini = parameter[1], alpha_tail = parameter[2], t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
+        }
+      }
+      result <- NULL
+      try(result <- stats::optim(c(1,1,1), target, lower = rep(0.001, 3), upper = c(alpha_max, alpha_max, 1e6), method = "L-BFGS-B"), silent = T)
+      if (is.null(result) || result$convergence > 0) {
+        warning("No solution found.")
+        Results$Comment <- "No solution found."
+        Results$Status <- 2
+        return(Results)
+      }
+      Results$FQ <- result$par[3]
+      Results$t <- model_threshold
+      Results$alpha_ini <- result$par[1]
+      Results$alpha_tail <- result$par[2]
+      Results$Status <- 0
+      Results$Comment <- "OK"
 
   }
 

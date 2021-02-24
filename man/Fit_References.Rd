@@ -2,7 +2,7 @@
 % Please edit documentation in R/Functions.R
 \name{Fit_References}
 \alias{Fit_References}
-\title{Fit a Tailor-Made Collective Model that Satisfies a Wishlist of Conditions}
+\title{Fit a Collective Model to a Wishlist of References}
 \usage{
 Fit_References(
   Covers = NULL,
@@ -55,7 +55,13 @@ A PPP_Model object that contains the information about a collective model with a
 }
 }
 \description{
-Fits a PPP_Model that fulfils a wishlist of conditions (expected layer losses and excess frequencies)
+The function fits a collective model to a wishlist of references (expected layer losses and excess frequencies).
+ The function allows to specify the family of the severity distribution that is used. Depending on this distribution family the
+ function works slightly differently: \itemize{
+ \item For the severity distribution \code{PiecewisePareto} the function returns a \code{PPP_Model} that satisfies all the references
+ \item For the severity distribution \code{Pareto} the function returns a \code{PPP_Model} that minimizes the squared relative deviations from the references
+ \item For the severity distribution \code{GenPareto} the function returns a \code{PGP_Model} that minimizes the squared relative deviations from the references
+}
 }
 \examples{
 covers <- c(1000, 1000, 1000)
