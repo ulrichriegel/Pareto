@@ -4543,7 +4543,7 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     f_discrete <- f(FQ_discrete)
     FQ_min <- FQ_discrete[max(1, order(f_discrete)[1] - 1)]
     FQ_max <- FQ_discrete[min(length(FQ_discrete), order(f_discrete)[1] + 1)]
-    try(result <- stats::optim(c(1), target_FQ, lower = FQ_min, upper = FQ_max, method = "Brent"), silent = T)
+    try(result <- stats::optim((FQ_min + FQ_max) / 2, target_FQ, lower = FQ_min, upper = FQ_max, method = "Brent"), silent = T)
     if (is.null(result) || result$convergence > 0) {
       warning("No solution found.")
       Results$Comment <- "No solution found."
@@ -4553,7 +4553,7 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     Results$FQ <- result$par
     Results$t <- model_threshold
     result <- NULL
-    try(result <- stats::optim(1, function(x) target(Results$FQ, x), lower = lb, upper = alpha_max, method = "Brent"), silent = T)
+    try(result <- stats::optim(1.5, function(x) target(Results$FQ, x), lower = lb, upper = alpha_max, method = "Brent"), silent = T)
 
     if (is.null(result) || result$convergence > 0) {
       warning("No solution found.")
@@ -4580,9 +4580,9 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
       }
     }
     if (nrow(df_layers) > 0 && is.infinite(max(df_layers$limit))) {
-      lb <- 1.001
+      lb <- 1.01
     } else {
-      lb <- 0.001
+      lb <- 0.01
     }
     target_FQ <- function(FQ) {
       result <- NULL
@@ -4594,21 +4594,36 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     }
     result <- NULL
     f <- Vectorize(target_FQ)
-    FQ_discrete <- exp(log(1e12) * (0:100) / 100) * 1e-6 # range from 1e-6 to 1e6
-    f_discrete <- f(FQ_discrete)
-    FQ_min <- FQ_discrete[max(1, order(f_discrete)[1] - 1)]
-    FQ_max <- FQ_discrete[min(length(FQ_discrete), order(f_discrete)[1] + 1)]
-    try(result <- stats::optim(c(1), target_FQ, lower = FQ_min, upper = FQ_max, method = "Brent"), silent = T)
-    if (is.null(result) || result$convergence > 0) {
-      warning("No solution found.")
-      Results$Comment <- "No solution found."
-      Results$Status <- 2
-      return(Results)
+    if (TRUE) {
+      FQ_min <- 1e-4
+      if (nrow(df_layers) > 0) FQ_min <- max(FQ_min, df_layers$exp_loss / df_layers$limit)
+      if (nrow(df_thresholds) > 0) FQ_min <- max(FQ_min, df_thresholds$frequency)
+      FQ_max <- 1e4
+      for (i in 1:10) {
+        FQ_discrete <- exp(log(FQ_max / FQ_min) * (0:5) / 5) * FQ_min # range from FQ_min to FQ_max
+        f_discrete <- f(FQ_discrete)
+        FQ_min <- FQ_discrete[max(1, order(f_discrete)[1] - 1)]
+        FQ_max <- FQ_discrete[min(length(FQ_discrete), order(f_discrete)[1] + 1)]
+      }
+      Results$FQ <- FQ_discrete[order(f_discrete)[1]]
+
+    } else {
+      FQ_discrete <- exp(log(1e12) * (0:100) / 100) * 1e-6 # range from 1e-6 to 1e6
+      f_discrete <- f(FQ_discrete)
+      FQ_min <- FQ_discrete[max(1, order(f_discrete)[1] - 1)]
+      FQ_max <- FQ_discrete[min(length(FQ_discrete), order(f_discrete)[1] + 1)]
+      try(result <- stats::optim((FQ_min + FQ_max) / 2, target_FQ, lower = FQ_min, upper = FQ_max, method = "Brent"), silent = T)
+      if (is.null(result) || result$convergence > 0) {
+        warning("No solution found.")
+        Results$Comment <- "No solution found."
+        Results$Status <- 2
+        return(Results)
+      }
+      Results$FQ <- result$par
     }
-    Results$FQ <- result$par
     Results$t <- model_threshold
     result <- NULL
-    try(result <- stats::optim(c(1, 1), function(x) target(Results$FQ, x[1], x[2]), lower = c(0.001, lb), upper = rep(alpha_max, 2), method = "L-BFGS-B"), silent = T)
+    try(result <- stats::optim(c(1.5, 1.5), function(x) target(Results$FQ, x[1], x[2]), lower = c(0.001, lb), upper = rep(alpha_max, 2), method = "L-BFGS-B"), silent = T)
 
     if (is.null(result) || result$convergence > 0) {
       warning("No solution found.")
