@@ -82,10 +82,12 @@ fqs <- c(0.04, 0.005)
 fit <- Fit_References(covers, att_points, exp_losses, thresholds, fqs)
 Layer_Mean(fit, covers, att_points)
 Excess_Frequency(fit, thresholds)
-fit <- Fit_References(covers, att_points, exp_losses, thresholds, fqs, severity_distribution = "Pareto")
+fit <- Fit_References(covers, att_points, exp_losses, thresholds, fqs,
+                      severity_distribution = "Pareto")
 Layer_Mean(fit, covers, att_points)
 Excess_Frequency(fit, thresholds)
-fit <- Fit_References(covers, att_points, exp_losses, severity_distribution = "GenPareto")
+fit <- Fit_References(covers, att_points, exp_losses,
+                      severity_distribution = "GenPareto")
 Layer_Mean(fit, covers, att_points)
 
 }
