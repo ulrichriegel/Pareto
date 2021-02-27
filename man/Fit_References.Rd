@@ -37,18 +37,28 @@ Fit_References(
 
 \item{alpha_max}{Numerical. Maximum alpha to be used for the matching.}
 
-\item{severity_distribution}{Character. Currently only "PiecewisePareto" is supported.}
+\item{severity_distribution}{Character. Implemented distributions: "PiecewisePareto" (default), "Pareto" and "GenPareto".}
 
 \item{ignore_inconsistent_references}{Logical. If TRUE then inconsistent references are ignored in case of the
 piecewise Pareto distribution and the other references are used to fit the model}
 }
 \value{
-A PPP_Model object that contains the information about a collective model with a Panjer distributed claim count and a Piecewise Pareto distributed severity. The object contains the following elements: \itemize{
+For severity_distribution = "PiecewisePareto" or "Pareto": A PPP_Model object that contains the information about a collective model with a Panjer distributed claim count and a Piecewise Pareto distributed severity. The object contains the following elements: \itemize{
 \item \code{FQ} Numerical. Frequency in excess of the lowest threshold of the piecewise Pareto distribution
 \item \code{t} Numeric vector. Vector containing the thresholds for the piecewise Pareto distribution
 \item \code{alpha} Numeric vector. Vector containing the Pareto alphas of the piecewise Pareto distribution
 \item \code{truncation} Numerical. If \code{truncation} is not \code{NULL} and \code{truncation > max(t)}, then the distribution is truncated at \code{truncation}.
 \item \code{truncation_type} Character. If \code{truncation_type = "wd"} then the whole distribution is truncated. If \code{truncation_type = "lp"} then a truncated Pareto is used for the last piece.
+\item \code{dispersion} Numerical. Dispersion of the Panjer distribution (i.e. variance to mean ratio).
+\item \code{Status} Numerical indicator: 0 = success, 1 = some information has been ignored, 2 = no solution found
+\item \code{Comment} Character. Information on whether the fit was successful
+}
+For severity_distribution = "GenPareto": A PGP_Model object that contains the information about a collective model with a Panjer distributed claim count and a Piecewise Pareto distributed severity. The object contains the following elements: \itemize{
+\item \code{FQ} Expected claim count of the collective model.
+\item \code{t} Numeric. Threshold of the Pareto distribution.
+\item \code{alpha_ini} Numeric. Initial Pareto alpha (at \code{t}).
+\item \code{alpha_tail} Numeric. Tail Pareto alpha.
+\item \code{truncation} If \code{truncation} is not \code{NULL} and \code{truncation > t}, then the Pareto distribution is truncated at \code{truncation}.
 \item \code{dispersion} Numerical. Dispersion of the Panjer distribution (i.e. variance to mean ratio).
 \item \code{Status} Numerical indicator: 0 = success, 1 = some information has been ignored, 2 = no solution found
 \item \code{Comment} Character. Information on whether the fit was successful
@@ -72,5 +82,10 @@ fqs <- c(0.04, 0.005)
 fit <- Fit_References(covers, att_points, exp_losses, thresholds, fqs)
 Layer_Mean(fit, covers, att_points)
 Excess_Frequency(fit, thresholds)
+fit <- Fit_References(covers, att_points, exp_losses, thresholds, fqs, severity_distribution = "Pareto")
+Layer_Mean(fit, covers, att_points)
+Excess_Frequency(fit, thresholds)
+fit <- Fit_References(covers, att_points, exp_losses, severity_distribution = "GenPareto")
+Layer_Mean(fit, covers, att_points)
 
 }

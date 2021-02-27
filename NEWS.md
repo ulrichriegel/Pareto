@@ -1,6 +1,6 @@
-# Pareto 2.4.1
+# Pareto 2.4.2
 
-* Minor bug fix in Fit_References
+* Added functionality for Pareto and GenPareto in Fit_References
 
 # Pareto 2.4.0
 
