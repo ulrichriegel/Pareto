@@ -4440,7 +4440,12 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     Results$Comment <- "model_threshold must be a positive number."
     Results$Status <- 2
     return(Results)
-
+  }
+  if (model_threshold > min(c(Attachment_Points, Thresholds))) {
+    warning("model_threshold must be a less than or equal to the lowest Threshold / Attachment Point.")
+    Results$Comment <- "model_threshold must be a less than or equal to the lowest Threshold / Attachment Point."
+    Results$Status <- 2
+    return(Results)
   }
   if (!is.positive.finite.number(default_alpha) || default_alpha <= 1) {
     warning("default_alpha must be a positive number > 1.")
@@ -4565,6 +4570,42 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     Results$Status <- 0
     Results$Comment <- "OK"
   } else if (severity_distribution == "GenPareto") {
+    if (nrow(df_layers) == 1 && nrow(df_thresholds) == 0) {
+      Results$t <- model_threshold
+      Results$alpha_ini <- default_alpha
+      Results$alpha_tail <- default_alpha
+      Results$FQ <- df_layers$exp_loss / Pareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, default_alpha, t = model_threshold)
+      Results$Status <- 0
+      Results$Comment <- "OK"
+      return(Results)
+    } else if (nrow(df_layers) == 0 && nrow(df_thresholds) == 1) {
+      Results$t <- model_threshold
+      Results$alpha_ini <- default_alpha
+      Results$alpha_tail <- default_alpha
+      Results$FQ <- df_thresholds$frequency / (1 - pPareto(df_thresholds$threshold, model_threshold, default_alpha))
+      Results$Status <- 0
+      Results$Comment <- "OK"
+      return(Results)
+    } else if (nrow(df_layers) == 1 && nrow(df_thresholds) == 1) {
+      alpha <- NA
+      try(alpha <- Pareto_Find_Alpha_btw_FQ_Layer(df_thresholds$threshold, df_thresholds$frequency, df_layers$limit, df_layers$attachment_point, df_layers$exp_loss), silent = T)
+      if (!is.na(alpha)) {
+        Results$t <- model_threshold
+        Results$alpha_ini <- alpha
+        Results$alpha_tail <- alpha
+        Results$FQ <- df_thresholds$frequency / (1 - pPareto(df_thresholds$threshold, model_threshold, alpha))
+        Results$Status <- 0
+        Results$Comment <- "OK"
+        return(Results)
+      }
+    } else if (nrow(df_layers) == 2 && nrow(df_thresholds) == 0) {
+
+    } else if (nrow(df_layers) == 0 && nrow(df_thresholds) == 2) {
+
+    }
+
+
+
     if (nrow(df_layers) > 0 && nrow(df_thresholds) > 0) {
       target <- function(FQ, alpha_ini, alpha_tail) {
         result <- sum((FQ * GenPareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, alpha_ini = alpha_ini, alpha_tail = alpha_tail, t = model_threshold) - df_layers$exp_loss)^2 / (df_layers$exp_loss)^2) +
@@ -4635,47 +4676,7 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     Results$alpha_tail <- result$par[2]
     Results$Status <- 0
     Results$Comment <- "OK"
-  } else {
-      if (nrow(df_layers) > 0 && nrow(df_thresholds) > 0) {
-        target <- function(parameter) {
-          # parameter[1] = alpha_ini
-          # parameter[2] = alpha_tail
-          # parameter[3] = frequency at model_threshold
-          result <- sum((parameter[3] * GenPareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, alpha_ini = parameter[1], alpha_tail = parameter[2], t = model_threshold) - df_layers$exp_loss)^2 / (df_layers$exp_loss)^2) +
-            sum((parameter[3] * (1 - pGenPareto(df_thresholds$threshold, alpha_ini = parameter[1], alpha_tail = parameter[2], t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
-        }
-      } else if (nrow(df_layers) > 0) {
-        target <- function(parameter) {
-          # parameter[1] = alpha_ini
-          # parameter[2] = alpha_tail
-          # parameter[3] = frequency at model_threshold
-          result <- sum((parameter[3] * GenPareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, alpha_ini = parameter[1], alpha_tail = parameter[2], t = model_threshold) - df_layers$exp_loss)^2 / (df_layers$exp_loss)^2)
-        }
-      } else {
-        target <- function(parameter) {
-          # parameter[1] = alpha_ini
-          # parameter[2] = alpha_tail
-          # parameter[3] = frequency at model_threshold
-          result <- sum((parameter[3] * (1 - pGenPareto(df_thresholds$threshold, alpha_ini = parameter[1], alpha_tail = parameter[2], t = model_threshold)) - df_thresholds$frequency)^2 / (df_thresholds$frequency)^2)
-        }
-      }
-      result <- NULL
-      try(result <- stats::optim(c(1,1,1), target, lower = rep(0.001, 3), upper = c(alpha_max, alpha_max, 1e6), method = "L-BFGS-B"), silent = T)
-      if (is.null(result) || result$convergence > 0) {
-        warning("No solution found.")
-        Results$Comment <- "No solution found."
-        Results$Status <- 2
-        return(Results)
-      }
-      Results$FQ <- result$par[3]
-      Results$t <- model_threshold
-      Results$alpha_ini <- result$par[1]
-      Results$alpha_tail <- result$par[2]
-      Results$Status <- 0
-      Results$Comment <- "OK"
-
   }
-
   return(Results)
 
 }
