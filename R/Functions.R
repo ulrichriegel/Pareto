@@ -4464,6 +4464,51 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
   df_layers <- data.frame(limit = Covers, attachment_point = Attachment_Points, exp_loss = Expected_Layer_Losses)
   df_thresholds <- data.frame(threshold = Thresholds, frequency = Frequencies)
 
+  # handle case of max 2 references
+
+  alpha_temp <- NA
+  FQ_temp <- NA
+
+  if (nrow(df_layers) == 1 && nrow(df_thresholds) == 0) {
+    alpha_temp <- default_alpha
+    try(FQ_temp <- df_layers$exp_loss / Pareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, default_alpha, t = model_threshold), silent = T)
+  } else if (nrow(df_layers) == 0 && nrow(df_thresholds) == 1) {
+    alpha_temp <- default_alpha
+    try(FQ_temp <- df_thresholds$frequency / (1 - pPareto(df_thresholds$threshold, model_threshold, default_alpha)), silent = T)
+  } else if (nrow(df_layers) == 1 && nrow(df_thresholds) == 1) {
+    try(alpha_temp <- Pareto_Find_Alpha_btw_FQ_Layer(df_thresholds$threshold, df_thresholds$frequency, df_layers$limit, df_layers$attachment_point, df_layers$exp_loss), silent = T)
+    if (!is.na(alpha_temp)) {
+      try(FQ_temp <- df_thresholds$frequency / (1 - pPareto(df_thresholds$threshold, model_threshold, alpha_temp)), silent = T)
+    }
+  } else if (nrow(df_layers) == 2 && nrow(df_thresholds) == 0) {
+    try(alpha_temp <- Pareto_Find_Alpha_btw_Layers(df_layers$limit[1], df_layers$attachment_point[1], df_layers$exp_loss[1], df_layers$limit[2], df_layers$attachment_point[2], df_layers$exp_loss[2]), silent = T)
+    if (!is.na(alpha_temp)) {
+      try(FQ_temp <- df_layers$exp_loss[1] / Pareto_Layer_Mean(df_layers$limit[1], df_layers$attachment_point[1], alpha_temp, t = model_threshold), silent = T)
+    }
+  } else if (nrow(df_layers) == 0 && nrow(df_thresholds) == 2) {
+    try(alpha_temp <- Pareto_Find_Alpha_btw_FQs(df_thresholds$threshold[1], df_thresholds$frequency[1], df_thresholds$threshold[2], df_thresholds$frequency[2]), silent = T)
+    if (!is.na(alpha_temp)) {
+      try(FQ_temp <- df_thresholds$frequency[1] / (1 - pPareto(df_thresholds$threshold[1], model_threshold, alpha_temp)), silent = T)
+    }
+  }
+
+  if (!is.na(alpha_temp) && !is.na(FQ_temp)) {
+    Results$t <- model_threshold
+    if (severity_distribution == "GenPareto") {
+      Results$alpha_ini <- alpha_temp
+      Results$alpha_tail <- alpha_temp
+    } else {
+      Results$alpha <- alpha_temp
+    }
+    Results$FQ <- FQ_temp
+    Results$Status <- 0
+    Results$Comment <- "OK"
+    return(Results)
+
+  }
+
+
+
   if (severity_distribution == "PiecewisePareto") {
     # check if references are overlapping
     entry <- c(Attachment_Points, Thresholds)
@@ -4570,40 +4615,6 @@ Fit_References <- function(Covers = NULL, Attachment_Points = NULL, Expected_Lay
     Results$Status <- 0
     Results$Comment <- "OK"
   } else if (severity_distribution == "GenPareto") {
-    if (nrow(df_layers) == 1 && nrow(df_thresholds) == 0) {
-      Results$t <- model_threshold
-      Results$alpha_ini <- default_alpha
-      Results$alpha_tail <- default_alpha
-      Results$FQ <- df_layers$exp_loss / Pareto_Layer_Mean(df_layers$limit, df_layers$attachment_point, default_alpha, t = model_threshold)
-      Results$Status <- 0
-      Results$Comment <- "OK"
-      return(Results)
-    } else if (nrow(df_layers) == 0 && nrow(df_thresholds) == 1) {
-      Results$t <- model_threshold
-      Results$alpha_ini <- default_alpha
-      Results$alpha_tail <- default_alpha
-      Results$FQ <- df_thresholds$frequency / (1 - pPareto(df_thresholds$threshold, model_threshold, default_alpha))
-      Results$Status <- 0
-      Results$Comment <- "OK"
-      return(Results)
-    } else if (nrow(df_layers) == 1 && nrow(df_thresholds) == 1) {
-      alpha <- NA
-      try(alpha <- Pareto_Find_Alpha_btw_FQ_Layer(df_thresholds$threshold, df_thresholds$frequency, df_layers$limit, df_layers$attachment_point, df_layers$exp_loss), silent = T)
-      if (!is.na(alpha)) {
-        Results$t <- model_threshold
-        Results$alpha_ini <- alpha
-        Results$alpha_tail <- alpha
-        Results$FQ <- df_thresholds$frequency / (1 - pPareto(df_thresholds$threshold, model_threshold, alpha))
-        Results$Status <- 0
-        Results$Comment <- "OK"
-        return(Results)
-      }
-    } else if (nrow(df_layers) == 2 && nrow(df_thresholds) == 0) {
-
-    } else if (nrow(df_layers) == 0 && nrow(df_thresholds) == 2) {
-
-    }
-
 
 
     if (nrow(df_layers) > 0 && nrow(df_thresholds) > 0) {
