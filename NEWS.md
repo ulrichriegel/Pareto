@@ -1,3 +1,7 @@
+# Pareto 2.4.3
+
+* Small bug corrected in PiecewisePareto_ML_Estimator_Alpha
+
 # Pareto 2.4.2
 
 * Added functionality for Pareto and GenPareto in Fit_References

@@ -3219,7 +3219,7 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
 
         survival_rt <- survival_t[index_rt] * (t[index_rt] / reporting_thresholds)^alpha[index_rt]
         survival_truncation <- survival_t[k+1]
-        density_losses <- survival_t[index_losses] * alpha[index_losses] / t[index_losses] * (t[index_losses] / losses)^alpha[index_losses]
+        density_losses <- survival_t[index_losses] * alpha[index_losses] / t[index_losses] * (t[index_losses] / losses)^(alpha[index_losses] + 1)
 
         - sum(weights * (
                           log(density_losses) - log(survival_rt - survival_truncation)
@@ -3239,7 +3239,7 @@ PiecewisePareto_ML_Estimator_Alpha <- function(losses, t, truncation = NULL, tru
         survival_losses <- survival_t[index_losses] * (t[index_losses] / losses)^alpha[index_losses]
         survival_rt <- survival_t[index_rt] * (t[index_rt] / reporting_thresholds)^alpha[index_rt]
         survival_truncation <- survival_t[k+1]
-        density_losses <- survival_t[index_losses] * alpha[index_losses] / t[index_losses] * (t[index_losses] / losses)^alpha[index_losses]
+        density_losses <- survival_t[index_losses] * alpha[index_losses] / t[index_losses] * (t[index_losses] / losses)^(alpha[index_losses] + 1)
 
         - sum(weights * ifelse(is.censored,
                                log(survival_losses - survival_truncation) - log(survival_rt - survival_truncation),
