@@ -97,7 +97,7 @@ print.PPP_Model <- function(x, ...) {
 #' @export
 
 is.PPP_Model <- function(x) {
-  if (class(x) == "PPP_Model") {
+  if (inherits(x, "PPP_Model")) {
     return(TRUE)
   } else {
     return(FALSE)
@@ -125,7 +125,7 @@ is.PPP_Model <- function(x) {
 #' @export
 
 is.valid.PPP_Model <- function(x, comment = FALSE) {
-  if (class(x) != "PPP_Model" || typeof(x) != "list") {
+  if (!inherits(x, "PPP_Model") || typeof(x) != "list") {
     if (!comment) {
       return(FALSE)
     } else {

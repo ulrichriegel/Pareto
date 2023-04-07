@@ -98,7 +98,7 @@ print.PGP_Model <- function(x, ...) {
 #' @export
 
 is.PGP_Model <- function(x) {
-  if (class(x) == "PGP_Model") {
+  if (inherits(x, "PGP_Model")) {
     return(TRUE)
   } else {
     return(FALSE)
@@ -126,7 +126,7 @@ is.PGP_Model <- function(x) {
 #' @export
 
 is.valid.PGP_Model <- function(x, comment = FALSE) {
-  if (class(x) != "PGP_Model" || typeof(x) != "list") {
+  if (!inherits(x, "PGP_Model") || typeof(x) != "list") {
     if (!comment) {
       return(FALSE)
     } else {
