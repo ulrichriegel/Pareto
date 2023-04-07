@@ -1,6 +1,6 @@
 # Pareto 2.4.3
 
-* Small bug corrected in PiecewisePareto_ML_Estimator_Alpha
+* Minor bug corrected in PiecewisePareto_ML_Estimator_Alpha
 
 # Pareto 2.4.2
 

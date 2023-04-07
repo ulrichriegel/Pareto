@@ -1,7 +1,8 @@
 ## Test environments
 
-* local Windows 10, R 4.0.3
-* ubuntu 16.04 (on travis-ci), R 4.0.2
+* local Windows 11, R 4.2.3
+* win-builder.r-project.org, Windows Server 2022 x64 (build 20348), R 4.3.0 beta
+* ubuntu xx.xx , R 4.2.3 (R-hub)
 
 ## R CMD check results:
 
