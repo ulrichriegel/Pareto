@@ -11,3 +11,7 @@
 ## Downstream dependencies
 
 There are currently no downstream dependencies.
+
+## Additional comment:
+
+Mac issue from last version released is fixed.
