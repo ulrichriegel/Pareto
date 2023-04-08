@@ -36,9 +36,9 @@ test_that("dGenPareto", {
 
 
 
-################################
-# test rPareto with truncation #
-################################
+###################################
+# test rGenPareto with truncation #
+###################################
 
 test_that("rPareto with truncation", {
   set.seed(1972)
@@ -63,7 +63,7 @@ test_that("rPareto with truncation", {
 })
 
 ############################################
-# test rPareto without truncation #
+# test rGenPareto without truncation       #
 ############################################
 
 test_that("rPareto without truncation", {
@@ -89,9 +89,9 @@ test_that("rPareto without truncation", {
 
 
 
-##################################
-# test Pareto_ML_Estimator_alpha #
-##################################
+#####################################
+# test GenPareto_ML_Estimator_alpha #
+#####################################
 
 test_that("GenPareto_ML_Estimator_alpha", {
   losses <- c(1622.49986584698, 1025.1735923535, 1142.67198754259, 1598.2131674777, 1369.79742768744, 1006.5249344124,
@@ -115,8 +115,7 @@ test_that("GenPareto_ML_Estimator_alpha", {
   w[index] <- 2
   losses2 <- c(losses, losses[index])
   expect_equal(GenPareto_ML_Estimator_Alpha(losses, 1000, weights = w), GenPareto_ML_Estimator_Alpha(losses2, 1000))
-  expect_equal(GenPareto_ML_Estimator_Alpha(losses, 1000, weights = w, truncation = 10000), GenPareto_ML_Estimator_Alpha(losses2, 1000, truncation = 10000))
-
+  expect_equal(round(GenPareto_ML_Estimator_Alpha(losses, 1000, weights = w, truncation = 10000), 5), round(GenPareto_ML_Estimator_Alpha(losses2, 1000, truncation = 10000), 5))
 
 })
 

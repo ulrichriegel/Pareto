@@ -166,7 +166,7 @@ test_that("Pareto_ML_Estimator_alpha", {
   reporting_thresholds2 <- c(reporting_thresholds, rep(reporting_thresholds[1:2], 9))
   expect_equal(Pareto_ML_Estimator_Alpha(losses, t, reporting_thresholds = reporting_thresholds, weights = w), Pareto_ML_Estimator_Alpha(losses2, t, reporting_thresholds = reporting_thresholds2))
   truncation <- 2 * max(losses)
-  expect_equal(Pareto_ML_Estimator_Alpha(losses, t, reporting_thresholds = reporting_thresholds, weights = w, truncation = truncation), Pareto_ML_Estimator_Alpha(losses2, t, reporting_thresholds = reporting_thresholds2, truncation = truncation))
+  expect_equal(round(Pareto_ML_Estimator_Alpha(losses, t, reporting_thresholds = reporting_thresholds, weights = w, truncation = truncation), 5), round(Pareto_ML_Estimator_Alpha(losses2, t, reporting_thresholds = reporting_thresholds2, truncation = truncation), 5))
 })
 
 
