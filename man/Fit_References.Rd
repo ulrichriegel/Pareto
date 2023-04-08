@@ -25,7 +25,7 @@ Fit_References(
 
 \item{Expected_Layer_Losses}{Numeric vector. Vector containing the expected losses of the layers from the wishlist.}
 
-\item{Thresholds}{Numeric vector. Contains the thresholds from the whishlist for which excess frequencies are given.}
+\item{Thresholds}{Numeric vector. Contains the thresholds from the wishlist for which excess frequencies are given.}
 
 \item{Frequencies}{Numeric vector. Expected frequencies excess the \code{Thresholds} from the wishlist.}
 
