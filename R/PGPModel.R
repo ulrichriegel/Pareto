@@ -29,7 +29,7 @@ PGP_Model <- function(FQ = NULL, t = NULL, alpha_ini = NULL, alpha_tail = NULL, 
 
 }
 
-#' Print a PGP_Model Object(Collective Panjer & Generalized Pareto Model) Object
+#' Print a PGP_Model Object (Collective Panjer & Generalized Pareto Model) Object
 #'
 #' @description Print method for PGP_Model objects
 #'

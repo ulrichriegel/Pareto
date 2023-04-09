@@ -30,7 +30,7 @@ PPP_Model <- function(FQ = NULL, t = NULL, alpha = NULL, truncation = NULL, trun
 
 }
 
-#' Print a PPP_Model Object(Collective Panjer & Piecewise Pareto Model) Object
+#' Print a PPP_Model Object (Collective Panjer & Piecewise Pareto Model) Object
 #'
 #' @description Print method for PPP_Model objects
 #'
