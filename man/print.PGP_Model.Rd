@@ -2,7 +2,7 @@
 % Please edit documentation in R/PGPModel.R
 \name{print.PGP_Model}
 \alias{print.PGP_Model}
-\title{Print a PGP_Model Object(Collective Panjer & Generalized Pareto Model) Object}
+\title{Print a PGP_Model Object (Collective Panjer & Generalized Pareto Model) Object}
 \usage{
 \method{print}{PGP_Model}(x, ...)
 }

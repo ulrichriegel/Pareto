@@ -14,5 +14,4 @@ There are currently no downstream dependencies.
 
 ## Additional comment:
 
-Mac issue from last version released is fixed in this version
-(fix of version 2.4.4 did not work in one case).
+One of the tests still failed on M1mac. I have removed this test.

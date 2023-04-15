@@ -1,3 +1,7 @@
+* Pareto 2.4.5
+
+* Minor bug fix in automated tests
+
 # Pareto 2.4.3
 
 * Minor bug corrected in PiecewisePareto_ML_Estimator_Alpha

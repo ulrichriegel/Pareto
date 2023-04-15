@@ -2,7 +2,7 @@
 % Please edit documentation in R/PPPModel.R
 \name{print.PPP_Model}
 \alias{print.PPP_Model}
-\title{Print a PPP_Model Object(Collective Panjer & Piecewise Pareto Model) Object}
+\title{Print a PPP_Model Object (Collective Panjer & Piecewise Pareto Model) Object}
 \usage{
 \method{print}{PPP_Model}(x, ...)
 }
