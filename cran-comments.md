@@ -14,4 +14,4 @@ There are currently no downstream dependencies.
 
 ## Additional comment:
 
-One of the tests still failed on M1mac. I have removed this test.
+Used higher tolerance in expect_equal() in the tests that failed on M1mac. 
